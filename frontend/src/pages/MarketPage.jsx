@@ -35,32 +35,25 @@ function MarketPage() {
   const [viewType, setViewType] = useState('card')
   const [editingId, setEditingId] = useState(null)
   const [editForm, setEditForm] = useState({})
-  
   const [sortType, setSortType] = useState('latest')
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 6;
   const [likedItems, setLikedItems] = useState(() => new Set(JSON.parse(localStorage.getItem('likedItems') || '[]')))
-  
   const [quote, setQuote] = useState(MARKET_QUOTES[0])
   const [selectedDesc, setSelectedDesc] = useState(null)
   const [showVersionInfo, setShowVersionInfo] = useState(false)
   const [submitMentionIndex, setSubmitMentionIndex] = useState(0);
-
   const [tourIndex, setTourIndex] = useState(-1) 
-  const [tourPos, setTourPos] = useState({ top: 0, left: 0 })
   const [showConfetti, setShowConfetti] = useState(false)
   const [showModalConfetti, setShowModalConfetti] = useState(false)
-
   const API_URL = '/api/market'; const COMMON_URL = '/api/items'
 
   useEffect(() => { fetchItems(); setQuote(MARKET_QUOTES[Math.floor(Math.random() * MARKET_QUOTES.length)]); }, [])
   const fetchItems = async () => { try { const res = await axios.get(API_URL); setItems(res.data) } catch(e){} }
-
   useEffect(() => {
     const intervalId = setInterval(() => setSubmitMentionIndex(prev => (prev + 1) % SUBMIT_MENTIONS.length), 6000); 
     return () => clearInterval(intervalId);
   }, []);
-
   useEffect(() => {
     if (showVersionInfo) {
       setShowModalConfetti(true);
@@ -74,13 +67,9 @@ function MarketPage() {
       const el = document.getElementById(step.targetId);
       if (el) {
         el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        
         const highlightClasses = ['ring-[6px]', 'ring-blue-500', 'ring-offset-2', 'z-[80]', 'transition-all', 'rounded-2xl'];
         el.classList.add(...highlightClasses);
-        
-        return () => {
-          el.classList.remove(...highlightClasses);
-        };
+        return () => { el.classList.remove(...highlightClasses); };
       }
     }
   }, [tourIndex]);
@@ -92,12 +81,10 @@ function MarketPage() {
     else if (value.length > 7) formatted = `${value.slice(0, 3)}-${value.slice(3, 7)}-${value.slice(7, 11)}`;
     setForm({ ...form, phone: formatted });
   }
-
   const handleFreebie = () => {
     setForm({...form, price: 'free'});
     setShowConfetti(true); setTimeout(() => setShowConfetti(false), 2000);
   }
-
   const addItem = async (e) => {
     e.preventDefault(); if (!form.title) return;
     if (form.deadline && new Date(form.deadline) < new Date().setHours(0,0,0,0)) {
@@ -108,7 +95,6 @@ function MarketPage() {
     setItems([...items, res.data]); setForm({ title: '', price: '', deadline: '', studentId: '', sellerName: '', phone: '', location: '', description: '' })
     setCurrentPage(1); setQuote(MARKET_QUOTES[Math.floor(Math.random() * MARKET_QUOTES.length)]);
   }
-
   const handleLike = async (id) => {
     const isLiked = likedItems.has(id); const val = isLiked ? -1 : 1;
     const res = await axios.patch(`${COMMON_URL}/${id}/like`, { value: val });
@@ -117,12 +103,10 @@ function MarketPage() {
     if (isLiked) newLiked.delete(id); else newLiked.add(id);
     setLikedItems(newLiked); localStorage.setItem('likedItems', JSON.stringify([...newLiked]));
   }
-
   const saveEdit = async (id) => {
     const res = await axios.put(`${COMMON_URL}/${id}`, { ...editForm, price: editForm.price === 'free' ? 0 : editForm.price })
     setItems(items.map(item => item._id === id ? res.data : item)); setEditingId(null)
   }
-
   const sortedItems = [...items].sort((a, b) => {
     if (sortType === 'latest') return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
     if (sortType === 'deadline') return new Date(a.deadline || '9999') - new Date(b.deadline || '9999');
@@ -131,7 +115,6 @@ function MarketPage() {
     if (sortType === 'likes') return b.likes - a.likes;
     return 0;
   });
-
   const currentItems = sortedItems.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
   const totalPages = Math.ceil(sortedItems.length / itemsPerPage) || 1;
 
@@ -177,7 +160,8 @@ function MarketPage() {
             </div>
           )}
           <div className="bg-white p-8 rounded-[2rem] max-w-2xl w-full shadow-2xl transform transition-all border-4 border-blue-50" onClick={e=>e.stopPropagation()}>
-            <h3 className="text-3xl font-black mb-2 text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 text-center">🚀 V5_super_2.5 ver 업데이트 내역</h3>
+            {/* 🚀 버전 상향 및 스탠다드 로직 */}
+            <h3 className="text-3xl font-black mb-2 text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 text-center">🚀 V5_super_3.0 ver 업데이트 내역</h3>
             <p className="text-center text-gray-500 font-bold mb-8 text-xs">웹프로그래밍 과제 25-2 기말대체 `todos_v4`의 최종 진화형!</p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
               <div className="bg-gray-50 p-6 rounded-3xl border-2 border-dashed border-gray-200">
@@ -212,8 +196,9 @@ function MarketPage() {
           
           <h2 className="text-5xl font-black text-[#002f6c] mb-3 tracking-tighter flex justify-center items-center">
             CWNU MARKET 
-            <span onClick={() => setShowVersionInfo(true)} className="inline-block ml-4 pr-6 py-1 text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-orange-400 to-red-500 animate-[pulse_1.5s_ease-in-out_infinite] hover:-skew-x-12 hover:scale-110 transition-transform duration-300 cursor-pointer italic drop-shadow-lg">
-              V5_super_2.5 ver
+            {/* 🚀 0 가림 문제 해결: 가로 패딩 px-2 추가, 버전 3.0 공식 업데이트 */}
+            <span onClick={() => setShowVersionInfo(true)} className="inline-block ml-4 px-2 py-1 text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-orange-400 to-red-500 animate-[pulse_1.5s_ease-in-out_infinite] hover:-skew-x-12 hover:scale-110 transition-transform duration-300 cursor-pointer italic drop-shadow-lg">
+              V5_super_3.0
             </span>
           </h2>
           <p className="text-gray-400 font-bold text-xs mb-3 cursor-pointer hover:text-blue-400 transition" onClick={() => setShowVersionInfo(true)}>(버전 업데이트 내용이 궁금하다면 V5를 클릭해보세요! 🚀)</p>
@@ -226,12 +211,9 @@ function MarketPage() {
 
         <form onSubmit={addItem} className="bg-white p-8 rounded-[2.5rem] shadow-xl mb-10 grid grid-cols-1 md:grid-cols-3 gap-5 border border-blue-50 relative overflow-visible">
           <input placeholder="물품명" value={form.title} onChange={e=>setForm({...form, title: e.target.value})} className="border-2 border-gray-100 p-4 rounded-2xl outline-none focus:border-blue-400 transition"/>
-          
           <div id="tour-freebie" className="flex gap-2 relative transition-all duration-300">
             {form.price === 'free' ? (
-              <div onClick={() => setForm({...form, price: ''})} className="border-2 border-green-400 bg-green-50 text-green-600 p-4 rounded-2xl flex-grow font-black text-center cursor-pointer hover:bg-green-100 transition shadow-inner flex items-center justify-center">
-                🎉 무료 나눔 모드! (클릭하여 취소)
-              </div>
+              <div onClick={() => setForm({...form, price: ''})} className="border-2 border-green-400 bg-green-50 text-green-600 p-4 rounded-2xl flex-grow font-black text-center cursor-pointer hover:bg-green-100 transition shadow-inner flex items-center justify-center">🎁 무료 나눔 모드! (클릭하여 취소)</div>
             ) : (
               <input placeholder="가격(원)" type="number" min="0" value={form.price} onChange={e=>setForm({...form, price: Math.max(0, e.target.value)})} className="border-2 border-gray-100 p-4 rounded-2xl outline-none focus:border-blue-400 transition flex-grow"/>
             )}
@@ -244,7 +226,6 @@ function MarketPage() {
               </div>
             )}
           </div>
-
           <input id="tour-deadline" type="date" value={form.deadline} onChange={e=>setForm({...form, deadline: e.target.value})} onClick={(e) => e.target.showPicker && e.target.showPicker()} className="border-2 border-gray-100 p-4 rounded-2xl outline-none focus:border-blue-400 transition cursor-pointer text-gray-600 font-medium"/>
           <input placeholder="학번" value={form.studentId} onChange={e=>setForm({...form, studentId: e.target.value})} className="border-2 border-gray-100 p-4 rounded-2xl outline-none focus:border-blue-400 transition"/>
           <input placeholder="판매자" value={form.sellerName} onChange={e=>setForm({...form, sellerName: e.target.value})} className="border-2 border-gray-100 p-4 rounded-2xl outline-none focus:border-blue-400 transition"/>
@@ -252,11 +233,8 @@ function MarketPage() {
           <input placeholder="거래 희망처" value={form.location} onChange={e=>setForm({...form, location: e.target.value})} className="border-2 border-gray-100 p-4 rounded-2xl outline-none focus:border-blue-400 transition md:col-span-3"/>
           <textarea placeholder="판매에 대한 상세한 설명을 적어주세요. (클릭 시 팝업되어 넓게 볼 수 있습니다)" value={form.description} onChange={e=>setForm({...form, description: e.target.value})} 
             className="border-2 border-gray-100 p-4 rounded-2xl md:col-span-3 outline-none focus:border-blue-400 h-16 focus:h-40 transition-all duration-300 resize-none leading-relaxed font-medium"></textarea>
-          
           <button className="md:col-span-3 bg-[#002f6c] text-white p-5 rounded-2xl font-black text-lg hover:bg-blue-800 transition-all shadow-xl mt-2 tracking-widest uppercase overflow-hidden relative h-16 flex justify-center items-center">
-            <span key={SUBMIT_MENTIONS[submitMentionIndex]} className="inline-block animate-submit-text-fade absolute">
-              {SUBMIT_MENTIONS[submitMentionIndex]}
-            </span>
+            <span key={SUBMIT_MENTIONS[submitMentionIndex]} className="inline-block animate-submit-text-fade absolute">{SUBMIT_MENTIONS[submitMentionIndex]}</span>
           </button>
         </form>
 
@@ -339,7 +317,6 @@ function MarketPage() {
                 {currentItems.map(item => (
                   <tr key={item._id} className={`border-b hover:bg-blue-50 transition-colors ${item.completed ? 'sold-out text-red-500' : ''}`}>
                     <td className={`p-5 font-black text-lg relative ${item.completed ? 'opacity-70' : 'text-gray-800'}`}>
-                      {/* 🚀 1. 테이블 모드 좌측 상단 SOLD OUT 뱃지 추가 */}
                       {item.completed && <div className="absolute top-0 left-0 bg-red-500 text-white font-black text-[9px] px-2 py-1 rounded-br-xl shadow-sm tracking-widest z-10">SOLD OUT</div>}
                       <span className={item.completed ? 'line-through text-red-500' : ''}>{item.title}</span> <span className="text-red-400 text-xs ml-2">♥{item.likes}</span>
                     </td>
@@ -357,14 +334,6 @@ function MarketPage() {
                 ))}
               </tbody>
             </table>
-          </div>
-        )}
-
-        {totalPages > 1 && (
-          <div className="flex justify-center items-center gap-4 mb-10">
-            <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="px-5 py-2.5 bg-white border-2 border-gray-100 rounded-xl font-black text-gray-400 hover:text-blue-500 hover:border-blue-200 disabled:opacity-30 transition">PREV</button>
-            <span className="font-black text-[#002f6c] text-xl bg-blue-50 px-6 py-2 rounded-2xl">{currentPage} <span className="text-gray-300 mx-1">/</span> {totalPages}</span>
-            <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="px-5 py-2.5 bg-white border-2 border-gray-100 rounded-xl font-black text-gray-400 hover:text-blue-500 hover:border-blue-200 disabled:opacity-30 transition">NEXT</button>
           </div>
         )}
       </div>

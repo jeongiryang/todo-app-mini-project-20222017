@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import { useState, useEffect, useRef } from 'react';
 import MarketPage from './pages/MarketPage';
 import TodoPage from './pages/TodoPage';
-import GpaPage from './pages/GpaPage'; // 🚀 1. 새로 만든 학점계산기 임포트
+import GpaPage from './pages/GpaPage';
 
 function App() {
   const [timerMode, setTimerMode] = useState('timer');
@@ -36,7 +36,7 @@ function App() {
             
             <div className="flex items-center gap-4">
               <h1 className="font-black text-2xl italic tracking-tighter">
-                CWNU PORTAL <span className="text-red-400">V5_super_2.5</span>
+                CWNU PORTAL <span className="text-red-400">V5_super_3.0</span>
               </h1>
               <div className="hidden md:flex items-center gap-2 border-l border-blue-800 ml-4 pl-4">
                 <a href="https://www.changwon.ac.kr/portal/main.do#" target="_blank" rel="noreferrer" 
@@ -53,7 +53,6 @@ function App() {
             <div className="flex gap-6 font-black text-sm items-center">
               <Link to="/market" className="hover:text-blue-300 transition-colors flex items-center gap-1">🏪 <span className="hidden sm:inline">MARKET</span></Link>
               <Link to="/todo" className="hover:text-blue-300 transition-colors flex items-center gap-1">📝 <span className="hidden sm:inline">TODO</span></Link>
-              {/* 🚀 2. GPA 메뉴 버튼 추가 */}
               <Link to="/gpa" className="hover:text-blue-300 transition-colors flex items-center gap-1 bg-white/10 px-3 py-1.5 rounded-lg border border-white/20">🎓 <span className="hidden sm:inline">GPA</span></Link>
             </div>
           </div>
@@ -64,7 +63,7 @@ function App() {
             <Route path="/" element={<MarketPage />} />
             <Route path="/market" element={<MarketPage />} />
             <Route path="/todo" element={<TodoPage {...timerProps} />} />
-            <Route path="/gpa" element={<GpaPage />} /> {/* 🚀 3. 라우팅 추가 */}
+            <Route path="/gpa" element={<GpaPage />} />
           </Routes>
         </div>
       </div>

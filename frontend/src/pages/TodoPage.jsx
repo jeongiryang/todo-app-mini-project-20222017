@@ -1,3 +1,4 @@
+// src/pages/TodoPage.jsx 전체 복사
 import { useState, useEffect } from 'react'
 import axios from 'axios'
 
@@ -28,8 +29,7 @@ const QUOTES = [
 ];
 
 const TOUR_STEPS = [
-  // 🚀 투어 설명 버전 3.0 업데이트
-  { title: "👋 환영합니다!", desc: "CWNU 포털 V5_super_3.0 투두리스트 가이드입니다. (화면이 자동으로 이동합니다)", targetId: "tour-header" },
+  { title: "👋 환영합니다!", desc: "CWNU 포털의 핵심 기능을 빠르게 안내해 드릴게요. (화면이 자동으로 이동합니다)", targetId: "tour-header" },
   { title: "⏱️ 타이머 & 스톱워치", desc: "이곳에서 집중할 시간을 설정하거나 측정이 가능합니다. (스톱워치 모드에선 경고가 해제됩니다)", targetId: "tour-timer" },
   { title: "🚨 30분 전 알림 토글", desc: "오른쪽 위 버튼을 켜면, 메인 타이머가 30분 이하로 남았을 때 빨간색으로 깜빡이며 경고해줍니다!", targetId: "tour-timer-alert" },
   { title: "⏰ 초정밀 마감 카운트다운", desc: "할 일을 추가할 때 달력을 눌러 날짜와 시간을 지정해보세요. 실시간으로 남은 시간이 초 단위로 줄어듭니다.", targetId: "tour-add" },
@@ -51,6 +51,8 @@ function TodoPage({ timerMode, setTimerMode, timerTime, setTimerTime, timerIsRun
   const [now, setNow] = useState(new Date());
   const [isAlertEnabled, setIsAlertEnabled] = useState(true);
   const [tourIndex, setTourIndex] = useState(-1)
+  const [showVersionInfo, setShowVersionInfo] = useState(false);
+  const [showModalConfetti, setShowModalConfetti] = useState(false);
   const API_URL = '/api/todo'; const COMMON_URL = '/api/items'
 
   useEffect(() => { fetchTodos(); handleRandomize(); }, [])
@@ -64,6 +66,13 @@ function TodoPage({ timerMode, setTimerMode, timerTime, setTimerTime, timerIsRun
   }, []);
 
   useEffect(() => {
+    if (showVersionInfo) {
+      setShowModalConfetti(true);
+      setTimeout(() => setShowModalConfetti(false), 2500);
+    }
+  }, [showVersionInfo]);
+
+  useEffect(() => {
     if (tourIndex >= 0) {
       if (tourIndex === 2 && timerMode !== 'timer') setTimerMode('timer'); 
       const step = TOUR_STEPS[tourIndex];
@@ -72,7 +81,9 @@ function TodoPage({ timerMode, setTimerMode, timerTime, setTimerTime, timerIsRun
         el.scrollIntoView({ behavior: 'smooth', block: 'center' });
         const highlightClasses = ['ring-[6px]', 'ring-indigo-500', 'ring-offset-2', 'z-[80]', 'transition-all', 'rounded-2xl'];
         el.classList.add(...highlightClasses);
-        return () => el.classList.remove(...highlightClasses);
+        return () => {
+          el.classList.remove(...highlightClasses);
+        };
       }
     }
   }, [tourIndex, timerMode]);
@@ -133,6 +144,10 @@ function TodoPage({ timerMode, setTimerMode, timerTime, setTimerTime, timerIsRun
         .submit-mention-enter-active { opacity: 1; transform: translateY(0); transition: all 0.5s ease-out; }
         .submit-mention-exit { opacity: 1; transform: translateY(0); }
         .submit-mention-exit-active { opacity: 0; transform: translateY(-5px); transition: all 0.5s ease-in; }
+        @keyframes shoot-up { 0% { transform: translateY(0) scale(0.5); opacity: 1; } 50% { transform: translateY(-100px) scale(1.2); opacity: 1; } 100% { transform: translateY(-150px) scale(1); opacity: 0; } }
+        .emoji-burst { position: absolute; animation: shoot-up 1.5s ease-out forwards; z-index: 9999; pointer-events: none; }
+        @keyframes fireswork { 0% { transform: scale(0) rotate(0deg); opacity: 1; } 100% { transform: scale(2) rotate(45deg); opacity: 0; } }
+        .golden-firework { position: absolute; animation: fireswork 1.5s ease-out forwards; z-index: 9999; font-size: 4rem; }
       `}</style>
 
       {tourIndex >= 0 && (
@@ -152,14 +167,50 @@ function TodoPage({ timerMode, setTimerMode, timerTime, setTimerTime, timerIsRun
         </>
       )}
 
+      {showVersionInfo && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[150] p-4 backdrop-blur-sm" onClick={() => setShowVersionInfo(false)}>
+          {showModalConfetti && (
+            <div className="fixed inset-0 pointer-events-none z-[9999] flex items-center justify-center">
+              <span className="emoji-burst text-6xl" style={{ left: '30%', top: '50%' }}>🎉</span>
+              <span className="emoji-burst text-7xl" style={{ animationDelay: '0.1s', left: '50%', top: '40%' }}>✨</span>
+              <span className="emoji-burst text-6xl" style={{ animationDelay: '0.2s', left: '70%', top: '50%' }}>🎊</span>
+            </div>
+          )}
+          <div className="bg-white p-8 rounded-[2rem] max-w-2xl w-full shadow-2xl transform transition-all border-4 border-indigo-50" onClick={e=>e.stopPropagation()}>
+            <h3 className="text-3xl font-black mb-2 text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600 text-center">🚀 V5_super_3.0 ver 업데이트 내역</h3>
+            <p className="text-center text-gray-500 font-bold mb-8 text-xs">웹프로그래밍 과제 25-2 기말대체 `todos_v4`의 최종 진화형!</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+              <div className="bg-gray-50 p-6 rounded-3xl border-2 border-dashed border-gray-200">
+                <h4 className="text-gray-500 font-black text-lg mb-4 text-center">🤔 이전 버전 (todos_v4)</h4>
+                <ul className="text-sm font-medium text-gray-500 space-y-3">
+                  <li>❌ 새로고침하면 등록한 데이터가 다 날아감 (로컬 스토리지 한계)</li>
+                  <li>❌ 단순한 텍스트 위주의 지루하고 투박한 디자인</li>
+                  <li>❌ 마감일 카운트다운 전무 (단순 CRUD)</li>
+                </ul>
+              </div>
+              <div className="bg-indigo-50 p-6 rounded-3xl border-2 border-indigo-200 shadow-inner">
+                <h4 className="text-indigo-600 font-black text-lg mb-4 text-center">✨ 현재 버전 (v5)</h4>
+                <ul className="text-sm font-bold text-gray-700 space-y-3">
+                  <li>✅ <span className="text-indigo-600 font-black">MongoDB 연동</span>으로 데이터 평생 보존!</li>
+                  <li>✅ 부드러운 애니메이션과 트렌디한 타이머 디자인</li>
+                  <li>✅ 초정밀 실시간 마감일 카운트다운 구현 <span className="text-indigo-600 font-black">프리미엄 UX</span></li>
+                </ul>
+              </div>
+            </div>
+            <button onClick={() => setShowVersionInfo(false)} className="w-full bg-gray-900 text-white py-4 rounded-xl font-black text-lg hover:bg-black transition shadow-lg tracking-widest uppercase">확인 완료! 직접 써보기</button>
+          </div>
+        </div>
+      )}
+
       <div className="flex-grow">
         <div id="tour-header" className="text-center mb-6 relative">
           <button onClick={() => setTourIndex(0)} className="absolute top-0 right-0 bg-yellow-100 text-yellow-700 px-4 py-2 rounded-full font-black text-xs hover:bg-yellow-200 transition shadow-sm z-10 animate-pulse">💡 도움말 투어 시작</button>
-          
-          {/* 🚀 Todo 타이틀 스타일을 마켓/GPA와 통일 (3.0 버전 반영) */}
           <h2 className="text-5xl font-black text-[#002f6c] mb-3 tracking-tighter flex justify-center items-center">
-            CWNU TODO <span className="inline-block ml-3 py-1 text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-red-600 animate-[pulse_1.5s_ease-in-out_infinite] hover:-skew-x-12 hover:scale-110 transition-transform duration-300 italic drop-shadow-lg text-4xl">V5_super_3.0</span>
+            {/* 🚀 0 가림 문제 해결: 가로 패딩 px-2 추가 */}
+            CWNU TODO <span onClick={() => setShowVersionInfo(true)} className="inline-block ml-3 px-2 py-1 text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-red-600 animate-[pulse_1.5s_ease-in-out_infinite] hover:-skew-x-12 hover:scale-110 transition-transform duration-300 italic drop-shadow-lg text-4xl cursor-pointer">V5_super_3.0</span>
           </h2>
+          {/* 업데이트 문구 힌트 추가 */}
+          <p className="text-gray-400 font-bold text-xs mb-3 cursor-pointer hover:text-indigo-400 transition" onClick={() => setShowVersionInfo(true)}>(버전 업데이트 내용이 궁금하다면 V5를 클릭해보세요! 🚀)</p>
           <p className="text-blue-500 font-black uppercase tracking-widest text-sm bg-blue-50 inline-block px-4 py-1 rounded-full">"{quote.en}"</p>
         </div>
 
@@ -264,7 +315,7 @@ function TodoPage({ timerMode, setTimerMode, timerTime, setTimerTime, timerIsRun
                               <button onClick={() => {setEditingId(todo._id); setEditForm(todo)}} className="text-[10px] font-black uppercase text-indigo-400 hover:text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-full transition">Edit</button>
                               <button onClick={async ()=>{await axios.delete(`${COMMON_URL}/${todo._id}`); fetchTodos()}} className="text-[10px] font-black uppercase text-red-400 hover:text-white hover:bg-red-500 bg-red-50 px-3 py-1.5 rounded-full transition">Del</button>
                             </td>
-                          </>
+                          </  >
                         )}
                       </tr>
                     )
