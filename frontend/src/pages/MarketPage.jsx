@@ -177,7 +177,7 @@ function MarketPage() {
             </div>
           )}
           <div className="bg-white p-8 rounded-[2rem] max-w-2xl w-full shadow-2xl transform transition-all border-4 border-blue-50" onClick={e=>e.stopPropagation()}>
-            <h3 className="text-3xl font-black mb-2 text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 text-center">🚀 V5_super_2.0 ver 업데이트 내역</h3>
+            <h3 className="text-3xl font-black mb-2 text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 text-center">🚀 V5_super_2.5 ver 업데이트 내역</h3>
             <p className="text-center text-gray-500 font-bold mb-8 text-xs">웹프로그래밍 과제 25-2 기말대체 `todos_v4`의 최종 진화형!</p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
               <div className="bg-gray-50 p-6 rounded-3xl border-2 border-dashed border-gray-200">
@@ -213,7 +213,7 @@ function MarketPage() {
           <h2 className="text-5xl font-black text-[#002f6c] mb-3 tracking-tighter flex justify-center items-center">
             CWNU MARKET 
             <span onClick={() => setShowVersionInfo(true)} className="inline-block ml-4 pr-6 py-1 text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-orange-400 to-red-500 animate-[pulse_1.5s_ease-in-out_infinite] hover:-skew-x-12 hover:scale-110 transition-transform duration-300 cursor-pointer italic drop-shadow-lg">
-              V5_super_2.0 ver
+              V5_super_2.5 ver
             </span>
           </h2>
           <p className="text-gray-400 font-bold text-xs mb-3 cursor-pointer hover:text-blue-400 transition" onClick={() => setShowVersionInfo(true)}>(버전 업데이트 내용이 궁금하다면 V5를 클릭해보세요! 🚀)</p>
