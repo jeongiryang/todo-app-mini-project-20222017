@@ -1,20 +1,28 @@
 // src/pages/MarketPage.jsx 전체 복사
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import axios from 'axios'
 
+// 🚀 7. 명언 대량 추가 (재치있고 거래를 독려하는 텍스트)
 const MARKET_QUOTES = [
   "안 쓰는 물건, 누군가에겐 보물입니다. 💎", "빠른 쿨거래가 창대인의 매너를 만듭니다. 🤝",
   "네고는 둥글게, 거래는 확실하게! ✨", "오늘 비운 공간, 내일의 여유가 됩니다. 📦",
-  "신뢰는 최고의 거래 조건입니다. 🕊️", "책상 속 잠든 전공책, 후배에겐 빛과 소금! 📚"
+  "신뢰는 최고의 거래 조건입니다. 🕊️", "책상 속 잠든 전공책, 후배에겐 빛과 소금! 📚",
+  "비움의 미학, 마켓에서 시작하세요. 🌿", "당신의 방치된 아이템, 누군가의 필수템! 🎯",
+  "환경도 살리고 지갑도 채우는 에코 거래 ♻️", "창원대 학우들끼리 따뜻한 직거래 한 판! 🏫",
+  "물건은 떠나도 따뜻한 마음은 남습니다. ☕", "혹시 당근... 아니 CWNU 마켓이세요? 🥕",
+  "버리기엔 아까운 물건, 여기서 새 주인을 찾아주세요! 🏷️", "안전한 캠퍼스 직거래, 지금 바로 시작하세요. 🛡️",
+  "자취방 이사 전 필수 코스! 물건 비우기 대작전 🚚", "기분 좋은 거래의 시작은 친절한 인사부터! 💬",
+  "필요 없는 물건이 치킨으로 연성되는 마법 🍗", "가성비 넘치는 대학 생활의 비밀 무기 🤫",
+  "판매자에겐 용돈을, 구매자에겐 득템을! 💸", "서로 돕고 사는 훈훈한 창대 라이프 💖"
 ];
 
-// 🚀 11. 도움말 튜토리얼 데이터
+// 🚀 1 & 11. 요소 이동형 도움말 투어 데이터 (targetId 추가)
 const TOUR_STEPS = [
-  { title: "👋 환영합니다!", desc: "CWNU 마켓의 핵심 기능을 빠르게 안내해 드릴게요." },
-  { title: "🎁 무료 나눔 기능", desc: "가격을 입력하는 곳 옆의 '무료 나눔' 버튼을 누르면 0원 처리와 함께 기분 좋은 효과가 나타납니다!" },
-  { title: "❤️ 실시간 찜하기", desc: "마음에 드는 물건은 하트를 눌러보세요! 다른 사람들도 얼마나 찜했는지 바로 알 수 있습니다." },
-  { title: "📝 상세 설명 보기", desc: "판매자의 설명이 길다면? 글씨를 살짝 클릭해보세요! 넓은 팝업창으로 편하게 읽을 수 있습니다." },
-  { title: "✅ 완벽한 수정/삭제", desc: "글을 올린 후에도 연한 글씨(미리보기)를 참고해 언제든 안전하게 내용을 고칠 수 있습니다." }
+  { title: "👋 환영합니다!", desc: "CWNU 마켓의 핵심 기능을 빠르게 안내해 드릴게요. (화면이 자동으로 이동합니다)", targetId: "tour-header" },
+  { title: "🎁 무료 나눔 & 가격", desc: "이곳에서 가격을 정하거나 '무료 나눔' 버튼을 누르면 기분 좋은 폭죽이 터집니다!", targetId: "tour-freebie" },
+  { title: "📅 캘린더 마감일", desc: "마우스로 클릭만 하면 캘린더가 팝업되어 쉽게 마감 기한을 정할 수 있어요.", targetId: "tour-deadline" },
+  { title: "🔄 똑똑한 정렬", desc: "최신순, 마감임박순, 찜 많은 순으로 원하는 물품을 입맛대로 골라보세요.", targetId: "tour-sort" },
+  { title: "❤️ 실시간 찜하기", desc: "마음에 드는 물건 카드의 하트를 누르면 숫자가 실시간으로 올라가고 내려갑니다!", targetId: "tour-card" }
 ];
 
 function MarketPage() {
@@ -31,18 +39,42 @@ function MarketPage() {
   
   const [quote, setQuote] = useState(MARKET_QUOTES[0])
   const [selectedDesc, setSelectedDesc] = useState(null)
-  
-  // 🚀 4. 버전 설명 모달 & 11. 도움말 투어 상태
   const [showVersionInfo, setShowVersionInfo] = useState(false)
-  const [tourIndex, setTourIndex] = useState(-1) // -1이면 꺼짐
-
-  // 🚀 5. 무료나눔 폭죽 애니메이션 상태
+  
+  // 🚀 1. 투어 상태 및 위치 추적
+  const [tourIndex, setTourIndex] = useState(-1) 
+  const [tourPos, setTourPos] = useState({ top: 0, left: 0 })
   const [showConfetti, setShowConfetti] = useState(false)
 
   const API_URL = '/api/market'; const COMMON_URL = '/api/items'
 
   useEffect(() => { fetchItems(); setQuote(MARKET_QUOTES[Math.floor(Math.random() * MARKET_QUOTES.length)]); }, [])
   const fetchItems = async () => { try { const res = await axios.get(API_URL); setItems(res.data) } catch(e){} }
+
+  // 🚀 1 & 11. 도움말 팝업 위치 자동 계산 로직
+  useEffect(() => {
+    if (tourIndex >= 0) {
+      const step = TOUR_STEPS[tourIndex];
+      const el = document.getElementById(step.targetId);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        // 스크롤 이동 시간 벌어주기
+        setTimeout(() => {
+          const rect = el.getBoundingClientRect();
+          setTourPos({ 
+            top: rect.bottom + window.scrollY + 15, 
+            left: Math.max(20, rect.left + window.scrollX - 20) 
+          });
+          // 하이라이트 효과 임시 부여
+          el.classList.add('ring-4', 'ring-yellow-400', 'z-50', 'relative', 'bg-white');
+          setTimeout(() => el.classList.remove('ring-4', 'ring-yellow-400', 'z-50', 'relative', 'bg-white'), 3000);
+        }, 400);
+      } else {
+        // 요소를 못 찾으면 화면 중앙
+        setTourPos({ top: window.scrollY + window.innerHeight / 2 - 100, left: window.innerWidth / 2 - 150 });
+      }
+    }
+  }, [tourIndex]);
 
   const handlePhoneChange = (e) => {
     const value = e.target.value.replace(/[^0-9]/g, '');
@@ -54,28 +86,22 @@ function MarketPage() {
 
   const handleFreebie = () => {
     setForm({...form, price: 'free'});
-    setShowConfetti(true);
-    setTimeout(() => setShowConfetti(false), 2000);
+    setShowConfetti(true); setTimeout(() => setShowConfetti(false), 2000);
   }
 
   const addItem = async (e) => {
     e.preventDefault(); if (!form.title) return;
-    if (form.deadline) {
-      const today = new Date(); today.setHours(0,0,0,0);
-      if (new Date(form.deadline) < today) {
-        if (!window.confirm("⚠️ 마감 기한이 오늘보다 이전입니다. 이대로 올리시겠습니까?")) return;
-      }
+    if (form.deadline && new Date(form.deadline) < new Date().setHours(0,0,0,0)) {
+      if (!window.confirm("⚠️ 마감 기한이 오늘보다 이전입니다. 이대로 올리시겠습니까?")) return;
     }
-    // 'free' 상태면 0으로 서버에 전송
     const submitData = { ...form, price: form.price === 'free' ? 0 : form.price };
     const res = await axios.post(API_URL, submitData)
     setItems([...items, res.data]); setForm({ title: '', price: '', deadline: '', studentId: '', sellerName: '', phone: '', location: '', description: '' })
-    setCurrentPage(1);
+    setCurrentPage(1); setQuote(MARKET_QUOTES[Math.floor(Math.random() * MARKET_QUOTES.length)]);
   }
 
   const handleLike = async (id) => {
-    const isLiked = likedItems.has(id);
-    const val = isLiked ? -1 : 1;
+    const isLiked = likedItems.has(id); const val = isLiked ? -1 : 1;
     const res = await axios.patch(`${COMMON_URL}/${id}/like`, { value: val });
     setItems(items.map(item => item._id === id ? res.data : item));
     const newLiked = new Set(likedItems);
@@ -97,108 +123,123 @@ function MarketPage() {
     return 0;
   });
 
-  const totalPages = Math.ceil(sortedItems.length / itemsPerPage) || 1;
   const currentItems = sortedItems.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const totalPages = Math.ceil(sortedItems.length / itemsPerPage) || 1;
 
   return (
     <div className="max-w-7xl mx-auto p-6 flex flex-col min-h-screen relative">
       <style>{`
         @keyframes pop { 0% { transform: scale(0.8) translateY(10px); opacity: 0; } 50% { transform: scale(1.2); opacity: 1; } 100% { transform: scale(1) translateY(-30px); opacity: 0; } }
-        .emoji-burst { position: absolute; animation: pop 1s ease-out forwards; font-size: 2rem; pointer-events: none; z-index: 50; }
+        .emoji-burst { position: absolute; animation: pop 1s ease-out forwards; font-size: 2.5rem; pointer-events: none; z-index: 50; }
+        @keyframes pulse-border { 0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.5); } 70% { box-shadow: 0 0 0 10px rgba(59, 130, 246, 0); } 100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); } }
+        .tour-popup { animation: pop 0.3s ease-out forwards; }
       `}</style>
 
-      {/* 🚀 11. 도움말 투어 모달 */}
+      {/* 🚀 1. 타겟 추적형 팝업 (도움말 투어) */}
       {tourIndex >= 0 && (
-        <div className="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4">
-          <div className="bg-white p-8 rounded-[2rem] max-w-sm w-full shadow-2xl animate-bounce-short">
-            <h3 className="text-blue-600 font-black mb-2 text-xs uppercase tracking-widest">Help Tour ({tourIndex + 1}/{TOUR_STEPS.length})</h3>
-            <h2 className="text-2xl font-black text-gray-800 mb-4">{TOUR_STEPS[tourIndex].title}</h2>
-            <p className="text-gray-600 font-medium leading-relaxed mb-8">{TOUR_STEPS[tourIndex].desc}</p>
-            <div className="flex justify-between gap-3">
-              <button onClick={() => setTourIndex(-1)} className="px-4 py-2 text-gray-400 font-bold hover:text-gray-600">건너뛰기</button>
-              <button onClick={() => setTourIndex(prev => prev + 1 >= TOUR_STEPS.length ? -1 : prev + 1)} className="bg-blue-600 text-white px-6 py-2 rounded-xl font-black shadow-md hover:bg-blue-700">
-                {tourIndex === TOUR_STEPS.length - 1 ? "투어 종료" : "다음"}
+        <>
+          <div className="fixed inset-0 bg-black/20 z-[90] pointer-events-none transition-opacity duration-300"></div>
+          <div className="absolute z-[100] bg-white p-6 rounded-3xl shadow-[0_10px_40px_rgba(0,0,0,0.2)] border-2 border-blue-400 w-80 tour-popup transition-all duration-500 ease-in-out"
+               style={{ top: tourPos.top, left: tourPos.left }}>
+            <div className="absolute -top-3 left-6 w-5 h-5 bg-white border-t-2 border-l-2 border-blue-400 rotate-45"></div>
+            <h3 className="text-blue-600 font-black mb-1 text-[10px] uppercase tracking-widest">Guide ({tourIndex + 1}/{TOUR_STEPS.length})</h3>
+            <h2 className="text-xl font-black text-gray-800 mb-3">{TOUR_STEPS[tourIndex].title}</h2>
+            <p className="text-gray-600 text-sm font-medium leading-relaxed mb-5">{TOUR_STEPS[tourIndex].desc}</p>
+            <div className="flex justify-between gap-2">
+              <button onClick={() => setTourIndex(-1)} className="px-3 py-1 text-gray-400 font-bold text-xs hover:text-gray-600">건너뛰기</button>
+              <button onClick={() => setTourIndex(prev => prev + 1 >= TOUR_STEPS.length ? -1 : prev + 1)} className="bg-blue-600 text-white px-5 py-2 rounded-xl font-black text-xs shadow-md hover:bg-blue-700 transition">
+                {tourIndex === TOUR_STEPS.length - 1 ? "투어 종료 🎉" : "다음 보기 ▶"}
               </button>
             </div>
           </div>
-        </div>
+        </>
       )}
 
-      {/* 🚀 4. 버전 업데이트 내역 모달 */}
+      {/* 🚀 4. 직관적인 A->B 비교 버전 모달 */}
       {showVersionInfo && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4" onClick={() => setShowVersionInfo(false)}>
-          <div className="bg-white p-8 rounded-[2rem] max-w-md w-full shadow-2xl transform transition-all" onClick={e=>e.stopPropagation()}>
-            <h3 className="text-3xl font-black mb-6 text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">🚀 v5_super.ver 이란?</h3>
-            <ul className="space-y-4 text-gray-700 font-medium text-sm">
-              <li className="bg-gray-50 p-3 rounded-xl"><b>💾 메모리 상실증 완치:</b> 새로고침하면 날아가던 데이터? 이제 평생 기억합니다!</li>
-              <li className="bg-gray-50 p-3 rounded-xl"><b>🎨 성형 대성공:</b> 투박했던 화면이 요즘 유행하는 앱처럼 확 예뻐졌어요.</li>
-              <li className="bg-gray-50 p-3 rounded-xl"><b>💡 똑똑한 비서:</b> 마감일 경고, 찜하기, 자동 하이픈 등 알아서 척척 해줍니다.</li>
-            </ul>
-            <button onClick={() => setShowVersionInfo(false)} className="mt-8 w-full bg-black text-white py-3 rounded-xl font-black hover:bg-gray-800 transition">멋지네요! 확인 완료</button>
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[150] p-4" onClick={() => setShowVersionInfo(false)}>
+          <div className="bg-white p-8 rounded-[2rem] max-w-2xl w-full shadow-2xl transform transition-all" onClick={e=>e.stopPropagation()}>
+            <h3 className="text-3xl font-black mb-2 text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 text-center">🚀 V5_super_2.0 ver 업데이트 내역</h3>
+            <p className="text-center text-gray-500 font-bold mb-8 text-sm">기존 (todos_v4.js) 대비 무엇이 달라졌을까요?</p>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+              <div className="bg-gray-50 p-6 rounded-3xl border-2 border-dashed border-gray-200">
+                <h4 className="text-gray-500 font-black text-lg mb-4 text-center">🤔 이전 버전 (v4)</h4>
+                <ul className="text-sm font-medium text-gray-500 space-y-3">
+                  <li>❌ 새로고침하면 등록한 데이터가 다 날아감</li>
+                  <li>❌ 단순한 텍스트 위주의 지루한 디자인</li>
+                  <li>❌ 마감일, 찜하기 등 부가 기능 전무</li>
+                </ul>
+              </div>
+              <div className="bg-blue-50 p-6 rounded-3xl border-2 border-blue-200 shadow-inner">
+                <h4 className="text-blue-600 font-black text-lg mb-4 text-center">✨ 현재 버전 (v5)</h4>
+                <ul className="text-sm font-bold text-gray-700 space-y-3">
+                  <li>✅ <span className="text-blue-600">MongoDB 연동</span>으로 데이터 평생 보존!</li>
+                  <li>✅ 부드러운 애니메이션과 트렌디한 카드 UI</li>
+                  <li>✅ 무료나눔 폭죽, 실시간 타이머, 자동 하이픈 등 <span className="text-blue-600">완벽한 UX</span></li>
+                </ul>
+              </div>
+            </div>
+            <button onClick={() => setShowVersionInfo(false)} className="w-full bg-gray-900 text-white py-4 rounded-xl font-black text-lg hover:bg-black transition shadow-lg">확인 완료! 직접 써보기</button>
           </div>
         </div>
       )}
 
       <div className="flex-grow">
-        <div className="text-center mb-10 relative">
-          {/* 도움말 버튼 */}
-          <button onClick={() => setTourIndex(0)} className="absolute top-0 right-0 bg-yellow-100 text-yellow-700 px-4 py-2 rounded-full font-black text-xs hover:bg-yellow-200 transition shadow-sm">💡 도움말 투어 시작</button>
+        <div id="tour-header" className="text-center mb-10 relative">
+          <button onClick={() => setTourIndex(0)} className="absolute top-0 right-0 bg-yellow-100 text-yellow-700 px-4 py-2 rounded-full font-black text-xs hover:bg-yellow-200 transition shadow-sm z-10 animate-pulse">💡 도움말 투어 시작</button>
           
           <h2 className="text-5xl font-black text-[#002f6c] mb-3 tracking-tighter flex justify-center items-center">
             CWNU MARKET 
-            {/* 🚀 2 & 4 & 7. r 잘림 방지(pr-4), 레이싱 효과, 클릭 이벤트 */}
-            <span onClick={() => setShowVersionInfo(true)} className="inline-block ml-4 pr-4 py-1 text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-orange-400 to-red-500 animate-[pulse_1.5s_ease-in-out_infinite] hover:-skew-x-12 hover:scale-110 transition-transform duration-300 cursor-pointer italic drop-shadow-lg">
-              v5_super.ver
+            <span onClick={() => setShowVersionInfo(true)} className="inline-block ml-4 pr-6 py-1 text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-orange-400 to-red-500 animate-[pulse_1.5s_ease-in-out_infinite] hover:-skew-x-12 hover:scale-110 transition-transform duration-300 cursor-pointer italic drop-shadow-lg">
+              V5_super_2.0 ver
             </span>
           </h2>
-          {/* 🚀 6. 버전 히스토리 텍스트 */}
-          <p className="text-gray-400 font-bold text-xs mb-3">(2025 웹프 과제 todos_v4.js에서 프리미엄으로 진화 🚀)</p>
+          <p className="text-gray-400 font-bold text-xs mb-3 cursor-pointer hover:text-blue-400 transition" onClick={() => setShowVersionInfo(true)}>(버전 업데이트 내용이 궁금하다면 V5를 클릭해보세요! 🚀)</p>
           
-          {/* 🚀 12. 명언 갱신 버튼 */}
-          <div className="flex flex-col items-center gap-2">
-            <p className="text-blue-500 font-black uppercase tracking-widest text-sm bg-blue-50 inline-block px-5 py-2 rounded-full shadow-inner">"{quote}"</p>
-            <button onClick={() => setQuote(MARKET_QUOTES[Math.floor(Math.random() * MARKET_QUOTES.length)])} className="text-[10px] bg-white border text-gray-400 px-3 py-1 rounded-full font-bold hover:text-blue-500 transition">🔄 명언 새로고침</button>
+          <div className="flex flex-col items-center gap-2 mt-4">
+            <p className="text-blue-600 font-black tracking-wide text-sm bg-blue-50/80 border border-blue-100 inline-block px-6 py-3 rounded-full shadow-sm">"{quote}"</p>
+            <button onClick={() => setQuote(MARKET_QUOTES[Math.floor(Math.random() * MARKET_QUOTES.length)])} className="text-[10px] bg-white border border-gray-200 text-gray-400 px-4 py-1.5 rounded-full font-bold hover:text-blue-500 hover:border-blue-300 transition">🔄 다른 문구 보기</button>
           </div>
         </div>
 
-        <form onSubmit={addItem} className="bg-white p-8 rounded-[2rem] shadow-xl mb-10 grid grid-cols-1 md:grid-cols-3 gap-4 border-2 border-blue-50 relative overflow-hidden">
-          <input placeholder="물품명" value={form.title} onChange={e=>setForm({...form, title: e.target.value})} className="border p-3 rounded-xl outline-none focus:ring-2 ring-blue-500"/>
+        <form onSubmit={addItem} className="bg-white p-8 rounded-[2.5rem] shadow-xl mb-10 grid grid-cols-1 md:grid-cols-3 gap-5 border border-blue-50 relative overflow-visible">
+          <input placeholder="물품명" value={form.title} onChange={e=>setForm({...form, title: e.target.value})} className="border-2 border-gray-100 p-4 rounded-2xl outline-none focus:border-blue-400 transition"/>
           
-          {/* 🚀 5 & 12. 무료 나눔 전용 UI & 애니메이션 */}
-          <div className="flex gap-2 relative">
+          {/* 🚀 1. 투어 타겟 아이디 부여 */}
+          <div id="tour-freebie" className="flex gap-2 relative transition-all duration-300">
             {form.price === 'free' ? (
-              <div onClick={() => setForm({...form, price: ''})} className="border-2 border-green-400 bg-green-50 text-green-600 p-3 rounded-xl flex-grow font-black text-center cursor-pointer hover:bg-green-100 transition flex items-center justify-center">
-                무료 나눔! 🎁 (클릭하여 취소)
+              <div onClick={() => setForm({...form, price: ''})} className="border-2 border-green-400 bg-green-50 text-green-600 p-4 rounded-2xl flex-grow font-black text-center cursor-pointer hover:bg-green-100 transition shadow-inner flex items-center justify-center">
+                🎉 무료 나눔 모드! (클릭하여 취소)
               </div>
             ) : (
-              <input placeholder="가격(원)" type="number" min="0" value={form.price} onChange={e=>setForm({...form, price: Math.max(0, e.target.value)})} className="border p-3 rounded-xl outline-none focus:ring-2 ring-blue-500 flex-grow"/>
+              <input placeholder="가격(원)" type="number" min="0" value={form.price} onChange={e=>setForm({...form, price: Math.max(0, e.target.value)})} className="border-2 border-gray-100 p-4 rounded-2xl outline-none focus:border-blue-400 transition flex-grow"/>
             )}
-            <button type="button" onClick={handleFreebie} className="bg-green-500 text-white font-black text-xs px-3 rounded-xl hover:bg-green-600 transition shadow-md">무료<br/>나눔</button>
+            <button type="button" onClick={handleFreebie} className="bg-green-500 text-white font-black text-xs px-4 rounded-2xl hover:bg-green-600 transition shadow-lg whitespace-nowrap">무료<br/>나눔</button>
             {showConfetti && (
               <>
-                <span className="emoji-burst" style={{ left: '10%' }}>🎉</span>
-                <span className="emoji-burst" style={{ left: '50%', animationDelay: '0.1s' }}>💖</span>
+                <span className="emoji-burst" style={{ left: '0%' }}>🎉</span>
+                <span className="emoji-burst" style={{ left: '40%', animationDelay: '0.1s' }}>💖</span>
                 <span className="emoji-burst" style={{ right: '10%', animationDelay: '0.2s' }}>🎊</span>
               </>
             )}
           </div>
 
-          <input type="date" value={form.deadline} onChange={e=>setForm({...form, deadline: e.target.value})} onClick={(e) => e.target.showPicker && e.target.showPicker()} className="border p-3 rounded-xl outline-none focus:ring-2 ring-blue-500 cursor-pointer"/>
-          <input placeholder="학번" value={form.studentId} onChange={e=>setForm({...form, studentId: e.target.value})} className="border p-3 rounded-xl outline-none focus:ring-2 ring-blue-500"/>
-          <input placeholder="판매자" value={form.sellerName} onChange={e=>setForm({...form, sellerName: e.target.value})} className="border p-3 rounded-xl outline-none focus:ring-2 ring-blue-500"/>
-          <input placeholder="전화번호" value={form.phone} onChange={handlePhoneChange} className="border p-3 rounded-xl outline-none focus:ring-2 ring-blue-500"/>
-          <input placeholder="거래 희망처" value={form.location} onChange={e=>setForm({...form, location: e.target.value})} className="border p-3 rounded-xl outline-none focus:ring-2 ring-blue-500 md:col-span-3"/>
-          <textarea placeholder="판매에 대한 상세한 설명을 적어주세요. (클릭 시 입력창이 확장됩니다)" value={form.description} onChange={e=>setForm({...form, description: e.target.value})} 
-            className="border p-3 rounded-xl md:col-span-3 outline-none focus:ring-2 ring-blue-500 h-14 focus:h-40 transition-all duration-300 resize-none leading-relaxed"></textarea>
+          <input id="tour-deadline" type="date" value={form.deadline} onChange={e=>setForm({...form, deadline: e.target.value})} onClick={(e) => e.target.showPicker && e.target.showPicker()} className="border-2 border-gray-100 p-4 rounded-2xl outline-none focus:border-blue-400 transition cursor-pointer text-gray-600 font-medium"/>
+          <input placeholder="학번" value={form.studentId} onChange={e=>setForm({...form, studentId: e.target.value})} className="border-2 border-gray-100 p-4 rounded-2xl outline-none focus:border-blue-400 transition"/>
+          <input placeholder="판매자" value={form.sellerName} onChange={e=>setForm({...form, sellerName: e.target.value})} className="border-2 border-gray-100 p-4 rounded-2xl outline-none focus:border-blue-400 transition"/>
+          <input placeholder="전화번호" value={form.phone} onChange={handlePhoneChange} className="border-2 border-gray-100 p-4 rounded-2xl outline-none focus:border-blue-400 transition"/>
+          <input placeholder="거래 희망처" value={form.location} onChange={e=>setForm({...form, location: e.target.value})} className="border-2 border-gray-100 p-4 rounded-2xl outline-none focus:border-blue-400 transition md:col-span-3"/>
+          <textarea placeholder="판매에 대한 상세한 설명을 적어주세요. (클릭 시 팝업되어 넓게 볼 수 있습니다)" value={form.description} onChange={e=>setForm({...form, description: e.target.value})} 
+            className="border-2 border-gray-100 p-4 rounded-2xl md:col-span-3 outline-none focus:border-blue-400 h-16 focus:h-40 transition-all duration-300 resize-none leading-relaxed font-medium"></textarea>
           
-          {/* 🚀 1. 버튼 텍스트 변경 */}
-          <button className="md:col-span-3 bg-[#002f6c] text-white p-4 rounded-xl font-black text-lg hover:bg-blue-800 transition-all shadow-lg mt-2 tracking-wide">
-            🚀 내 물건 마켓에 올리기
+          <button className="md:col-span-3 bg-[#002f6c] text-white p-5 rounded-2xl font-black text-lg hover:bg-blue-800 transition-all shadow-xl mt-2 tracking-widest uppercase">
+            🚀 프리미엄 물품 등록하기
           </button>
         </form>
 
         <div className="flex justify-between items-center mb-6">
-          <select value={sortType} onChange={(e) => {setSortType(e.target.value); setCurrentPage(1);}} className="bg-white border-2 border-blue-100 px-4 py-2 rounded-xl font-bold text-gray-700 outline-none cursor-pointer">
+          <select id="tour-sort" value={sortType} onChange={(e) => {setSortType(e.target.value); setCurrentPage(1);}} className="bg-white border-2 border-blue-100 px-5 py-3 rounded-2xl font-black text-gray-700 outline-none cursor-pointer shadow-sm hover:border-blue-300 transition">
             <option value="latest">🔄 최신 등록순</option>
             <option value="deadline">⏳ 마감 임박순</option>
             <option value="priceLow">📉 가격 낮은순</option>
@@ -206,55 +247,56 @@ function MarketPage() {
             <option value="likes">❤️ 찜 많은순</option>
           </select>
           <div className="flex gap-2">
-            <button onClick={() => setViewType('card')} className={`px-4 py-2 rounded-xl font-black text-sm transition-all ${viewType==='card'?'bg-[#002f6c] text-white':'bg-white text-gray-400 border'}`}>🎴 CARD</button>
-            <button onClick={() => setViewType('table')} className={`px-4 py-2 rounded-xl font-black text-sm transition-all ${viewType==='table'?'bg-[#002f6c] text-white':'bg-white text-gray-400 border'}`}>📋 TABLE</button>
+            <button onClick={() => setViewType('card')} className={`px-5 py-2.5 rounded-2xl font-black text-xs transition-all shadow-sm ${viewType==='card'?'bg-[#002f6c] text-white':'bg-white text-gray-400 border-2 border-gray-100 hover:text-gray-600'}`}>🎴 CARD</button>
+            <button onClick={() => setViewType('table')} className={`px-5 py-2.5 rounded-2xl font-black text-xs transition-all shadow-sm ${viewType==='table'?'bg-[#002f6c] text-white':'bg-white text-gray-400 border-2 border-gray-100 hover:text-gray-600'}`}>📋 TABLE</button>
           </div>
         </div>
 
         {viewType === 'card' ? (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-10 w-full">
+          <div id="tour-card" className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-10 w-full transition-all">
             {currentItems.map(item => (
-              <div key={item._id} className={`p-7 rounded-[3rem] border-4 transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl flex flex-col ${item.completed ? 'border-red-500 bg-red-50' : 'border-blue-50 bg-white'}`}>
+              <div key={item._id} className={`p-8 rounded-[3rem] border-4 transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl flex flex-col relative overflow-hidden ${item.completed ? 'border-red-500 bg-red-50' : 'border-blue-50 bg-white'}`}>
+                {item.completed && <div className="absolute -right-10 top-10 bg-red-500 text-white font-black text-xs py-1 px-12 rotate-45 shadow-lg">SOLD OUT</div>}
+                
                 {editingId === item._id ? (
-                  // 🚀 1. 연한 글씨 Placeholder 적용 & 3. 취소 버튼 추가
-                  <div className="flex flex-col gap-2">
-                    <input className="border p-2 rounded-lg text-xs" placeholder={`기존: ${item.title}`} value={editForm.title} onChange={e=>setEditForm({...editForm, title: e.target.value})} />
-                    <input className="border p-2 rounded-lg text-xs" placeholder={item.price === 0 ? "무료 나눔" : `기존: ${item.price}원`} type="number" min="0" value={editForm.price} onChange={e=>setEditForm({...editForm, price: Math.max(0, e.target.value)})} />
-                    <input className="border p-2 rounded-lg text-xs" placeholder={`기존 희망처: ${item.location}`} value={editForm.location} onChange={e=>setEditForm({...editForm, location: e.target.value})} />
-                    <textarea className="border p-2 rounded-lg text-xs h-20 resize-none" placeholder={`기존 설명:\n${item.description}`} value={editForm.description} onChange={e=>setEditForm({...editForm, description: e.target.value})} />
-                    <div className="flex gap-2 mt-1">
-                      <button onClick={()=>saveEdit(item._id)} className="bg-green-500 text-white rounded-lg py-2 font-bold text-xs flex-grow hover:bg-green-600">수정 저장</button>
-                      <button onClick={()=>setEditingId(null)} className="bg-gray-400 text-white rounded-lg py-2 font-bold text-xs flex-grow hover:bg-gray-500">수정 취소</button>
+                  <div className="flex flex-col gap-3 z-10">
+                    <input className="border-2 border-blue-100 p-3 rounded-xl text-sm font-bold placeholder-gray-300 focus:border-blue-400 outline-none transition" placeholder={`기존 물품명: ${item.title}`} value={editForm.title} onChange={e=>setEditForm({...editForm, title: e.target.value})} />
+                    <input className="border-2 border-blue-100 p-3 rounded-xl text-sm font-bold placeholder-gray-300 focus:border-blue-400 outline-none transition" placeholder={item.price === 0 ? "기존: 무료 나눔" : `기존 가격: ${item.price}원`} type="number" min="0" value={editForm.price} onChange={e=>setEditForm({...editForm, price: Math.max(0, e.target.value)})} />
+                    <input className="border-2 border-blue-100 p-3 rounded-xl text-sm font-bold placeholder-gray-300 focus:border-blue-400 outline-none transition" placeholder={`기존 희망처: ${item.location}`} value={editForm.location} onChange={e=>setEditForm({...editForm, location: e.target.value})} />
+                    <textarea className="border-2 border-blue-100 p-3 rounded-xl text-sm font-medium h-24 resize-none placeholder-gray-300 focus:border-blue-400 outline-none transition" placeholder={`기존 설명:\n${item.description}`} value={editForm.description} onChange={e=>setEditForm({...editForm, description: e.target.value})} />
+                    <div className="flex gap-2 mt-2">
+                      <button onClick={()=>saveEdit(item._id)} className="bg-green-500 text-white rounded-xl py-3 font-black text-xs flex-grow hover:bg-green-600 shadow-md">수정 저장</button>
+                      <button onClick={()=>setEditingId(null)} className="bg-gray-400 text-white rounded-xl py-3 font-black text-xs flex-grow hover:bg-gray-500 shadow-md">수정 취소</button>
                     </div>
                   </div>
                 ) : (
                   <>
-                    <div className="flex justify-between items-start mb-2">
-                      <h3 className={`text-2xl font-black ${item.completed ? 'text-red-600 line-through' : 'text-gray-800'}`}>{item.title}</h3>
-                      <button onClick={() => handleLike(item._id)} className={`flex flex-col items-center hover:scale-125 transition-transform ${likedItems.has(item._id) ? 'text-red-500' : 'text-gray-300'}`}>
-                        <span className="text-2xl drop-shadow-md">♥</span>
-                        <span className="text-[10px] font-black">{item.likes}</span>
+                    <div className="flex justify-between items-start mb-4 z-10">
+                      <h3 className={`text-2xl font-black ${item.completed ? 'text-red-600 line-through opacity-70' : 'text-gray-800'}`}>{item.title}</h3>
+                      <button onClick={() => handleLike(item._id)} className={`flex flex-col items-center hover:scale-125 transition-transform ${likedItems.has(item._id) ? 'text-red-500' : 'text-gray-200'}`}>
+                        <span className="text-3xl drop-shadow-md">♥</span>
+                        <span className="text-[10px] font-black mt-[-4px]">{item.likes}</span>
                       </button>
                     </div>
-                    <p className={`text-3xl font-black mb-4 ${item.completed ? 'text-red-400' : 'text-blue-700'}`}>
+                    <p className={`text-4xl font-black mb-6 ${item.completed ? 'text-red-400 opacity-70' : 'text-blue-700'}`}>
                       {item.price === 0 ? "🎁 무료 나눔!" : `${Number(item.price).toLocaleString()}원`}
                     </p>
-                    <div className="text-xs text-gray-500 font-bold mb-4 space-y-1.5 flex-grow">
-                      <p>👤 {item.sellerName} <span className="text-gray-400">({item.studentId})</span></p>
-                      <p>📞 {item.phone}</p>
-                      <p>📅 마감: <span className={new Date(item.deadline) < new Date() ? 'text-red-500' : ''}>{item.deadline || '없음'}</span></p>
-                      <p className="text-blue-500">📍 희망처: {item.location}</p>
-                      <p onClick={() => setSelectedDesc(item.description)} className="bg-gray-50 p-3 rounded-xl mt-3 text-gray-600 font-medium leading-relaxed italic border cursor-pointer hover:bg-blue-100 hover:border-blue-300 transition truncate group relative">
-                        "{item.description || '설명 없음'}"
-                        <span className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 bg-black/70 text-white px-2 py-1 rounded text-[10px]">자세히 보기</span>
+                    <div className="text-xs text-gray-500 font-bold mb-6 space-y-2 flex-grow z-10">
+                      <p className="flex justify-between border-b border-gray-100 pb-2"><span>👤 {item.sellerName}</span> <span className="text-gray-400">{item.studentId}</span></p>
+                      <p className="border-b border-gray-100 pb-2">📞 {item.phone}</p>
+                      <p className="border-b border-gray-100 pb-2">📅 마감: <span className={new Date(item.deadline) < new Date() ? 'text-red-500 font-black' : ''}>{item.deadline || '없음'}</span></p>
+                      <p className="text-blue-500 pb-2">📍 희망처: {item.location}</p>
+                      <p onClick={() => setSelectedDesc(item.description)} className="bg-gray-50 p-4 rounded-2xl mt-4 text-gray-600 font-medium leading-relaxed italic border border-dashed border-gray-200 cursor-pointer hover:bg-blue-50 hover:border-blue-300 transition truncate group relative">
+                        "{item.description || '상세 설명 없음'}"
+                        <span className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 bg-blue-600/90 text-white px-3 py-1.5 rounded-lg text-xs font-black shadow-lg backdrop-blur-sm">🔍 자세히 읽기</span>
                       </p>
                     </div>
-                    <div className="flex gap-2">
-                      <button onClick={async() => {await axios.put(`${COMMON_URL}/${item._id}`,{completed: !item.completed}); fetchItems()}} className={`flex-grow py-3 rounded-2xl font-black text-xs ${item.completed?'bg-red-600 text-white':'bg-gray-100 text-gray-600 hover:bg-blue-600 hover:text-white transition'}`}>
-                        {item.completed ? "DONE" : "COMPLETE"}
+                    <div className="flex gap-2 z-10">
+                      <button onClick={async() => {await axios.put(`${COMMON_URL}/${item._id}`,{completed: !item.completed}); fetchItems()}} className={`flex-grow py-3 rounded-2xl font-black text-[10px] tracking-widest uppercase shadow-sm ${item.completed?'bg-red-600 text-white':'bg-gray-100 text-gray-500 hover:bg-blue-600 hover:text-white transition'}`}>
+                        {item.completed ? "Cancel" : "Complete"}
                       </button>
-                      <button onClick={() => {setEditingId(item._id); setEditForm(item)}} className="p-3 bg-gray-50 border rounded-2xl text-gray-400 hover:text-blue-500 text-xs font-bold">EDIT</button>
-                      <button onClick={async() => {await axios.delete(`${COMMON_URL}/${item._id}`); fetchItems()}} className="p-3 bg-gray-50 border rounded-2xl text-gray-400 hover:text-red-500 text-xs font-bold">DEL</button>
+                      <button onClick={() => {setEditingId(item._id); setEditForm(item)}} className="px-5 bg-white border-2 border-gray-100 rounded-2xl text-gray-400 hover:text-blue-500 hover:border-blue-200 text-[10px] font-black uppercase transition">Edit</button>
+                      <button onClick={async() => {await axios.delete(`${COMMON_URL}/${item._id}`); fetchItems()}} className="px-5 bg-white border-2 border-gray-100 rounded-2xl text-gray-400 hover:text-red-500 hover:border-red-200 text-[10px] font-black uppercase transition">Del</button>
                     </div>
                   </>
                 )}
@@ -264,22 +306,22 @@ function MarketPage() {
         ) : (
           <div className="bg-white rounded-[2rem] shadow-xl overflow-hidden border-2 border-gray-100 mb-10 w-full">
             <table className="w-full text-center">
-              <thead className="bg-[#002f6c] text-white text-sm font-bold">
-                <tr><th className="p-4">물품명</th><th className="p-4">가격</th><th className="p-4">판매자</th><th className="p-4">마감/상태</th><th className="p-4">관리</th></tr>
+              <thead className="bg-[#002f6c] text-white text-sm font-bold tracking-widest uppercase">
+                <tr><th className="p-5">Item</th><th className="p-5">Price</th><th className="p-5">Seller</th><th className="p-5">Status</th><th className="p-5">Action</th></tr>
               </thead>
               <tbody>
                 {currentItems.map(item => (
-                  <tr key={item._id} className={`border-b hover:bg-blue-50 transition-colors ${item.completed ? 'text-red-500 bg-red-50' : ''}`}>
-                    <td className={`p-4 font-black text-lg ${item.completed ? 'line-through' : 'text-gray-800'}`}>{item.title} <span className="text-red-400 text-xs">♥{item.likes}</span></td>
-                    <td className="p-4 font-black text-blue-600">{item.price === 0 ? "무료 나눔!" : `${Number(item.price).toLocaleString()}원`}</td>
-                    <td className="p-4 font-bold text-gray-500 text-sm">{item.sellerName} <br/><span className="text-[10px] text-gray-400">{item.phone}</span></td>
-                    <td className="p-4">
-                      <div className="text-xs font-bold mb-1">{item.deadline}</div>
-                      <span className={`px-3 py-1 rounded-full text-[10px] font-black text-white ${item.completed ? 'bg-red-500' : 'bg-blue-600'}`}>{item.completed ? "거래완료" : "판매중"}</span>
+                  <tr key={item._id} className={`border-b hover:bg-blue-50 transition-colors ${item.completed ? 'text-red-500 bg-red-50/50' : ''}`}>
+                    <td className={`p-5 font-black text-lg ${item.completed ? 'line-through opacity-70' : 'text-gray-800'}`}>{item.title} <span className="text-red-400 text-xs ml-2">♥{item.likes}</span></td>
+                    <td className="p-5 font-black text-blue-600">{item.price === 0 ? "🎁 무료 나눔!" : `${Number(item.price).toLocaleString()}원`}</td>
+                    <td className="p-5 font-bold text-gray-500 text-sm leading-relaxed">{item.sellerName} <br/><span className="text-xs text-gray-400">{item.phone}</span></td>
+                    <td className="p-5">
+                      <div className="text-xs font-bold mb-2 text-gray-600">{item.deadline}</div>
+                      <span className={`px-4 py-1.5 rounded-full text-[10px] font-black text-white shadow-sm ${item.completed ? 'bg-red-500' : 'bg-blue-600'}`}>{item.completed ? "거래완료" : "판매중"}</span>
                     </td>
-                    <td className="p-4 flex flex-col justify-center items-center gap-2">
-                      <button onClick={async() => {await axios.put(`${COMMON_URL}/${item._id}`,{completed: !item.completed}); fetchItems()}} className="text-xs font-black uppercase text-blue-500 underline">{item.completed ? "undo" : "done"}</button>
-                      <button onClick={async() => {await axios.delete(`${COMMON_URL}/${item._id}`); fetchItems()}} className="text-gray-400 hover:text-red-500 font-black text-xs uppercase">delete</button>
+                    <td className="p-5 flex flex-col justify-center items-center gap-2">
+                      <button onClick={async() => {await axios.put(`${COMMON_URL}/${item._id}`,{completed: !item.completed}); fetchItems()}} className="text-[10px] font-black uppercase text-blue-500 hover:text-blue-700 bg-blue-50 px-3 py-1 rounded-full w-20 transition">{item.completed ? "undo" : "done"}</button>
+                      <button onClick={async() => {await axios.delete(`${COMMON_URL}/${item._id}`); fetchItems()}} className="text-red-400 hover:text-white hover:bg-red-500 bg-red-50 px-3 py-1 rounded-full font-black text-[10px] uppercase w-20 transition">delete</button>
                     </td>
                   </tr>
                 ))}
@@ -289,26 +331,22 @@ function MarketPage() {
         )}
 
         {totalPages > 1 && (
-          <div className="flex justify-center items-center gap-3 mb-10">
-            <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="px-4 py-2 bg-white border rounded-xl font-bold text-gray-500 hover:bg-gray-50 disabled:opacity-50">Prev</button>
-            <span className="font-black text-blue-600 text-lg">{currentPage} / {totalPages}</span>
-            <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="px-4 py-2 bg-white border rounded-xl font-bold text-gray-500 hover:bg-gray-50 disabled:opacity-50">Next</button>
+          <div className="flex justify-center items-center gap-4 mb-10">
+            <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="px-5 py-2.5 bg-white border-2 border-gray-100 rounded-xl font-black text-gray-400 hover:text-blue-500 hover:border-blue-200 disabled:opacity-30 transition">PREV</button>
+            <span className="font-black text-[#002f6c] text-xl bg-blue-50 px-6 py-2 rounded-2xl">{currentPage} <span className="text-gray-300 mx-1">/</span> {totalPages}</span>
+            <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="px-5 py-2.5 bg-white border-2 border-gray-100 rounded-xl font-black text-gray-400 hover:text-blue-500 hover:border-blue-200 disabled:opacity-30 transition">NEXT</button>
           </div>
         )}
       </div>
 
-      <footer className="py-12 text-center border-t border-gray-200 mt-10">
-        <p className="text-gray-500 font-black text-base tracking-[0.2em] mb-2 uppercase">Software Engineering Project: CWNU Market System</p>
-        <p className="text-gray-400 text-sm font-bold tracking-widest">@ 2026 Jung Yi Ryang | Designed with Gemini AI Collaborative Works</p>
-      </footer>
-
-      {/* 🚀 5. 설명 자세히 보기 모달 */}
       {selectedDesc && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[150] p-4" onClick={() => setSelectedDesc(null)}>
-          <div className="bg-white p-8 rounded-[2rem] max-w-lg w-full shadow-2xl transform transition-all" onClick={e => e.stopPropagation()}>
-            <h3 className="text-2xl font-black text-blue-800 mb-4 border-b pb-2">📝 상세 설명</h3>
-            <p className="text-gray-700 font-medium leading-relaxed whitespace-pre-wrap max-h-96 overflow-y-auto">{selectedDesc}</p>
-            <button onClick={() => setSelectedDesc(null)} className="mt-8 w-full bg-[#002f6c] text-white py-3 rounded-xl font-black hover:bg-blue-800 transition">닫기</button>
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[150] p-4 backdrop-blur-sm" onClick={() => setSelectedDesc(null)}>
+          <div className="bg-white p-10 rounded-[2.5rem] max-w-xl w-full shadow-2xl transform transition-all border-4 border-blue-50" onClick={e => e.stopPropagation()}>
+            <h3 className="text-3xl font-black text-blue-800 mb-6 flex items-center gap-3"><span className="text-4xl">📝</span> 상세 설명</h3>
+            <div className="bg-gray-50 p-6 rounded-3xl border border-gray-100">
+              <p className="text-gray-700 font-medium leading-loose whitespace-pre-wrap max-h-96 overflow-y-auto text-lg">{selectedDesc}</p>
+            </div>
+            <button onClick={() => setSelectedDesc(null)} className="mt-8 w-full bg-[#002f6c] text-white py-4 rounded-2xl font-black text-lg hover:bg-blue-800 transition shadow-lg">닫기</button>
           </div>
         </div>
       )}
