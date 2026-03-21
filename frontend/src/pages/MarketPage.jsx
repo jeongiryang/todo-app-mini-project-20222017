@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import axios from 'axios'
 
 const MARKET_QUOTES = ["안 쓰는 물건, 누군가에겐 보물입니다.", "빠른 쿨거래가 창대인의 매너를 만듭니다.", "네고는 둥글게, 거래는 확실하게!", "오늘 비운 공간, 내일의 여유가 됩니다.", "신뢰는 최고의 거래 조건입니다.", "책상 속 잠든 전공책, 후배에겐 빛과 소금!", "비움의 미학, 마켓에서 시작하세요.", "당신의 방치된 아이템, 누군가의 필수템!", "환경도 살리고 지갑도 채우는 에코 거래", "창원대 학우들끼리 따뜻한 직거래 한 판!", "물건은 떠나도 따뜻한 마음은 남습니다.", "혹시 당근... 아니 CWNU 마켓이세요?", "버리기엔 아까운 물건, 여기서 새 주인을 찾아주세요!", "안전한 캠퍼스 직거래, 지금 바로 시작하세요.", "자취방 이사 전 필수 코스! 물건 비우기 대작전", "기분 좋은 거래의 시작은 친절한 인사부터!", "필요 없는 물건이 치킨으로 연성되는 마법", "가성비 넘치는 대학 생활의 비밀 무기", "판매자에겐 용돈을, 구매자에겐 득템을!", "서로 돕고 사는 훈훈한 창대 라이프"];
-const SUBMIT_MENTIONS = ["🚀 내 물건 마켓에 올리기", "✨ 신상 등록하고 용돈 벌기", "📦 박스 속 물건 새 주인 찾기", "💸 치킨값 벌러 물건 올리기", "♻️ 가치 있는 나눔의 시작", "🤝 쿨거래 페이스메이커로 등록", "🏫 창대인에게 득템 기회 제공", "🔥 인기 물품 대열에 합류!"];
+const SUBMIT_MENTIONS = ["내 물건 마켓에 올리기", "신상 등록하고 용돈 벌기", "박스 속 물건 새 주인 찾기", "치킨값 벌러 물건 올리기", "가치 있는 나눔의 시작", "쿨거래 페이스메이커로 등록", "창대인에게 득템 기회 제공", "인기 물품 대열에 합류!"];
 const TOUR_STEPS = [{ title: "👋 환영합니다!", desc: "CWNU 마켓의 핵심 기능을 안내해 드릴게요.", targetId: "tour-header" }, { title: "🎁 무료 나눔 & 가격", desc: "가격을 정하거나 '무료 나눔' 버튼을 누를 수 있습니다.", targetId: "tour-freebie" }, { title: "📅 캘린더 마감일", desc: "클릭하여 쉽게 마감 기한을 정할 수 있어요.", targetId: "tour-deadline" }, { title: "🔄 똑똑한 정렬", desc: "최신순, 마감임박순 등으로 원하는 물품을 골라보세요.", targetId: "tour-sort" }, { title: "❤️ 실시간 찜하기", desc: "마음에 드는 물건 카드의 하트를 눌러보세요!", targetId: "tour-card" }];
 
 function MarketPage() {
@@ -90,7 +90,6 @@ function MarketPage() {
   const totalPages = Math.ceil(sortedItems.length / itemsPerPage) || 1;
 
   return (
-    // 📱 모바일: p-4 / PC: p-6
     <div className="max-w-7xl mx-auto p-4 md:p-6 flex flex-col min-h-screen relative text-gray-900 dark:text-gray-100 transition-colors">
       <style>{`
         @keyframes shoot-up { 0% { transform: translateY(0) scale(0.5); opacity: 1; } 50% { transform: translateY(-100px) scale(1.2); opacity: 1; } 100% { transform: translateY(-150px) scale(1); opacity: 0; } }
@@ -105,40 +104,76 @@ function MarketPage() {
         tr.sold-out td { opacity: 0.8; }
       `}</style>
 
+      {/* 2. 모바일 도움말 최적화 */}
       {tourIndex >= 0 && (
-        <div className="fixed z-[100] bg-white dark:bg-gray-800 p-5 md:p-6 rounded-3xl shadow-[0_20px_60px_rgba(0,0,0,0.4)] border-[3px] border-blue-400 dark:border-blue-500 w-[90%] md:w-[350px] bottom-10 left-1/2 -translate-x-1/2 tour-popup flex flex-col pointer-events-auto">
+        <div className="fixed z-[100] bg-white dark:bg-gray-800 p-5 md:p-6 rounded-3xl shadow-[0_20px_60px_rgba(0,0,0,0.4)] border-[3px] border-blue-400 dark:border-blue-500 w-[92%] max-w-[350px] bottom-6 md:bottom-10 left-1/2 -translate-x-1/2 tour-popup flex flex-col pointer-events-auto">
           <h3 className="text-blue-600 dark:text-blue-400 font-black mb-1 text-[10px] uppercase tracking-widest">Guide ({tourIndex + 1}/{TOUR_STEPS.length})</h3>
           <h2 className="text-lg md:text-xl font-black mb-2 md:mb-3 dark:text-white">{TOUR_STEPS[tourIndex].title}</h2>
           <p className="text-gray-600 dark:text-gray-300 text-xs md:text-sm font-medium leading-relaxed mb-4 md:mb-5">{TOUR_STEPS[tourIndex].desc}</p>
-          <div className="flex justify-between gap-2"><button onClick={() => setTourIndex(-1)} className="px-3 py-1 text-gray-400 dark:text-gray-500 font-bold text-xs hover:text-gray-600 dark:hover:text-gray-300">건너뛰기</button><button onClick={() => setTourIndex(prev => prev + 1 >= TOUR_STEPS.length ? -1 : prev + 1)} className="bg-blue-600 dark:bg-blue-500 text-white px-5 py-2 rounded-xl font-black text-xs shadow-md hover:bg-blue-700 transition">{tourIndex === TOUR_STEPS.length - 1 ? "투어 종료 🎉" : "다음 보기 ▶"}</button></div>
+          <div className="flex justify-between gap-2">
+            <button onClick={() => setTourIndex(-1)} className="px-3 py-1 text-gray-400 dark:text-gray-500 font-bold text-xs hover:text-gray-600 dark:hover:text-gray-300">건너뛰기</button>
+            <button onClick={() => setTourIndex(prev => prev + 1 >= TOUR_STEPS.length ? -1 : prev + 1)} className="bg-blue-600 dark:bg-blue-500 text-white px-5 py-2 rounded-xl font-black text-xs shadow-md hover:bg-blue-700 transition">{tourIndex === TOUR_STEPS.length - 1 ? "투어 종료 🎉" : "다음 보기 ▶"}</button>
+          </div>
         </div>
       )}
 
+      {/* 업데이트 내역 모달 (풍성한 레이아웃 복구) */}
       {showVersionInfo && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[150] p-4 backdrop-blur-sm" onClick={() => setShowVersionInfo(false)}>
           <div className="bg-white dark:bg-gray-800 p-6 md:p-8 rounded-3xl md:rounded-[2rem] max-w-3xl w-full shadow-2xl transform transition-all border-4 border-blue-50 dark:border-gray-700 max-h-[90vh] overflow-y-auto" onClick={e=>e.stopPropagation()}>
             {showModalConfetti && <div className="fixed inset-0 pointer-events-none z-[9999] flex items-center justify-center"><span className="emoji-burst text-6xl">🎉</span></div>}
-            <h3 className="text-2xl md:text-3xl font-black mb-2 text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400 text-center">🚀 Market V5_super_4.0 ver 업데이트 내역</h3>
-            <p className="text-center text-gray-500 dark:text-gray-400 font-bold mb-6 md:mb-8 text-[10px] md:text-xs">25년 2학기 웹프로그래밍 과목 기말대체 과제 `todos_v4`의 최종 진화형!</p>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 md:mb-8 mt-4 md:mt-6">
-              <div className="bg-gray-50 dark:bg-gray-700 p-5 md:p-6 rounded-2xl md:rounded-3xl border-2 border-dashed border-gray-200 dark:border-gray-600">
-                <h4 className="text-gray-500 dark:text-gray-300 font-black text-base md:text-lg mb-3 md:mb-4 text-center">🤔 이전 버전 (todos_v4)</h4>
-                <ul className="text-xs md:text-sm font-medium text-gray-500 dark:text-gray-400 space-y-2 md:space-y-3">
+            <h3 className="text-2xl md:text-3xl font-black mb-1 text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400 text-center">Market V5_super_4.0 ver 업데이트 내역</h3>
+            <p className="text-center text-gray-400 dark:text-gray-500 font-bold mb-6 text-[10px] md:text-xs tracking-tighter">25년 2학기 웹프로그래밍 기말대체 과제 `todos_v4`의 최종 진화형!</p>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 mt-2">
+              <div className="bg-gray-50 dark:bg-gray-700 p-5 rounded-2xl border-2 border-dashed border-gray-200 dark:border-gray-600">
+                <h4 className="text-gray-500 dark:text-gray-300 font-black text-sm mb-3 text-center">🤔 이전 버전 (todos_v4)</h4>
+                <ul className="text-xs font-medium text-gray-500 dark:text-gray-400 space-y-2">
                   <li>❌ 새로고침하면 데이터 소실</li>
                   <li>❌ 단순한 텍스트 위주의 투박한 디자인</li>
                   <li>❌ 찜하기 등 거래 부가 기능 전무</li>
                 </ul>
               </div>
-              <div className="bg-blue-50 dark:bg-blue-900/30 p-5 md:p-6 rounded-2xl md:rounded-3xl border-2 border-blue-200 dark:border-blue-800 shadow-inner">
-                <h4 className="text-blue-600 dark:text-blue-400 font-black text-base md:text-lg mb-3 md:mb-4 text-center">✨ 현재 버전 (v5)</h4>
-                <ul className="text-xs md:text-sm font-bold text-gray-700 dark:text-gray-200 space-y-2 md:space-y-3">
-                  <li>✅ <span className="text-blue-600 dark:text-blue-400 font-black">MongoDB 연동</span>으로 데이터 평생 보존!</li>
-                  <li>✅ 트렌디하고 부드러운 카드 UI 및 정렬 기능</li>
+              <div className="bg-blue-50 dark:bg-blue-900/30 p-5 rounded-2xl border-2 border-blue-200 dark:border-blue-800 shadow-inner">
+                <h4 className="text-blue-600 dark:text-blue-400 font-black text-sm mb-3 text-center">✨ 현재 버전 (v5)</h4>
+                <ul className="text-xs font-bold text-gray-700 dark:text-gray-200 space-y-2">
+                  <li>✅ <span className="text-blue-600 dark:text-blue-400 font-black">MongoDB 연동</span>으로 데이터 보존!</li>
+                  <li>✅ 트렌디한 카드 UI 및 정렬 기능</li>
                   <li>✅ 실시간 찜하기 및 <span className="text-blue-600 dark:text-blue-400 font-black">마켓 검색 기능</span> 추가!</li>
                 </ul>
               </div>
             </div>
+
+            {/* 발전 과정 타임라인 (사진 1-3 레이아웃 복구) */}
+            <div className="bg-slate-50 dark:bg-gray-700/50 rounded-2xl p-6 mb-6 border border-gray-100 dark:border-gray-600">
+              <h4 className="text-center font-black text-slate-700 dark:text-slate-300 mb-4 text-sm flex justify-center items-center gap-2">🛠️ CWNU PORTAL V5 발전 과정</h4>
+              <div className="space-y-3 text-[11px] md:text-xs px-2">
+              <p className="flex items-center gap-3 font-medium bg-white dark:bg-gray-800 p-2 rounded-lg shadow-sm">
+  <span className="text-blue-600 font-black min-w-[45px]">V1.0:</span>
+  <span className="text-slate-600 dark:text-gray-400">물품 등록 및 기본적인 목록 조회 시스템 구축</span>
+</p>
+<p className="flex items-center gap-3 font-medium bg-white dark:bg-gray-800 p-2 rounded-lg shadow-sm">
+  <span className="text-blue-600 font-black min-w-[45px]">V2.0:</span>
+  <span className="text-slate-600 dark:text-gray-400">사용자 도움말 투어 및 거래 편의 기능 추가</span>
+</p>
+<p className="flex items-center gap-3 font-medium bg-white dark:bg-gray-800 p-2 rounded-lg shadow-sm">
+  <span className="text-blue-600 font-black min-w-[45px]">V3.5:</span>
+  <span className="text-slate-600 dark:text-gray-400">실시간 찜하기 기능 및 카드/테이블 뷰 전환 도입</span>
+</p>
+<p className="flex items-center gap-3 font-bold bg-white dark:bg-gray-800 p-2 rounded-lg shadow-sm">
+  <span className="text-blue-600 font-black min-w-[45px]">V4.0:</span>
+  <span className="text-slate-800 dark:text-gray-200 italic">MongoDB 연동 데이터 보존 및 통합 검색 기능 강화</span>
+</p>
+              </div>
+            </div>
+
+            {/* 유료 안내 배너 (사진 1-3 레이아웃 복구) */}
+            <div className="bg-blue-50 dark:bg-blue-900/30 p-5 rounded-2xl border-2 border-blue-200 dark:border-blue-800 text-center mb-6 shadow-inner relative overflow-hidden">
+                <h4 className="text-xl font-black text-blue-800 dark:text-blue-400 mb-1">"근데 이거 유료라고요?"</h4>
+                <p className="text-blue-700 dark:text-blue-300 font-bold text-xs">아닙니다! 창대인을 위한 <span className="font-black text-sm">완전 무료</span> 서비스입니다!<br/>쿨거래로 학우 간 따뜻한 정을 나눠보세요!</p>
+            </div>
+
             <button onClick={() => setShowVersionInfo(false)} className="w-full bg-gray-900 dark:bg-gray-700 text-white py-3 md:py-4 rounded-xl font-black text-base md:text-lg hover:bg-black dark:hover:bg-gray-600 transition">확인 완료! 직접 써보기</button>
           </div>
         </div>
@@ -147,7 +182,6 @@ function MarketPage() {
       <div className="flex-grow">
         <div id="tour-header" className="text-center mb-8 md:mb-10 relative">
           <button onClick={() => setTourIndex(0)} className="absolute top-0 right-0 bg-yellow-100 dark:bg-yellow-900/50 text-yellow-700 dark:text-yellow-400 px-3 py-1.5 md:px-4 md:py-2 rounded-full font-black text-[10px] md:text-xs animate-pulse">💡 도움말 투어 시작</button>
-          {/* 📱 모바일: text-3xl / PC: text-5xl */}
           <h2 className="text-3xl md:text-5xl font-black text-[#002f6c] dark:text-blue-300 mb-2 md:mb-3 tracking-tighter flex justify-center items-center cursor-pointer">
             CWNU MARKET <span onClick={() => setShowVersionInfo(true)} className="inline-block ml-2 md:ml-4 px-2 py-1 text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-orange-400 to-red-500 dark:from-red-400 dark:via-orange-300 dark:to-red-400 animate-[pulse_1.5s_ease-in-out_infinite] hover:-skew-x-12 transition-transform duration-300 italic drop-shadow-lg text-2xl md:text-4xl">V5_super_4.0</span>
           </h2>
@@ -170,7 +204,6 @@ function MarketPage() {
           </div>
         </div>
 
-        {/* 📱 폼 여백 축소: p-5 */}
         <form onSubmit={addItem} className="bg-white dark:bg-gray-800 p-5 md:p-8 rounded-3xl md:rounded-[2.5rem] shadow-xl mb-6 md:mb-10 grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-5 border border-blue-50 dark:border-gray-700 relative overflow-visible z-10">
           <input placeholder="물품명" value={form.title} onChange={e=>setForm({...form, title: e.target.value})} className="border-2 border-gray-100 dark:border-gray-600 dark:bg-gray-700 p-3 md:p-4 text-sm md:text-base rounded-2xl outline-none focus:border-blue-400 dark:focus:border-blue-500 transition"/>
           <div id="tour-freebie" className="flex gap-2 relative transition-all duration-300 md:col-span-1">
@@ -187,7 +220,7 @@ function MarketPage() {
           <input id="tour-deadline" type="date" value={form.deadline} onChange={e=>setForm({...form, deadline: e.target.value})} onClick={(e) => e.target.showPicker && e.target.showPicker()} className="border-2 border-gray-100 dark:border-gray-600 dark:bg-gray-700 p-3 md:p-4 text-sm md:text-base rounded-2xl outline-none focus:border-blue-400 dark:focus:border-blue-500 transition cursor-pointer text-gray-600 dark:text-gray-200 font-medium dark:[color-scheme:dark]"/>
           <input placeholder="학번" value={form.studentId} onChange={e=>setForm({...form, studentId: e.target.value})} className="border-2 border-gray-100 dark:border-gray-600 dark:bg-gray-700 p-3 md:p-4 text-sm md:text-base rounded-2xl outline-none focus:border-blue-400 dark:focus:border-blue-500 transition"/>
           <input placeholder="판매자" value={form.sellerName} onChange={e=>setForm({...form, sellerName: e.target.value})} className="border-2 border-gray-100 dark:border-gray-600 dark:bg-gray-700 p-3 md:p-4 text-sm md:text-base rounded-2xl outline-none focus:border-blue-400 dark:focus:border-blue-500 transition"/>
-          <input placeholder="전화번호" value={form.phone} onChange={handlePhoneChange} className="border-2 border-gray-100 dark:border-gray-600 dark:bg-gray-700 p-3 md:p-4 text-sm md:text-base rounded-2xl outline-none focus:border-blue-400 dark:focus:border-blue-500 transition"/>
+          <input placeholder="전화번호 :  ' - ' 없이 입력" value={form.phone} onChange={handlePhoneChange} className="border-2 border-gray-100 dark:border-gray-600 dark:bg-gray-700 p-3 md:p-4 text-sm md:text-base rounded-2xl outline-none focus:border-blue-400 dark:focus:border-blue-500 transition"/>
           <input placeholder="거래 희망처" value={form.location} onChange={e=>setForm({...form, location: e.target.value})} className="md:col-span-3 border-2 border-gray-100 dark:border-gray-600 dark:bg-gray-700 p-3 md:p-4 text-sm md:text-base rounded-2xl outline-none focus:border-blue-400 dark:focus:border-blue-500 transition"/>
           <textarea placeholder="상세 설명" value={form.description} onChange={e=>setForm({...form, description: e.target.value})} className="md:col-span-3 border-2 border-gray-100 dark:border-gray-600 dark:bg-gray-700 p-3 md:p-4 text-sm md:text-base rounded-2xl h-14 md:h-16 focus:h-32 md:focus:h-40 outline-none transition-all"></textarea>
           <button className="md:col-span-3 bg-[#002f6c] dark:bg-blue-800 text-white p-4 md:p-5 rounded-2xl font-black text-base md:text-lg hover:bg-blue-800 dark:hover:bg-blue-700 transition shadow-xl relative h-14 md:h-16 flex justify-center items-center"><span key={SUBMIT_MENTIONS[submitMentionIndex]} className="inline-block animate-submit-text-fade absolute">{SUBMIT_MENTIONS[submitMentionIndex]}</span></button>
@@ -196,14 +229,13 @@ function MarketPage() {
         <div className="mb-4 md:mb-6 w-full mx-auto relative z-10">
           <input
             type="text"
-            placeholder="🔍 찾으시는 중고 물품을 검색해보세요!"
+            placeholder="찾으시는 중고 물품을 검색해보세요! (제목 또는 내용 입력)"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full p-3 md:p-4 border-2 text-sm md:text-base border-blue-100 rounded-xl md:rounded-2xl shadow-sm focus:outline-none focus:border-blue-400 dark:bg-gray-800 dark:border-gray-700 dark:focus:border-blue-500 dark:text-white transition-all font-bold text-gray-700"
           />
         </div>
 
-        {/* 📱 모바일: 세로로 쌓기 (flex-col) / PC: 가로 배치 (flex-row) */}
         <div className="flex flex-col sm:flex-row justify-between items-center gap-3 sm:gap-0 mb-6 relative z-10 w-full">
           <select id="tour-sort" value={sortType} onChange={(e) => {setSortType(e.target.value); setCurrentPage(1);}} className="bg-white dark:bg-gray-800 border-2 border-blue-100 dark:border-gray-700 px-4 py-2 md:px-5 md:py-3 w-full sm:w-auto rounded-xl md:rounded-2xl font-black text-xs md:text-sm text-gray-700 dark:text-gray-200 outline-none cursor-pointer shadow-sm hover:border-blue-300 transition">
             <option value="latest">🔄 최신 등록순</option><option value="deadline">⏳ 마감 임박순</option><option value="priceLow">📉 가격 낮은순</option><option value="priceHigh">📈 가격 높은순</option><option value="likes">❤️ 찜 많은순</option>
@@ -217,7 +249,6 @@ function MarketPage() {
         {viewType === 'card' ? (
           <div id="tour-card" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 mb-8 md:mb-10 w-full transition-all relative z-10">
             {currentItems.map(item => ( 
-              // 📱 카드 여백 축소: p-6
               <div key={item._id} className={`p-6 md:p-8 rounded-3xl md:rounded-[3rem] border-4 transition-all duration-300 hover:-translate-y-1 md:hover:-translate-y-2 hover:shadow-2xl flex flex-col relative overflow-hidden ${item.completed ? 'border-red-500 dark:border-red-900 bg-red-50 dark:bg-red-900/10' : 'border-blue-50 dark:border-gray-700 bg-white dark:bg-gray-800'}`}> 
                 {item.completed && <div className="absolute -right-10 top-10 bg-red-500 dark:bg-red-700 text-white font-black text-[10px] md:text-xs py-1 px-12 rotate-45 shadow-lg z-10">SOLD OUT</div>}
                 
@@ -257,9 +288,7 @@ function MarketPage() {
             ))}
           </div>
         ) : (
-          // 🚨 핵심 포인트: 모바일 표 찢어짐 방지 가로 스크롤 (overflow-x-auto)
           <div className="bg-white dark:bg-gray-800 rounded-3xl md:rounded-[2rem] shadow-xl overflow-x-auto border-2 border-gray-100 dark:border-gray-700 mb-8 md:mb-10 w-full relative z-10">
-            {/* min-w-[600px] 설정으로 폰 화면보다 좁아져서 글자가 뭉개지는 것을 방지 */}
             <table className="w-full text-center min-w-[600px] md:min-w-full">
               <thead className="bg-[#002f6c] dark:bg-gray-900 text-white text-xs md:text-sm font-bold tracking-widest uppercase"><tr><th className="p-3 md:p-5">Item</th><th className="p-3 md:p-5">Price</th><th className="p-3 md:p-5">Seller</th><th className="p-3 md:p-5">Status</th><th className="p-3 md:p-5">Action</th></tr></thead>
               <tbody>
@@ -293,7 +322,12 @@ function MarketPage() {
           </div>
         )}
       </div>
-      <footer className="py-8 md:py-12 text-center border-t border-gray-200 dark:border-gray-800 mt-8 md:mt-10 relative z-10"><p className="text-gray-500 dark:text-gray-400 font-black text-xs md:text-base uppercase tracking-widest">Software Engineering Project: CWNU Portal System</p><p className="text-gray-400 text-[10px] md:text-sm font-bold mt-1 md:mt-2">@ 2026 Jung Yi Ryang | Designed with Gemini AI Collaborative Works</p></footer>
+
+      {/* 하단 워터마크 푸터 */}
+      <footer className="py-8 md:py-12 text-center border-t border-gray-200 dark:border-gray-800 mt-8 md:mt-10 relative z-10">
+        <p className="text-gray-500 dark:text-gray-400 font-black text-xs md:text-base uppercase tracking-widest">Software Engineering Project: CWNU Portal System</p>
+        <p className="text-gray-400 dark:text-gray-500 text-[10px] md:text-sm font-bold mt-1 md:mt-2">@ 2026 Jung Yi Ryang | Designed with Gemini AI Collaborative Works</p>
+      </footer>
       
       {selectedDesc && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[150] p-4 backdrop-blur-sm" onClick={() => setSelectedDesc(null)}>

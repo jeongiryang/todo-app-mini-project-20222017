@@ -21,8 +21,11 @@ function GpaPage() {
   const [courses, setCourses] = useState(() => JSON.parse(localStorage.getItem(STORAGE_KEY)) || []);
   const [activeTab, setActiveTab] = useState(SEMESTERS[0]);
   const [form, setForm] = useState({ semester: SEMESTERS[0], name: '', credit: 3, grade: 'A+', isMajor: false });
-  const [tourIndex, setTourIndex] = useState(-1); const [editingId, setEditingId] = useState(null); const [editForm, setEditForm] = useState({});
-  const [showVersionInfo, setShowVersionInfo] = useState(false); const [showModalConfetti, setShowModalConfetti] = useState(false);
+  const [tourIndex, setTourIndex] = useState(-1); 
+  const [editingId, setEditingId] = useState(null); 
+  const [editForm, setEditForm] = useState({});
+  const [showVersionInfo, setShowVersionInfo] = useState(false); 
+  const [showModalConfetti, setShowModalConfetti] = useState(false);
 
   useEffect(() => { localStorage.setItem(STORAGE_KEY, JSON.stringify(courses)); }, [courses]);
   useEffect(() => { if (showVersionInfo) { setShowModalConfetti(true); setTimeout(() => setShowModalConfetti(false), 2500); } }, [showVersionInfo]);
@@ -84,7 +87,6 @@ function GpaPage() {
   };
 
   return (
-    // 📱 모바일: p-4 / PC: p-6
     <div className="max-w-7xl mx-auto p-4 md:p-6 flex flex-col min-h-screen relative text-gray-900 dark:text-gray-100 transition-colors">
       <style>{`
         .tour-popup { animation: slide-up 0.4s forwards; }
@@ -93,33 +95,40 @@ function GpaPage() {
         .emoji-burst { position: absolute; animation: shoot-up 1.5s ease-out forwards; z-index: 9999; }
       `}</style>
 
+      {/* 2. 모바일 도움말 최적화 (위치 및 너비 조정) */}
       {tourIndex >= 0 && (
-        <div className="fixed z-[100] bg-white dark:bg-gray-800 p-5 md:p-6 rounded-3xl shadow-2xl border-[3px] border-emerald-400 w-[90%] md:w-[350px] bottom-10 left-1/2 -translate-x-1/2 tour-popup flex flex-col pointer-events-auto">
+        <div className="fixed z-[100] bg-white dark:bg-gray-800 p-5 md:p-6 rounded-3xl shadow-2xl border-[3px] border-emerald-400 w-[92%] max-w-[350px] bottom-6 md:bottom-10 left-1/2 -translate-x-1/2 tour-popup flex flex-col pointer-events-auto">
           <h3 className="text-emerald-600 dark:text-emerald-400 font-black mb-1 text-[10px] uppercase">Guide ({tourIndex + 1}/{TOUR_STEPS.length})</h3>
           <h2 className="text-lg md:text-xl font-black mb-2 md:mb-3 dark:text-white">{TOUR_STEPS[tourIndex].title}</h2>
           <p className="text-gray-600 dark:text-gray-300 text-xs md:text-sm font-bold mb-4 md:mb-5">{TOUR_STEPS[tourIndex].desc}</p>
-          <div className="flex justify-between gap-2"><button onClick={() => setTourIndex(-1)} className="px-3 py-1 text-gray-400 dark:text-gray-400 font-bold text-xs hover:text-gray-200">건너뛰기</button><button onClick={() => setTourIndex(p => p+1 >= TOUR_STEPS.length ? -1 : p+1)} className="bg-emerald-600 dark:bg-emerald-500 text-white px-4 md:px-5 py-2 rounded-xl font-black text-[10px] md:text-xs shadow-md">다음 ▶</button></div>
+          <div className="flex justify-between gap-2">
+            <button onClick={() => setTourIndex(-1)} className="px-3 py-1 text-gray-400 dark:text-gray-400 font-bold text-xs hover:text-gray-200">건너뛰기</button>
+            <button onClick={() => setTourIndex(p => p+1 >= TOUR_STEPS.length ? -1 : p+1)} className="bg-emerald-600 dark:bg-emerald-500 text-white px-4 md:px-5 py-2 rounded-xl font-black text-[10px] md:text-xs shadow-md">다음 ▶</button>
+          </div>
         </div>
       )}
 
+      {/* 업데이트 내역 모달 (풍성한 레이아웃 복구) */}
       {showVersionInfo && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[150] p-4 backdrop-blur-sm" onClick={() => setShowVersionInfo(false)}>
-          <div className="bg-white dark:bg-gray-800 p-6 md:p-8 rounded-3xl md:rounded-[2rem] max-w-3xl w-full shadow-2xl transform transition-all border-4 border-emerald-50 dark:border-gray-700 max-h-[90vh] overflow-y-auto" onClick={e=>e.stopPropagation()}>
+          <div className="bg-white dark:bg-gray-800 p-6 md:p-8 rounded-3xl md:rounded-[2.5rem] max-w-3xl w-full shadow-2xl transform transition-all border-4 border-emerald-50 dark:border-gray-700 max-h-[90vh] overflow-y-auto" onClick={e=>e.stopPropagation()}>
             {showModalConfetti && <div className="fixed inset-0 pointer-events-none z-[9999] flex items-center justify-center"><span className="emoji-burst text-6xl">🎉</span></div>}
-            <h3 className="text-2xl md:text-3xl font-black mb-2 text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-600 dark:from-emerald-400 dark:to-teal-400 text-center">🚀 GPA V5_super_4.0 ver 업데이트 내역</h3>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 md:mb-8 mt-4 md:mt-6">
-              <div className="bg-gray-50 dark:bg-gray-700 p-5 md:p-6 rounded-2xl md:rounded-3xl border-2 border-dashed border-gray-200 dark:border-gray-600">
-                <h4 className="text-gray-500 dark:text-gray-300 font-black text-base md:text-lg mb-3 md:mb-4 text-center">🤔 이전 버전</h4>
-                <ul className="text-xs md:text-sm font-medium text-gray-500 dark:text-gray-400 space-y-2 md:space-y-3">
+            <h3 className="text-2xl md:text-3xl font-black mb-1 text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-600 dark:from-emerald-400 dark:to-teal-400 text-center">GPA V5_super_4.0 ver 업데이트 내역</h3>
+            <p className="text-center text-gray-400 dark:text-gray-500 font-bold mb-6 text-[10px] md:text-xs tracking-tighter">25년 2학기 웹프로그래밍 기말대체 과제 `todos_v4`의 최종 진화형!</p>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+              <div className="bg-gray-50 dark:bg-gray-700 p-5 rounded-2xl border-2 border-dashed border-gray-200 dark:border-gray-600">
+                <h4 className="text-gray-500 dark:text-gray-300 font-black text-sm mb-3 text-center">🤔 이전 버전</h4>
+                <ul className="text-xs font-medium text-gray-500 dark:text-gray-400 space-y-2">
                   <li>❌ 학점 계산기가 전무하여 와글에서 수동 확인</li>
                   <li>❌ 복잡하게 나열된 성적 입력 양식</li>
                   <li>❌ 통계 분석 및 그래프 도구 부재</li>
                 </ul>
               </div>
-              <div className="bg-emerald-50 dark:bg-emerald-900/30 p-5 md:p-6 rounded-2xl md:rounded-3xl border-2 border-emerald-200 dark:border-emerald-800 shadow-inner">
-                <h4 className="text-emerald-600 dark:text-emerald-400 font-black text-base md:text-lg mb-3 md:mb-4 text-center">✨ 현재 버전 (v5)</h4>
-                <ul className="text-xs md:text-sm font-bold text-gray-700 dark:text-gray-200 space-y-2 md:space-y-3">
+              <div className="bg-emerald-50 dark:bg-emerald-900/30 p-5 rounded-2xl border-2 border-emerald-200 dark:border-emerald-800 shadow-inner">
+                <h4 className="text-emerald-600 dark:text-emerald-400 font-black text-sm mb-3 text-center">✨ 현재 버전 (v5)</h4>
+                <ul className="text-xs font-bold text-gray-700 dark:text-gray-200 space-y-2">
                   <li>✅ <span className="text-emerald-600 dark:text-emerald-400 font-black">학기 탭 기반 인터페이스</span>로 깔끔한 관리</li>
                   <li>✅ 3단 대시보드(전체/전공/최근) 구축</li>
                   <li>✅ 학기별 이수/평점 시각화 <span className="text-emerald-600 dark:text-emerald-400 font-black">분석 그래프 추가</span></li>
@@ -127,9 +136,33 @@ function GpaPage() {
               </div>
             </div>
 
-            <div className="bg-green-50 dark:bg-green-900/30 p-5 md:p-6 rounded-2xl md:rounded-3xl border-2 border-green-200 dark:border-green-800 text-center mb-6 md:mb-8 shadow-inner relative overflow-hidden">
-                <h4 className="text-xl md:text-2xl font-black text-green-800 dark:text-green-400 mb-2">🎁 "이것도 유료인가요?"</h4>
-                <p className="text-green-700 dark:text-green-300 font-bold text-xs md:text-sm">아닙니다! 창대인을 위한 <span className="font-black text-base md:text-lg">완전 무료</span> 서비스입니다!<br/> 체계적인 학점 관리로 완벽한 성적표를 만들어보세요!</p>
+            {/* 발전 과정 타임라인 (사진 1-3 레이아웃 복구) */}
+            <div className="bg-slate-50 dark:bg-gray-700/50 rounded-2xl p-6 mb-6 border border-gray-100 dark:border-gray-600">
+              <h4 className="text-center font-black text-slate-700 dark:text-slate-300 mb-4 text-sm flex justify-center items-center gap-2">🛠️ CWNU PORTAL V5 발전 과정</h4>
+              <div className="space-y-3 text-[11px] md:text-xs px-2">
+                <p className="flex items-center gap-3 font-medium bg-white dark:bg-gray-800 p-2 rounded-lg shadow-sm">
+  <span className="text-emerald-600 font-black min-w-[45px]">V1.0:</span>
+  <span className="text-slate-600 dark:text-gray-400">성적 입력 및 기본적인 학점 계산 기능 구현</span>
+</p>
+<p className="flex items-center gap-3 font-medium bg-white dark:bg-gray-800 p-2 rounded-lg shadow-sm">
+  <span className="text-emerald-600 font-black min-w-[45px]">V2.0:</span>
+  <span className="text-slate-600 dark:text-gray-400">학기별 탭 인터페이스 및 가이드 투어 도입</span>
+</p>
+<p className="flex items-center gap-3 font-medium bg-white dark:bg-gray-800 p-2 rounded-lg shadow-sm">
+  <span className="text-emerald-600 font-black min-w-[45px]">V3.5:</span>
+  <span className="text-slate-600 dark:text-gray-400">3단 대시보드 및 전공/전체 성적 분석 로직 강화</span>
+</p>
+<p className="flex items-center gap-3 font-bold bg-white dark:bg-gray-800 p-2 rounded-lg shadow-sm">
+  <span className="text-emerald-600 font-black min-w-[45px]">V4.0:</span>
+  <span className="text-slate-800 dark:text-gray-200 italic">학점 분석 그래프 시각화 및 모바일 UI 고도화</span>
+</p>
+              </div>
+            </div>
+
+            {/* 유료 안내 배너 (사진 1-3 레이아웃 복구) */}
+            <div className="bg-green-50 dark:bg-green-900/30 p-5 rounded-2xl border-2 border-green-200 dark:border-green-800 text-center mb-6 shadow-inner relative overflow-hidden">
+                <h4 className="text-xl font-black text-green-800 dark:text-green-400 mb-1"> "이것도 무료인가요?!"</h4>
+                <p className="text-green-700 dark:text-green-300 font-bold text-xs">물론이죠! 창대인을 위한 <span className="font-black text-sm">완전 무료</span> 서비스입니다!<br/> 체계적인 학점 관리로 완벽한 성적표를 만들어보세요!</p>
             </div>
 
             <button onClick={() => setShowVersionInfo(false)} className="w-full bg-gray-900 dark:bg-gray-700 text-white py-3 md:py-4 rounded-xl font-black text-base md:text-lg hover:bg-black dark:hover:bg-gray-600 transition">확인 완료! 직접 써보기</button>
@@ -147,13 +180,11 @@ function GpaPage() {
           <p className="text-emerald-600 dark:text-emerald-400 font-bold text-xs md:text-sm bg-emerald-50 dark:bg-emerald-900/30 inline-block px-4 py-1.5 md:px-5 md:py-2 rounded-full shadow-inner border border-emerald-100 dark:border-emerald-800">🔒 성적 정보는 오직 기기에만 보관됩니다.</p>
         </div>
 
-        {/* 📱 모바일 차트 높이/여백 조정: h-72, p-5 */}
         <div id="tour-chart" className="bg-white dark:bg-gray-800 p-5 md:p-10 rounded-3xl md:rounded-[3rem] shadow-lg border-2 border-emerald-50 dark:border-gray-700 mb-8 md:mb-10 h-72 md:h-96 relative z-10 w-full">
-           <h3 className="text-lg md:text-xl font-black text-gray-800 dark:text-white mb-3 md:mb-4 flex items-center gap-2 md:gap-3"><span className="text-2xl md:text-3xl">📈</span> 학기별 성적 추이 분석</h3>
+            <h3 className="text-lg md:text-xl font-black text-gray-800 dark:text-white mb-3 md:mb-4 flex items-center gap-2 md:gap-3"><span className="text-2xl md:text-3xl">📈</span> 학기별 성적 추이 분석</h3>
           {groupedCourses.length < 1 ? <div className="flex items-center justify-center h-full text-gray-400 dark:text-gray-500 font-bold text-xs md:text-sm bg-gray-50 dark:bg-gray-700 rounded-2xl border border-dashed border-gray-200 dark:border-gray-600">성적을 등록하면 그래프가 생성됩니다.</div> : <Chart type='bar' data={chartData} options={{ responsive: true, maintainAspectRatio: false, scales: { x: { ticks: { padding: 10, color: '#9ca3af', font: { size: 10 } }, grid: { color: 'rgba(156, 163, 175, 0.1)' } }, y1: { position: 'right', min: 0, max: 4.5, ticks: { color: '#9ca3af', font: { size: 10 } }, grid: { color: 'rgba(156, 163, 175, 0.1)' } }, y: { ticks: { color: '#9ca3af', font: { size: 10 } }, grid: { color: 'rgba(156, 163, 175, 0.1)' } } }, plugins: { legend: { labels: { color: '#9ca3af', font: { size: 10 } } } } }} />}
         </div>
 
-        {/* 📱 대시보드 박스 패딩/글씨 축소: p-6, text-5xl */}
         <div id="tour-dashboard" className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-8 md:mb-10 relative z-10">
           <div className="bg-[#111] dark:bg-gray-900 p-6 md:px-10 md:py-10 rounded-3xl md:rounded-[3rem] shadow-2xl border-b-[8px] md:border-b-[10px] border-emerald-900 flex flex-col justify-center items-center text-white">
             <h3 className="text-gray-400 font-black text-xs md:text-sm uppercase mb-2 md:mb-3">전체평점 (CGPA)</h3>
@@ -173,7 +204,6 @@ function GpaPage() {
           </div>
         </div>
 
-        {/* 📱 입력 폼: 모바일 세로 1줄 배열로 자동 변경 */}
         <form id="tour-form" onSubmit={addCourse} className="bg-white dark:bg-gray-800 p-5 md:p-6 rounded-3xl md:rounded-[2.5rem] shadow-lg border border-gray-100 dark:border-gray-700 grid grid-cols-1 md:grid-cols-12 gap-3 md:gap-4 mb-8 md:mb-10 items-center relative z-10 w-full">
           <select value={form.semester} onChange={e=>setForm({...form, semester: e.target.value})} className="md:col-span-3 p-3 md:p-4 bg-gray-50 dark:bg-gray-700 rounded-xl md:rounded-2xl font-black text-sm md:text-base text-gray-700 dark:text-white outline-none border border-gray-100 dark:border-gray-600 focus:ring-2 ring-emerald-200 w-full">{SEMESTERS.map(s => <option key={s} value={s}>{s}</option>)}</select>
           <input placeholder="과목명" value={form.name} onChange={e=>setForm({...form, name: e.target.value})} className="md:col-span-3 p-3 md:p-4 bg-gray-50 dark:bg-gray-700 rounded-xl md:rounded-2xl outline-none font-black text-gray-800 dark:text-white focus:bg-emerald-50 dark:focus:bg-emerald-900/30 transition-colors text-sm md:text-lg border border-gray-100 dark:border-gray-600 focus:border-emerald-200 dark:focus:border-emerald-500 w-full"/>
@@ -188,7 +218,6 @@ function GpaPage() {
         </form>
 
         <div id="tour-list" className="mb-6 w-full">
-          {/* 📱 탭 스크롤 여백 조절 */}
           <div className="flex gap-2 overflow-x-auto pb-4 scrollbar-hide relative z-10 w-full">{SEMESTERS.map(sem => { const has = courses.some(c => c.semester === sem); return ( <button key={sem} onClick={() => setActiveTab(sem)} className={`px-4 py-1.5 md:px-5 md:py-2 rounded-full whitespace-nowrap font-black text-[10px] md:text-xs transition-all shadow-sm ${activeTab === sem ? 'bg-emerald-600 dark:bg-emerald-500 text-white shadow-md' : has ? 'bg-white dark:bg-gray-800 text-emerald-600 dark:text-emerald-400 border-2 border-emerald-100 dark:border-emerald-800' : 'bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500'}`}> {sem} {has && '•'} </button> ); })}</div>
           
           <div className="bg-white dark:bg-gray-800 rounded-3xl md:rounded-[2.5rem] shadow-xl border-2 border-emerald-100 dark:border-gray-700 mb-10 relative z-10 w-full overflow-hidden">
@@ -202,7 +231,6 @@ function GpaPage() {
               {activeSemesterCourses.length > 0 && <button onClick={()=>{ if(window.confirm(`${activeTab} 모든 성적을 삭제하시겠습니까?`)) setCourses(courses.filter(c => c.semester !== activeTab)); }} className="bg-white dark:bg-gray-800 text-red-500 border border-red-200 dark:border-red-900/50 px-3 py-1 md:px-4 md:py-1.5 rounded-lg md:rounded-xl text-[9px] md:text-[10px] font-black hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors">🗑️ 학기 삭제</button>}
             </div>
 
-            {/* 🚨 핵심 포인트: 모바일 가로 스크롤 (overflow-x-auto) 및 최소 너비 설정 */}
             <div className="overflow-x-auto w-full">
               <table className="w-full text-center min-w-[500px] md:min-w-full">
                 <thead className="bg-gray-50 dark:bg-gray-900/50 text-gray-400 dark:text-gray-500 text-[9px] md:text-[10px] font-black tracking-widest uppercase border-b border-gray-100 dark:border-gray-700">
@@ -218,7 +246,8 @@ function GpaPage() {
                             <input value={editForm.name} onChange={e=>setEditForm({...editForm, name: e.target.value})} className="w-full sm:flex-grow p-2 md:p-3 bg-gray-100 dark:bg-gray-700 rounded-lg md:rounded-xl font-bold text-xs md:text-sm text-gray-800 dark:text-white outline-none border dark:border-gray-600 focus:ring-2 ring-emerald-200"/>
                             <div className="flex w-full sm:w-auto gap-2">
                               <select value={editForm.credit} onChange={e=>setEditForm({...editForm, credit: e.target.value})} className="flex-1 p-2 md:p-3 bg-gray-100 dark:bg-gray-700 rounded-lg md:rounded-xl font-black text-[10px] md:text-xs text-gray-700 dark:text-white outline-none border dark:border-gray-600">{CREDIT_OPTIONS.map(c => <option key={c} value={c}>{c}학점</option>)}</select>
-                              <select value={editForm.grade} onChange={e=>setForm({...editForm, grade: e.target.value})} className="flex-1 p-2 md:p-3 bg-emerald-100 dark:bg-emerald-900/50 rounded-lg md:rounded-xl font-black text-[10px] md:text-xs text-emerald-700 dark:text-emerald-400 outline-none border dark:border-emerald-800">{Object.keys(GRADE_POINTS).map(g => <option key={g} value={g}>{g}</option>)}</select>
+                              {/* 4. 수정 버그 해결 (setEditForm으로 변경) */}
+                              <select value={editForm.grade} onChange={e=>setEditForm({...editForm, grade: e.target.value})} className="flex-1 p-2 md:p-3 bg-emerald-100 dark:bg-emerald-900/50 rounded-lg md:rounded-xl font-black text-[10px] md:text-xs text-emerald-700 dark:text-emerald-400 outline-none border dark:border-emerald-800">{Object.keys(GRADE_POINTS).map(g => <option key={g} value={g}>{g}</option>)}</select>
                             </div>
                             <div className="flex w-full sm:w-auto gap-2 items-center justify-between">
                               <label className="flex items-center gap-1.5 cursor-pointer bg-gray-100 dark:bg-gray-700 px-3 py-2 md:py-3 rounded-lg md:rounded-xl border dark:border-gray-600 text-[10px] md:text-xs flex-grow justify-center"><input type="checkbox" checked={editForm.isMajor} onChange={e=>setEditForm({...editForm, isMajor: e.target.checked})} className="w-3 h-3 md:w-4 md:h-4 accent-emerald-500 rounded cursor-pointer"/><span className="font-black text-gray-600 dark:text-gray-300">전공</span></label>
@@ -250,7 +279,12 @@ function GpaPage() {
           </div>
         </div>
       </div>
-      <footer className="py-8 md:py-12 text-center border-t border-gray-200 dark:border-gray-800 mt-8 md:mt-10 relative z-10"><p className="text-gray-500 dark:text-gray-600 font-black text-xs md:text-base tracking-widest md:tracking-[0.2em] mb-1 md:mb-2 uppercase">Software Engineering Project: CWNU Portal System</p><p className="text-gray-400 dark:text-gray-500 text-[10px] md:text-sm font-bold tracking-wider md:tracking-widest">@ 2026 Jung Yi Ryang | Designed with Gemini AI Collaborative Works</p></footer>
+      
+      {/* 하단 워터마크 푸터 */}
+      <footer className="py-8 md:py-12 text-center border-t border-gray-200 dark:border-gray-800 mt-8 md:mt-10 relative z-10">
+        <p className="text-gray-500 dark:text-gray-600 font-black text-xs md:text-base tracking-widest md:tracking-[0.2em] mb-1 md:mb-2 uppercase">Software Engineering Project: CWNU Portal System</p>
+        <p className="text-gray-400 dark:text-gray-500 text-[10px] md:text-sm font-bold tracking-wider md:tracking-widest">@ 2026 Jung Yi Ryang | Designed with Gemini AI Collaborative Works</p>
+      </footer>
     </div>
   );
 }
