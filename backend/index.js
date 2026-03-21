@@ -1,88 +1,47 @@
-// 1. dotenv는 로컬(개발 환경)에서만 실행하고, Vercel(production)에서는 무시하도록 설정
-if (process.env.NODE_ENV !== 'production') {
-  require('dotenv').config();
-}
-
+// backend/index.js 전체 복사
+if (process.env.NODE_ENV !== 'production') { require('dotenv').config(); }
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 
 const app = express();
-
-// 미들웨어 설정
 app.use(cors());
 app.use(express.json());
 
-// 2. MongoDB 연결
-// Vercel에서는 환경 변수(Environment Variables) 설정에 넣은 MONGODB_URI를 읽어옵니다.
-mongoose.connect(process.env.MONGODB_URI)
-  .then(() => console.log('✅ MongoDB 연결 성공'))
-  .catch(err => console.error('❌ MongoDB 연결 실패:', err));
+mongoose.connect(process.env.MONGODB_URI).then(() => console.log('✅ MongoDB 연결 성공 (최종 진화형)'));
 
-// 3. Todo 데이터 모델(Schema) 정의
-const todoSchema = new mongoose.Schema({
+const itemSchema = new mongoose.Schema({
   title: { type: String, required: true },
-  completed: { type: Boolean, default: false }
+  completed: { type: Boolean, default: false },
+  price: { type: Number, default: 0 },
+  deadline: { type: String, default: "" },      
+  todoDeadline: { type: String, default: "" },  
+  importance: { type: String, default: "보통" },
+  type: { type: String, required: true, enum: ['todo', 'market'] },
+  studentId: { type: String, default: "" },
+  sellerName: { type: String, default: "" },
+  phone: { type: String, default: "" },
+  location: { type: String, default: "" },
+  description: { type: String, default: "" },
+  likes: { type: Number, default: 0 },
+  createdAt: { type: Date, default: Date.now } // 🚀 정렬을 위해 생성일 추가
 });
-const Todo = mongoose.model('Todo', todoSchema);
+const Item = mongoose.model('Item', itemSchema);
 
-// 4. API 엔드포인트 (CRUD)
+app.get('/api/market', async (req, res) => { res.json(await Item.find({ type: 'market' })); });
+app.get('/api/todo', async (req, res) => { res.json(await Item.find({ type: 'todo' })); });
+app.post('/api/market', async (req, res) => { const newItem = new Item({ ...req.body, type: 'market' }); await newItem.save(); res.json(newItem); });
+app.post('/api/todo', async (req, res) => { const newItem = new Item({ ...req.body, type: 'todo' }); await newItem.save(); res.json(newItem); });
 
-// [GET] 모든 할 일 목록 가져오기
-app.get('/api/todos', async (req, res) => {
-  try {
-    const todos = await Todo.find();
-    res.json(todos);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-});
-
-// [POST] 새로운 할 일 추가하기
-app.post('/api/todos', async (req, res) => {
-  try {
-    const newTodo = new Todo({ title: req.body.title });
-    await newTodo.save();
-    res.json(newTodo);
-  } catch (err) {
-    res.status(400).json({ message: err.message });
-  }
-});
-
-// [PUT] 할 일 상태 수정하기 (완료 여부 체크)
-app.put('/api/todos/:id', async (req, res) => {
-  try {
-    const todo = await Todo.findByIdAndUpdate(
-      req.params.id, 
-      { completed: req.body.completed }, 
-      { returnDocument: 'after' } 
-    );
-    res.json(todo);
-  } catch (err) {
-    res.status(400).json({ message: err.message });
-  }
+// 🚀 1. 찜하기 토글 API (증가/감소 모두 지원)
+app.patch('/api/items/:id/like', async (req, res) => { 
+  const val = req.body.value || 1;
+  const item = await Item.findByIdAndUpdate(req.params.id, { $inc: { likes: val } }, { new: true }); 
+  res.json(item); 
 });
 
-// [DELETE] 할 일 삭제하기
-app.delete('/api/todos/:id', async (req, res) => {
-  try {
-    await Todo.findByIdAndDelete(req.params.id);
-    res.json({ message: '삭제 완료' });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-});
+app.put('/api/items/:id', async (req, res) => { const item = await Item.findByIdAndUpdate(req.params.id, req.body, { new: true }); res.json(item); });
+app.delete('/api/items/:id', async (req, res) => { await Item.findByIdAndDelete(req.params.id); res.json({ message: '삭제' }); });
 
-// 루트 경로 테스트용
-app.get('/', (req, res) => {
-  res.send('Todo App Backend Server is Running! 🚀');
-});
-
-// 5. 서버 실행 설정 (Vercel 서버리스 대응)
-if (process.env.NODE_ENV !== 'production') {
-  const PORT = process.env.PORT || 5000;
-  app.listen(PORT, () => console.log(`🚀 서버 실행 중: http://localhost:${PORT}`));
-}
-
-// Vercel이 이 app 객체를 컨트롤할 수 있도록 내보냅니다.
+if (process.env.NODE_ENV !== 'production') { app.listen(5000, () => console.log(`🚀 서버 실행 중`)); }
 module.exports = app;
