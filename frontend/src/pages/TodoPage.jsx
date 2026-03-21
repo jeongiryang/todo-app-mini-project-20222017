@@ -2,14 +2,117 @@
 import { useState, useEffect } from 'react'
 import axios from 'axios'
 
-const TITLE_MENTIONS = ["오늘의 미션은 무엇인가요?", "성장을 위한 한 걸음, 무엇을 할까요?", "지루함을 깨뜨릴 오늘의 스케줄을 적어주세요.", "미래의 나에게 부끄럽지 않을 계획을 세웁시다.", "작은 목표가 모여 전설을 만듭니다."];
-const PLACEHOLDERS = ["어떤 위대한 미션을 수행할까요?", "성장을 위한 작은 습관 추가", "목표를 적는 순간 이미 반은 성공입니다."];
+const TITLE_MENTIONS = [
+  // 기존 항목
+  "오늘의 미션은 무엇인가요?", 
+  "성장을 위한 한 걸음, 무엇을 할까요?", 
+  "지루함을 깨뜨릴 오늘의 스케줄을 적어주세요.", 
+  "미래의 나에게 부끄럽지 않을 계획을 세웁시다.", 
+  "작은 목표가 모여 전설을 만듭니다.",
+  
+  // 🚀 새로 추가된 동기부여 & 계획 타이틀
+  "오늘 하루, 어떤 멋진 일들을 계획하고 있나요?",
+  "기록하는 순간, 목표는 이미 현실에 한 걸음 다가섭니다.",
+  "어제보다 더 나은 오늘을 위한 당신만의 계획!",
+  "성공적인 하루의 시작, 명확한 목표 설정부터!",
+  "작은 성취들이 모여 눈부신 미래를 완성합니다.",
+  "오늘 하루도 힘차게! 어떤 과제들을 부숴볼까요?",
+  "머릿속의 복잡한 생각들, 여기에 적고 가볍게 시작하세요.",
+  "오늘의 나를 이기는 가장 확실한 방법, 철저한 계획!",
+  "창대인의 열정을 보여줄 오늘의 미션들을 채워주세요.",
+  "눈부신 성장을 위한 오늘의 스케줄을 디자인해보세요.",
+  "당신의 귀한 시간을 가장 가치 있게 써봅시다.",
+  "망설임은 시간만 늦출 뿐, 지금 바로 적고 실행합시다.",
+  "거창하지 않아도 좋습니다. 오늘의 작고 소중한 목표는?",
+  "하루를 지배하는 자가 인생을 지배합니다. 스케줄을 세워보세요.",
+  "무엇이든 해낼 수 있는 오늘, 당신의 첫 번째 스텝은?"
+];
+
+const PLACEHOLDERS = [
+  // 기존 항목
+  "어떤 위대한 미션을 수행할까요?", 
+  "성장을 위한 작은 습관 추가", 
+  "목표를 적는 순간 이미 반은 성공입니다.",
+  
+  // 새로 추가된 부드러운 유도 & 예시 플레이스홀더
+  "여기에 오늘의 핵심 목표를 입력하세요.",
+  "가장 먼저 끝내고 싶은 일은 무엇인가요?",
+  "오늘 하루를 알차게 만들 작은 미션 하나!",
+  "세상을 바꿀 당신의 오늘 첫 번째 할 일은?",
+  "미루고 미뤘던 그 과제, 오늘 한 번 끝내봅시다!",
+  "작은 것부터 하나씩, 천천히 적어보세요.",
+  "목표를 구체적으로 적을수록 실행력은 배가 됩니다.",
+  "과제, 복습, 운동, 약속 등 무엇이든 적어주세요!",
+  "머릿속에 맴도는 할 일을 텍스트로 꺼내보세요.",
+  "한 줄의 계획이 당신의 하루를 완벽하게 바꿉니다.",
+  "오늘의 나를 더 멋지게 만들어줄 할 일 추가하기",
+  "일단 적어두면 뇌가 알아서 움직이기 시작합니다.",
+  "ex) 웹프로그래밍 기말과제 완벽하게 마무리하기",
+  "ex) 하루 30분 전공 서적 읽고 핵심 노트 정리하기",
+  "ex) 오늘은 스마트폰 줄이고 무조건 12시 전에 자기",
+  "나태해진 나를 깨울 강력한 목표 한 줄!",
+  "오늘 하루, 나 자신과의 소중한 약속을 적어주세요."
+];
 const QUOTES = [
+  //  [실행과 결단]
   { en: "Do not put off until tomorrow what you can do today.", ko: "내일의 할 일을 오늘 하라." },
+  { en: "The secret of getting ahead is getting started.", ko: "앞서가는 비밀은 시작하는 것이다." },
+  { en: "Done is better than perfect.", ko: "완성하는 것이 완벽한 것보다 낫다." },
+  { en: "You don't have to be great to start, but you have to start to be great.", ko: "위대해지기 위해 시작할 필요는 없지만, 위대해지려면 시작해야 한다." },
+  { en: "Action is the foundational key to all success.", ko: "행동은 모든 성공의 기본 열쇠다." },
+  { en: "Yesterday you said tomorrow. Just do it.", ko: "어제 당신은 내일 하겠다고 했다. 일단 해라." },
+  { en: "A goal without a plan is just a wish.", ko: "계획 없는 목표는 한낱 소망에 불과하다." },
+  { en: "The best time to plant a tree was 20 years ago. The second best time is now.", ko: "나무를 심기 가장 좋았던 때는 20년 전이다. 두 번째로 좋은 때는 바로 지금이다." },
+  { en: "Don't wait. The time will never be just right.", ko: "기다리지 마라. 완벽한 타이밍이란 결코 없다." },
+  { en: "Do something today that your future self will thank you for.", ko: "미래의 당신이 감사할 일을 오늘 하라." },
+
+  // ⏱ [시간 관리와 집중]
   { en: "Management creates time.", ko: "관리는 시간을 창조한다." },
-  { en: "Failure is the opportunity to begin again more intelligently.", ko: "실패는 다시 시작할 기회다." },
   { en: "Time waits for no one.", ko: "시간은 기다려주지 않는다." },
-  { en: "Small habits make big changes.", ko: "작은 습관이 큰 변화를 만든다." }
+  { en: "Small habits make big changes.", ko: "작은 습관이 큰 변화를 만든다." },
+  { en: "Focus on being productive instead of busy.", ko: "바쁘게 살지 말고 생산적으로 살아라." },
+  { en: "Don't count the days, make the days count.", ko: "날짜를 세지 말고, 하루하루를 가치 있게 만들어라." },
+  { en: "Either you run the day, or the day runs you.", ko: "당신이 하루를 지배하거나, 하루가 당신을 지배하거나." },
+  { en: "Someday is not a day of the week.", ko: "'언젠가'라는 요일은 없다." },
+  { en: "Motivation is what gets you started. Habit is what keeps you going.", ko: "동기부여는 시작하게 만들고, 습관은 계속 나아가게 만든다." },
+  { en: "Where focus goes, energy flows.", ko: "집중하는 곳에 에너지가 흐른다." },
+  { en: "Starve your distractions, feed your focus.", ko: "산만함을 굶기고, 집중력에 먹이를 주어라." },
+
+  //  [인내와 멘탈 극복]
+  { en: "Failure is the opportunity to begin again more intelligently.", ko: "실패는 더 지능적으로 다시 시작할 기회다." },
+  { en: "It always seems impossible until it's done.", ko: "해내기 전에는 항상 불가능해 보인다." },
+  { en: "Strive for progress, not perfection.", ko: "완벽함이 아니라 발전을 위해 노력하라." },
+  { en: "Success is the sum of small efforts, repeated day in and day out.", ko: "성공은 매일 반복되는 작은 노력들의 합이다." },
+  { en: "Tough times never last, but tough people do.", ko: "힘든 시간은 끝이 있지만, 강한 사람은 끝까지 남는다." },
+  { en: "Don't stop when you're tired. Stop when you're done.", ko: "피곤할 때 멈추지 말고, 다 끝냈을 때 멈춰라." },
+  { en: "If it doesn't challenge you, it doesn't change you.", ko: "도전이 없으면 변화도 없다." },
+  { en: "Fall seven times and stand up eight.", ko: "일곱 번 넘어져도 여덟 번 일어난다." },
+  { en: "It does not matter how slowly you go as long as you do not stop.", ko: "멈추지 않는 한 얼마나 천천히 가는지는 중요하지 않다." },
+  { en: "Success is walking from failure to failure with no loss of enthusiasm.", ko: "성공이란 열정을 잃지 않고 실패에서 실패로 걸어가는 것이다." },
+
+  //  [삶의 지혜: 동서양 속담]
+  { en: "A journey of a thousand miles begins with a single step.", ko: "천 리 길도 한 걸음부터." },
+  { en: "Well begun is half done.", ko: "시작이 반이다." },
+  { en: "Even a pearl necklace needs to be strung to be jewelry.", ko: "구슬이 서 말이라도 꿰어야 보배다." },
+  { en: "No sweat, no sweet.", ko: "고생 끝에 낙이 온다." },
+  { en: "The ground hardens after the rain.", ko: "비 온 뒤에 땅이 굳는다." },
+  { en: "Rome was not built in a day.", ko: "로마는 하루아침에 이루어지지 않았다." },
+  { en: "The early bird catches the worm.", ko: "일찍 일어나는 새가 벌레를 잡는다." },
+  { en: "Where there is a will, there is a way.", ko: "뜻이 있는 곳에 길이 있다." },
+  { en: "Strike while the iron is hot.", ko: "쇠뿔도 단김에 빼라." },
+  { en: "A smooth sea never made a skilled sailor.", ko: "잔잔한 바다는 훌륭한 사공을 만들지 못한다." },
+
+  //  [철학과 태도]
+  { en: "Your future is created by what you do today, not tomorrow.", ko: "당신의 미래는 내일이 아니라 오늘 무엇을 하느냐에 달려 있다." },
+  { en: "Dreams don't work unless you do.", ko: "네가 일하지 않으면 꿈도 일하지 않는다." },
+  { en: "Doubt kills more dreams than failure ever will.", ko: "의심은 실패보다 훨씬 더 많은 꿈을 죽인다." },
+  { en: "Discipline is choosing between what you want now and what you want most.", ko: "규율이란 지금 당장 원하는 것과 가장 원하는 것 사이에서 선택하는 것이다." },
+  { en: "Believe you can and you're halfway there.", ko: "할 수 있다고 믿으면 이미 절반은 온 것이다." },
+  { en: "Quality means doing it right when no one is looking.", ko: "품질이란 아무도 보지 않을 때 제대로 하는 것이다." },
+  { en: "Be the change that you wish to see in the world.", ko: "세상에서 보고 싶은 변화가 있다면 당신이 먼저 그 변화가 되어라." },
+  { en: "No pressure, no diamonds.", ko: "압박이 없으면 다이아몬드도 없다." },
+  { en: "Attitude is a little thing that makes a big difference.", ko: "태도는 작은 것이지만 큰 차이를 만든다." },
+  { en: "Turn your wounds into wisdom.", ko: "당신의 상처를 지혜로 바꿔라." }
 ];
 const TOUR_STEPS = [
   { title: "👋 환영합니다!", desc: "CWNU 포털의 핵심 기능을 안내해 드릴게요.", targetId: "tour-header" }, 
