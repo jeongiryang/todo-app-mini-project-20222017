@@ -25,14 +25,12 @@ function GpaPage() {
   const [editingId, setEditingId] = useState(null); 
   const [editForm, setEditForm] = useState({});
   const [showVersionInfo, setShowVersionInfo] = useState(false); 
-  const [showSecurityInfo, setShowSecurityInfo] = useState(false); // ✅ 보안 안내 팝업 상태
+  const [showSecurityInfo, setShowSecurityInfo] = useState(false);
   const [showModalConfetti, setShowModalConfetti] = useState(false);
 
   useEffect(() => { localStorage.setItem(STORAGE_KEY, JSON.stringify(courses)); }, [courses]);
   useEffect(() => { if (showVersionInfo) { setShowModalConfetti(true); setTimeout(() => setShowModalConfetti(false), 2500); } }, [showVersionInfo]);
   
-  // 글로벌 이벤트 리스너 제거 (각 페이지 타이틀 옆 버튼으로 직접 제어)
-
   useEffect(() => {
     if (tourIndex >= 0 && tourIndex < TOUR_STEPS.length) {
       const el = document.getElementById(TOUR_STEPS[tourIndex].targetId);
@@ -127,18 +125,38 @@ function GpaPage() {
         </div>
       )}
 
-      {/* ✅ 3번 문제 해결: 보안 데이터 안내 상세 팝업창 */}
+      {/* ✅ 수정된 보안 데이터 안내 상세 팝업창 */}
       {showSecurityInfo && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[150] p-4 backdrop-blur-sm" onClick={() => setShowSecurityInfo(false)}>
           <div className="bg-white dark:bg-gray-800 p-6 md:p-8 rounded-3xl md:rounded-[2rem] max-w-md w-full shadow-2xl transform transition-all border-4 border-emerald-50 dark:border-gray-700" onClick={e=>e.stopPropagation()}>
             <div className="text-center mb-4"><span className="text-4xl md:text-5xl">🛡️</span></div>
             <h3 className="text-xl md:text-2xl font-black mb-4 text-emerald-700 dark:text-emerald-400 text-center tracking-tight">데이터 보안 안내</h3>
+            
             <div className="bg-emerald-50 dark:bg-gray-700/50 p-4 md:p-5 rounded-2xl mb-6 text-xs md:text-sm text-gray-700 dark:text-gray-300 leading-relaxed font-medium">
-              <p className="mb-3 font-bold"><strong>"정말 저한테만 보이나요?"</strong></p>
-              <p className="mb-3">네, 100% 안전합니다! 🙆‍♂️</p>
-              <p className="mb-2">이 학점 계산기는 외부 서버나 데이터베이스를 전혀 사용하지 않고, 오직 학우님이 접속하신 <strong>브라우저의 '로컬 스토리지(Local Storage)'</strong>라는 개인 기기 내장 공간에만 데이터를 보관합니다.</p>
-              <p className="mt-3 text-emerald-600 dark:text-emerald-400 font-black">심지어 개발자조차 학우님의 성적을 절대 볼 수 없으니 안심하고 사용하세요!</p>
+              <p className="mb-3">
+                <strong>"입력하신 성적 데이터가 어떻게 처리되는지 궁금하셨군요? 데이터의 안전성을 확인하려는 아주 훌륭한 접근입니다."</strong>
+              </p>
+              <p className="mb-3">
+                본 포털의 GPA 계산 시스템은 철저하게 <strong>'Client-Side Only (클라이언트 단독 연산)'</strong> 아키텍처로 설계되었습니다. 쉽게 말씀드리면, 학우님이 입력하시는 모든 과목과 성적 정보는 창원대학교 서버는 물론, 제 외부 데이터베이스(DB)로도 <strong>단 1바이트조차 전송되지 않습니다.</strong>
+              </p>
+              <p className="mb-4">
+                데이터는 오직 학우님이 현재 접속하신 기기(스마트폰/PC)의 브라우저가 제공하는 표준 보안 저장소인 <strong>`Local Storage (로컬 스토리지)`</strong>에 물리적으로 격리되어 저장됩니다.
+              </p>
+
+              <div className="bg-white dark:bg-gray-800 border border-emerald-200 dark:border-gray-600 rounded-xl p-3 mb-4 shadow-sm">
+                <p className="font-black text-emerald-800 dark:text-emerald-400 mb-2 text-center text-xs"> 성적 데이터 처리 방침 요약</p>
+                <ul className="space-y-1.5 text-[11px] md:text-xs">
+                  <li><span className="text-gray-500">▪ 수집 및 전송:</span> <strong>없음</strong> (서버 통신 전면 배제)</li>
+                  <li><span className="text-gray-500">▪ 저장 위치:</span> <strong>사용자 본인 기기의 브라우저</strong></li>
+                  <li><span className="text-gray-500">▪ 열람 권한:</span> <strong>기기 소유자 본인</strong> (개발자 접근 불가)</li>
+                </ul>
+              </div>
+
+              <p className="mb-1 text-emerald-600 dark:text-emerald-400 font-bold">
+                즉, 외부 데이터 유출 위험이 원천 차단되어 있으며, 시스템을 구축한 개발자인 저조차도 여러분의 성적표를 열람할 기술적 방법이 전혀 존재하지 않습니다.
+              </p>
             </div>
+            
             <button onClick={() => setShowSecurityInfo(false)} className="w-full bg-emerald-600 dark:bg-emerald-500 text-white py-3 md:py-4 rounded-xl font-black text-sm md:text-base hover:bg-emerald-700 transition shadow-lg">안심하고 확인 완료!</button>
           </div>
         </div>
@@ -204,10 +222,14 @@ function GpaPage() {
           <p onClick={() => setShowVersionInfo(true)} className="text-[10px] md:text-xs text-emerald-400 dark:text-emerald-500 font-black cursor-pointer hover:text-emerald-600 transition tracking-widest">(버전 클릭 시 업데이트 내역 확인)</p>
         </div>
 
-        {/* 6번 데이터 보안 신뢰성 안내 (클릭 시 팝업창 오픈) */}
+        {/* ✅ 수정: 클릭 가능한 (?) 아이콘이 추가된 보안 안내 배너 */}
         <div className="flex justify-center mb-6 md:mb-8 px-2">
-           <div onClick={() => setShowSecurityInfo(true)} className="cursor-pointer bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-400 px-4 md:px-6 py-2 md:py-3 rounded-2xl text-[10px] md:text-xs font-bold flex items-center gap-2 shadow-sm break-keep text-center hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition-colors">
-             <span className="text-sm md:text-base">🔒</span> 입력하신 성적 데이터는 본인의 기기에만 안전하게 저장되며, 외부로 공유되지 않습니다.
+           <div className="bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-400 px-4 md:px-5 py-2 md:py-3 rounded-2xl text-[10px] md:text-xs font-bold flex items-center justify-center gap-2 shadow-sm break-keep text-center">
+             <span className="text-sm md:text-base">🔒</span> 
+             <span>입력하신 성적 데이터는 본인의 기기에만 안전하게 저장되며, 외부로 공유되지 않습니다.</span>
+             <button onClick={() => setShowSecurityInfo(true)} className="ml-1 bg-emerald-200 dark:bg-emerald-700/50 text-emerald-800 dark:text-emerald-200 rounded-full w-5 h-5 flex items-center justify-center font-black text-[10px] hover:bg-emerald-300 dark:hover:bg-emerald-600 transition-colors shadow-sm cursor-pointer shrink-0">
+               ?
+             </button>
            </div>
         </div>
 

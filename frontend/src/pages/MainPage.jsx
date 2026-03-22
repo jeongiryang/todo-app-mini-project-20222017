@@ -98,7 +98,7 @@ function MainPage() {
           
           <div id="tour-main-notices" className="text-center mb-12 md:mb-16 relative z-10 p-4">
             <h4 className="text-sm md:text-base font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest text-center mb-6 md:mb-8 transition-colors">
-              OFFICIAL ANNOUNCEMENTS & WA-GLE
+              OFFICIAL ANNOUNCEMENTS & WAGLE
             </h4>
             <div className="flex flex-col sm:flex-row justify-center items-center gap-4 md:gap-6">
               <a 

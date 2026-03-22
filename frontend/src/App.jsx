@@ -65,11 +65,14 @@ function App() {
           <button onClick={() => setIsDarkMode(!isDarkMode)} className="md:hidden p-2 bg-white/10 rounded-full">{isDarkMode ? '☀️' : '🌙'}</button>
         </div>
 
-        <nav className="flex items-center gap-1 md:gap-4 bg-black/20 p-1 md:p-1.5 rounded-2xl">
-          <Link to="/market" className={getMenuClass('/market')}>🏪 <span className="hidden sm:inline">MARKET</span><span className="sm:hidden text-[10px]">MARKET</span></Link>
-          <Link to="/todo" className={getMenuClass('/todo')}>📝 <span className="hidden sm:inline">TODO</span><span className="sm:hidden text-[10px]">TODO</span></Link>
-          <Link to="/gpa" className={getMenuClass('/gpa')}>🎓 <span className="hidden sm:inline">GPA 계산기</span><span className="sm:hidden text-[10px]">GPA</span></Link>
-        </nav>
+        {/* ✅ 수정: 메인 페이지('/')가 아닐 때만 상단 네비게이션 메뉴 노출 */}
+        {location.pathname !== '/' && (
+          <nav className="flex items-center gap-1 md:gap-4 bg-black/20 p-1 md:p-1.5 rounded-2xl">
+            <Link to="/market" className={getMenuClass('/market')}>🏪 <span className="hidden sm:inline">MARKET</span><span className="sm:hidden text-[10px]">MARKET</span></Link>
+            <Link to="/todo" className={getMenuClass('/todo')}>📝 <span className="hidden sm:inline">TODO</span><span className="sm:hidden text-[10px]">TODO</span></Link>
+            <Link to="/gpa" className={getMenuClass('/gpa')}>🎓 <span className="hidden sm:inline">GPA 계산기</span><span className="sm:hidden text-[10px]">GPA</span></Link>
+          </nav>
+        )}
 
         <div className="flex gap-2 md:gap-3 items-center w-full md:w-auto justify-center md:justify-end">
           <a href="https://app.changwon.ac.kr/campus/campus_001.do" target="_blank" rel="noreferrer" className="bg-[#634432] text-white px-2.5 py-1.5 md:px-4 md:py-2 rounded-xl font-black text-[10px] md:text-xs shadow-md flex items-center gap-1.5 hover:bg-[#4d3527] transition">🍱 학식</a>
