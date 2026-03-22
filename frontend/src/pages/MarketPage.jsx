@@ -31,7 +31,7 @@ function MarketPage({ lang }) {
 
   const API_URL = '/api/market'; const COMMON_URL = '/api/items'
 
-  // ✅ 다국어 사전
+  // ✅ 다국어 사전 (V5 5.0 통일 및 업데이트 내역 포함)
   const t = {
     ko: {
       tourSteps: [
@@ -49,7 +49,14 @@ function MarketPage({ lang }) {
       currency: "원", freeBadge: "🎁 무료 나눔!", soldOut: "SOLD OUT", sellerPrefix: "👤", locPrefix: "📍 희망처:", deadlinePrefix: "📅 마감:", deadlineNone: "없음",
       btnEdit: "Edit", btnDel: "Del", btnDone: "Complete", btnUndo: "Cancel", btnSave: "수정 저장", btnEditCancel: "취소",
       thItem: "Item", thPrice: "Price", thSeller: "Seller", thStatus: "Status", thAction: "Action", stDone: "거래완료", stSale: "판매중",
-      footerDept: "Department of Computer Science | Software Engineering Project: CWNU Portal System", footerCopy: "@ 2026 Jung Yi Ryang | Designed with Gemini AI Collaborative Works"
+      footerDept: "Department of Computer Science | Software Engineering Project: CWNU Portal System", footerCopy: "@ 2026 Jung Yi Ryang | Designed with Gemini AI Collaborative Works",
+      // 모달 텍스트
+      modalTitle: "Market V5 5.0 ver 업데이트 내역", modalSub: "25년 2학기 웹프로그래밍 기말대체 과제 `todos_v4`의 최종 진화형!",
+      modalPrevTitle: "🤔 이전 버전 (todos_v4)", modalPrev1: "❌ 새로고침하면 데이터 소실", modalPrev2: "❌ 단순한 텍스트 위주의 투박한 디자인", modalPrev3: "❌ 찜하기 등 거래 부가 기능 전무",
+      modalCurTitle: "✨ 현재 버전 (V5 5.0)", modalCur1: "✅ MongoDB 연동으로 데이터 보존!", modalCur2: "✅ 트렌디한 카드 UI 및 정렬 기능", modalCur3: "✅ 실시간 찜하기 및 마켓 검색 기능 추가!", modalCur4: "✅ 글로벌 다국어(KOR/ENG) 완벽 지원!",
+      modalHistTitle: "🛠️ CWNU PORTAL 발전 과정",
+      modalHistV1: "물품 등록 및 기본적인 목록 조회 시스템 구축", modalHistV2: "사용자 도움말 투어 및 거래 편의 기능 추가", modalHistV3: "실시간 찜하기 기능 및 카드/테이블 뷰 전환 도입", modalHistV4: "MongoDB 연동 데이터 보존 및 통합 검색 기능 강화", modalHistV5: "글로벌 다국어(KOR/ENG) 완벽 지원 및 UI 고도화",
+      modalFreeTitle: "\"근데 이거 유료라고요?\"", modalFreeDesc1: "아닙니다! 창대인을 위한 완전 무료 서비스입니다!", modalFreeDesc2: "쿨거래로 학우 간 따뜻한 정을 나눠보세요!", modalBtn: "확인 완료!"
     },
     en: {
       tourSteps: [
@@ -67,7 +74,14 @@ function MarketPage({ lang }) {
       currency: " KRW", freeBadge: "🎁 Freebie!", soldOut: "SOLD OUT", sellerPrefix: "👤", locPrefix: "📍 Loc:", deadlinePrefix: "📅 Due:", deadlineNone: "None",
       btnEdit: "Edit", btnDel: "Del", btnDone: "Done", btnUndo: "Undo", btnSave: "Save", btnEditCancel: "Cancel",
       thItem: "Item", thPrice: "Price", thSeller: "Seller", thStatus: "Status", thAction: "Action", stDone: "Done", stSale: "On Sale",
-      footerDept: "Department of Computer Science | Software Engineering Project: CWNU Portal System", footerCopy: "@ 2026 Jung Yi Ryang | Designed with Gemini AI Collaborative Works"
+      footerDept: "Department of Computer Science | Software Engineering Project: CWNU Portal System", footerCopy: "@ 2026 Jung Yi Ryang | Designed with Gemini AI Collaborative Works",
+      // 모달 텍스트
+      modalTitle: "Market V5 5.0 ver Updates", modalSub: "The ultimate evolution of the Fall '25 Web Programming final project `todos_v4`!",
+      modalPrevTitle: "🤔 Previous Version (todos_v4)", modalPrev1: "❌ Data lost on refresh", modalPrev2: "❌ Clunky text-based design", modalPrev3: "❌ No extra features like 'Like'",
+      modalCurTitle: "✨ Current Version (V5 5.0)", modalCur1: "✅ Data preserved with MongoDB!", modalCur2: "✅ Trendy card UI & sorting", modalCur3: "✅ Real-time 'Like' & Market search!", modalCur4: "✅ Global bilingual (KOR/ENG) support!",
+      modalHistTitle: "🛠️ CWNU PORTAL Evolution",
+      modalHistV1: "Basic item registration & list view system", modalHistV2: "User guide tour & trade convenience features", modalHistV3: "Real-time Like & Card/Table view toggle", modalHistV4: "MongoDB integration & advanced search", modalHistV5: "Full bilingual support (KOR/ENG) & UI enhancement",
+      modalFreeTitle: "\"Wait, is this paid?\"", modalFreeDesc1: "No! It's a completely free service for CWNU students!", modalFreeDesc2: "Share warmth through cool deals!", modalBtn: "Confirmed!"
     }
   };
   const current = t[lang];
@@ -161,12 +175,51 @@ function MarketPage({ lang }) {
         </div>
       )}
 
+      {/* ✅ 꽉 찬 디테일 모달창 완벽 복구 */}
       {showVersionInfo && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[150] p-4 backdrop-blur-sm" onClick={() => setShowVersionInfo(false)}>
-           {/* (버전 정보 모달 유지, 생략 없이 그대로 둠) */}
           <div className="bg-white dark:bg-gray-800 p-6 md:p-8 rounded-3xl md:rounded-[2rem] max-w-3xl w-full shadow-2xl transform transition-all border-4 border-blue-50 dark:border-gray-700 max-h-[90vh] overflow-y-auto" onClick={e=>e.stopPropagation()}>
-            <h3 className="text-2xl md:text-3xl font-black mb-1 text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400 text-center">Market V5_Global ver 업데이트 내역</h3>
-            <button onClick={() => setShowVersionInfo(false)} className="w-full mt-6 bg-gray-900 dark:bg-gray-700 text-white py-3 md:py-4 rounded-xl font-black text-base md:text-lg hover:bg-black transition">확인 완료!</button>
+            {showModalConfetti && <div className="fixed inset-0 pointer-events-none z-[9999] flex items-center justify-center"><span className="emoji-burst text-6xl">🎉</span></div>}
+            
+            <h3 className="text-2xl md:text-3xl font-black mb-1 text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400 text-center">{current.modalTitle}</h3>
+            <p className="text-center text-gray-400 dark:text-gray-500 font-bold mb-6 text-[10px] md:text-xs tracking-tighter">{current.modalSub}</p>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 mt-2">
+              <div className="bg-gray-50 dark:bg-gray-700 p-5 rounded-2xl border-2 border-dashed border-gray-200 dark:border-gray-600">
+                <h4 className="text-gray-500 dark:text-gray-300 font-black text-sm mb-3 text-center">{current.modalPrevTitle}</h4>
+                <ul className="text-xs font-medium text-gray-500 dark:text-gray-400 space-y-2">
+                  <li>{current.modalPrev1}</li>
+                  <li>{current.modalPrev2}</li>
+                  <li>{current.modalPrev3}</li>
+                </ul>
+              </div>
+              <div className="bg-blue-50 dark:bg-blue-900/30 p-5 rounded-2xl border-2 border-blue-200 dark:border-blue-800 shadow-inner">
+                <h4 className="text-blue-600 dark:text-blue-400 font-black text-sm mb-3 text-center">{current.modalCurTitle}</h4>
+                <ul className="text-xs font-bold text-gray-700 dark:text-gray-200 space-y-2">
+                  <li>{current.modalCur1}</li>
+                  <li>{current.modalCur2}</li>
+                  <li>{current.modalCur3}</li>
+                  <li>{current.modalCur4}</li>
+                </ul>
+              </div>
+            </div>
+
+            <div className="bg-slate-50 dark:bg-gray-700/50 rounded-2xl p-6 mb-6 border border-gray-100 dark:border-gray-600">
+              <h4 className="text-center font-black text-slate-700 dark:text-slate-300 mb-4 text-sm flex justify-center items-center gap-2">{current.modalHistTitle}</h4>
+              <div className="space-y-3 text-[11px] md:text-xs px-2">
+                <p className="flex items-center gap-3 font-medium bg-white dark:bg-gray-800 p-2 rounded-lg shadow-sm"><span className="text-blue-600 font-black min-w-[45px]">V1.0:</span><span className="text-slate-600 dark:text-gray-400">{current.modalHistV1}</span></p>
+                <p className="flex items-center gap-3 font-medium bg-white dark:bg-gray-800 p-2 rounded-lg shadow-sm"><span className="text-blue-600 font-black min-w-[45px]">V2.0:</span><span className="text-slate-600 dark:text-gray-400">{current.modalHistV2}</span></p>
+                <p className="flex items-center gap-3 font-medium bg-white dark:bg-gray-800 p-2 rounded-lg shadow-sm"><span className="text-blue-600 font-black min-w-[45px]">V3.5:</span><span className="text-slate-600 dark:text-gray-400">{current.modalHistV3}</span></p>
+                <p className="flex items-center gap-3 font-medium bg-white dark:bg-gray-800 p-2 rounded-lg shadow-sm"><span className="text-blue-600 font-black min-w-[45px]">V4.0:</span><span className="text-slate-600 dark:text-gray-400">{current.modalHistV4}</span></p>
+                <p className="flex items-center gap-3 font-bold bg-white dark:bg-gray-800 p-2 rounded-lg shadow-sm"><span className="text-blue-600 font-black min-w-[45px]">V5.0:</span><span className="text-slate-800 dark:text-gray-200 italic">{current.modalHistV5}</span></p>
+              </div>
+            </div>
+
+            <div className="bg-blue-50 dark:bg-blue-900/30 p-5 rounded-2xl border-2 border-blue-200 dark:border-blue-800 text-center mb-6 shadow-inner relative overflow-hidden">
+                <h4 className="text-xl font-black text-blue-800 dark:text-blue-400 mb-1">{current.modalFreeTitle}</h4>
+                <p className="text-blue-700 dark:text-blue-300 font-bold text-xs"><span className="font-black text-sm">{current.modalFreeDesc1}</span><br/>{current.modalFreeDesc2}</p>
+            </div>
+            <button onClick={() => setShowVersionInfo(false)} className="w-full bg-gray-900 dark:bg-gray-700 text-white py-3 md:py-4 rounded-xl font-black text-base md:text-lg hover:bg-black transition">{current.modalBtn}</button>
           </div>
         </div>
       )}
@@ -245,7 +298,6 @@ function MarketPage({ lang }) {
                   <>
                     <div className="flex justify-between items-start mb-4 z-10"><h3 className={`text-xl font-black flex-grow pr-10 ${item.completed ? 'text-red-600 line-through opacity-70' : 'text-gray-800 dark:text-gray-100'}`}>{item.title}</h3></div> 
                     <div className="flex justify-between items-center mb-6 z-10 relative">
-                      {/* ✅ 금액에 통화 기호 적용 로직 */}
                       <p className={`text-2xl md:text-3xl font-black ${item.completed ? 'text-red-400 opacity-70' : 'text-blue-700 dark:text-blue-400'}`}>{item.price === 0 ? current.freeBadge : `${Number(item.price).toLocaleString()}${current.currency}`}</p>
                       <button onClick={() => handleLike(item._id)} className={`flex flex-col items-center hover:scale-110 transition-transform ${likedItems.has(item._id) ? 'text-red-500' : 'text-gray-200'}`}><span className="text-2xl drop-shadow-md">♥</span><span className="text-[10px] font-black mt-[-4px]">{item.likes}</span></button>
                     </div> 

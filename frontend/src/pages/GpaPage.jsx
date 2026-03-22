@@ -30,7 +30,7 @@ function GpaPage({ lang }) {
   const [simTargetGpa, setSimTargetGpa] = useState(4.0);
   const [simNextCredits, setSimNextCredits] = useState(18);
 
-  // ✅ 다국어 사전 (i18n)
+  // ✅ 다국어 사전 (i18n) + 꽉 찬 모달 텍스트 및 보안 팝업 UI 텍스트 완벽 복구
   const t = {
     ko: {
       tourSteps: [
@@ -41,7 +41,20 @@ function GpaPage({ lang }) {
         { title: "📑 학기 탭 & 성적표", desc: "학기를 클릭하여 해당 학기의 성적표를 관리하세요.", targetId: "tour-list" }
       ],
       tourSkip: "건너뛰기", tourNext: "다음 ▶", help: "💡 도움말", verCheck: "(버전 클릭 시 업데이트 내역 확인)",
-      secTitle: "데이터 보안 안내", secBtn: "안심하고 확인 완료!",
+      
+      // 보안 안내 모달 (UI 복구용)
+      secTitle: "데이터 보안 안내", 
+      secP1: "\"입력하신 성적 데이터가 어떻게 처리되는지 궁금하셨군요? 데이터의 안전성을 확인하려는 아주 훌륭한 접근입니다.\"",
+      secP2: "본 포털의 GPA 계산 시스템은 철저하게 'Client-Side Only (클라이언트 단독 연산)' 아키텍처로 설계되었습니다. 쉽게 말씀드리면, 학우님이 입력하시는 모든 과목과 성적 정보는 창원대학교 서버는 물론, 제 외부 데이터베이스(DB)로도 단 1바이트조차 전송되지 않습니다.",
+      secP3: "데이터는 오직 학우님이 현재 접속하신 기기(스마트폰/PC)의 브라우저가 제공하는 표준 보안 저장소인 `Local Storage (로컬 스토리지)`에 물리적으로 격리되어 저장됩니다.",
+      secBoxTitle: "성적 데이터 처리 방침 요약",
+      secBul1Key: "수집 및 전송", secBul1Val: "없음 (서버 통신 전면 배제)",
+      secBul2Key: "저장 위치", secBul2Val: "사용자 본인 기기의 브라우저",
+      secBul3Key: "열람 권한", secBul3Val: "기기 소유자 본인 (개발자 접근 불가)",
+      secP4: "즉, 외부 데이터 유출 위험이 원천 차단되어 있으며, 시스템을 구축한 개발자인 저조차도 여러분의 성적표를 열람할 기술적 방법이 전혀 존재하지 않습니다.",
+      secBtn: "안심하고 확인 완료!",
+      secBannerText: "입력하신 성적 데이터는 본인의 기기에만 안전하게 저장되며, 외부로 공유되지 않습니다.",
+
       chartTitle: "성적 추이 분석", chartBtn: "📥 엑셀(CSV) 저장", chartEmpty: "성적을 등록하면 그래프가 생성됩니다.", chartCredits: "이수 학점", chartGpa: "학기 평점",
       dbAll: "전체평점 (CGPA)", dbMajor: "전공 평점", dbRecent: "최근학기 평점", dbEarned: "총 {c}학점 이수", dbEarnedMajor: "전공 {c}학점 이수", dbEarnedRecent: "최근 {c}학점 이수",
       simTitle: "목표 학점 시뮬레이터", simDesc: "다음 학기에 몇 점을 받아야 원하는 전체 평점(CGPA)을 만들 수 있을까요?", simTarget: "목표 평점", simExpected: "예정 학점", simResultTitle: "다음 학기 필요 평균",
@@ -51,7 +64,14 @@ function GpaPage({ lang }) {
       thType: "분류", thName: "과목명", thCredit: "학점", thGrade: "성적", thAction: "관리",
       btnSave: "저장", btnCancel: "취소", btnEdit: "수정", btnDel: "Del", emptyList: "해당 학기에 등록된 성적이 없습니다.", delConfirm: "삭제하시겠습니까?",
       csvHeader: "학기,과목명,학점,성적,전공여부", csvMajor: "전공", csvElective: "교양",
-      footerDept: "Department of Computer Science | Software Engineering Project: CWNU Portal System", footerCopy: "@ 2026 Jung Yi Ryang | Designed with Gemini AI Collaborative Works"
+      footerDept: "Department of Computer Science | Software Engineering Project: CWNU Portal System", footerCopy: "@ 2026 Jung Yi Ryang | Designed with Gemini AI Collaborative Works",
+      // 버전 업데이트 모달
+      modalTitle: "GPA V5 5.0 ver 업데이트 내역", modalSub: "25년 2학기 웹프로그래밍 기말대체 과제 `todos_v4`의 최종 진화형!",
+      modalPrevTitle: "🤔 이전 버전", modalPrev1: "❌ 학점 계산기가 전무하여 와글에서 수동 확인", modalPrev2: "❌ 복잡하게 나열된 성적 입력 양식",
+      modalCurTitle: "✨ 현재 버전 (V5 5.0)", modalCur1: "✅ 학기 탭 기반 인터페이스로 깔끔한 관리", modalCur2: "✅ 3단 대시보드 및 평점 시각화 분석", modalCur3: "✅ 성적 데이터 다운로드 및 목표 학점 시뮬레이터 탑재!", modalCur4: "✅ 글로벌 다국어(KOR/ENG) 완벽 지원!",
+      modalHistTitle: "🛠️ CWNU PORTAL 발전 과정",
+      modalHistV1: "성적 입력 및 기본적인 학점 계산 기능 구현", modalHistV2: "학기별 탭 인터페이스 및 가이드 투어 도입", modalHistV3: "3단 대시보드 및 전공/전체 성적 분석 로직 강화", modalHistV4: "학점 분석 그래프 시각화 및 모바일 UI 고도화", modalHistV5: "글로벌 다국어 완벽 지원 및 목표 학점 시뮬레이터 탑재",
+      modalFreeTitle: "\"이것도 무료인가요?!\"", modalFreeDesc1: "물론이죠! 창대인을 위한 완전 무료 서비스입니다!", modalFreeDesc2: "체계적인 학점 관리로 완벽한 성적표를 만들어보세요!", modalBtn: "확인 완료!"
     },
     en: {
       tourSteps: [
@@ -62,7 +82,20 @@ function GpaPage({ lang }) {
         { title: "📑 Tabs & Transcript", desc: "Click a semester to manage its transcript.", targetId: "tour-list" }
       ],
       tourSkip: "Skip", tourNext: "Next ▶", help: "💡 Guide", verCheck: "(Click version to check updates)",
-      secTitle: "Data Security Guide", secBtn: "Confirmed & Safe!",
+      
+      // 보안 안내 모달 (UI 복구용 영문)
+      secTitle: "Data Security Guide", 
+      secP1: "\"Curious about how your grade data is processed? Verifying data safety is an excellent approach.\"",
+      secP2: "This portal's GPA calculation system is strictly designed with a 'Client-Side Only' architecture. Simply put, absolutely zero bytes of your course and grade information are transmitted to any university server or external database.",
+      secP3: "The data is physically isolated and stored exclusively within the `Local Storage`, a standard secure repository provided by your current device's browser.",
+      secBoxTitle: "Grade Data Processing Policy Summary",
+      secBul1Key: "Collection/Transmission", secBul1Val: "None (Server comms entirely excluded)",
+      secBul2Key: "Storage Location", secBul2Val: "User's device browser",
+      secBul3Key: "Access Rights", secBul3Val: "Device owner only (Devs cannot access)",
+      secP4: "Thus, the risk of external data leakage is fundamentally blocked, and not even the developer has the technical means to view your transcripts.",
+      secBtn: "Confirmed & Safe!",
+      secBannerText: "Your grade data is securely stored only on your device and is not shared externally.",
+
       chartTitle: "GPA Trend Analysis", chartBtn: "📥 Export CSV", chartEmpty: "Register grades to see the chart.", chartCredits: "Earned Credits", chartGpa: "Semester GPA",
       dbAll: "Cumulative (CGPA)", dbMajor: "Major GPA", dbRecent: "Recent GPA", dbEarned: "Total {c} credits", dbEarnedMajor: "Major {c} credits", dbEarnedRecent: "Recent {c} credits",
       simTitle: "Target GPA Simulator", simDesc: "What grades do you need next semester to achieve your target CGPA?", simTarget: "Target GPA", simExpected: "Exp. Credits", simResultTitle: "Required Avg Next Sem",
@@ -72,7 +105,14 @@ function GpaPage({ lang }) {
       thType: "Type", thName: "Course Name", thCredit: "Credits", thGrade: "Grade", thAction: "Action",
       btnSave: "Save", btnCancel: "Cancel", btnEdit: "Edit", btnDel: "Del", emptyList: "No grades registered for this semester.", delConfirm: "Are you sure you want to delete?",
       csvHeader: "Semester,Course Name,Credits,Grade,Major/Elective", csvMajor: "Major", csvElective: "Elective",
-      footerDept: "Department of Computer Science | Software Engineering Project: CWNU Portal System", footerCopy: "@ 2026 Jung Yi Ryang | Designed with Gemini AI Collaborative Works"
+      footerDept: "Department of Computer Science | Software Engineering Project: CWNU Portal System", footerCopy: "@ 2026 Jung Yi Ryang | Designed with Gemini AI Collaborative Works",
+      // 버전 업데이트 모달
+      modalTitle: "GPA V5 5.0 ver Updates", modalSub: "The ultimate evolution of the Fall '25 Web Programming final project `todos_v4`!",
+      modalPrevTitle: "🤔 Previous Version", modalPrev1: "❌ No GPA calculator, manual check required", modalPrev2: "❌ Clunky and complicated input forms",
+      modalCurTitle: "✨ Current Version (V5 5.0)", modalCur1: "✅ Clean management with tab interface", modalCur2: "✅ 3-tier dashboard & GPA visualization", modalCur3: "✅ Data export & Target GPA Simulator added!", modalCur4: "✅ Global bilingual (KOR/ENG) support!",
+      modalHistTitle: "🛠️ CWNU PORTAL Evolution",
+      modalHistV1: "Grade input & basic calculation logic", modalHistV2: "Semester tab interface & user guide tour", modalHistV3: "Dashboard & major/cumulative GPA analysis", modalHistV4: "Chart visualization & mobile UI upgrade", modalHistV5: "Full bilingual support & Target GPA Simulator",
+      modalFreeTitle: "\"Wait, is this free?!\"", modalFreeDesc1: "Absolutely! Completely free service for CWNU students!", modalFreeDesc2: "Build a perfect transcript with systematic management!", modalBtn: "Confirmed!"
     }
   };
   const current = t[lang];
@@ -186,32 +226,87 @@ function GpaPage({ lang }) {
         </div>
       )}
 
+      {/* ✅ 데이터 보안 안내 모달 (UI 완벽 복구 & 다국어 지원) */}
       {showSecurityInfo && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[150] p-4 backdrop-blur-sm" onClick={() => setShowSecurityInfo(false)}>
           <div className="bg-white dark:bg-gray-800 p-6 md:p-8 rounded-3xl md:rounded-[2rem] max-w-md w-full shadow-2xl transform transition-all border-4 border-emerald-50 dark:border-gray-700" onClick={e=>e.stopPropagation()}>
             <div className="text-center mb-4"><span className="text-4xl md:text-5xl">🛡️</span></div>
             <h3 className="text-xl md:text-2xl font-black mb-4 text-emerald-700 dark:text-emerald-400 text-center tracking-tight">{current.secTitle}</h3>
+            
             <div className="bg-emerald-50 dark:bg-gray-700/50 p-4 md:p-5 rounded-2xl mb-6 text-xs md:text-sm text-gray-700 dark:text-gray-300 leading-relaxed font-medium">
               <p className="mb-3">
-                <strong>{lang==='ko'?"입력하신 성적 데이터가 어떻게 처리되는지 궁금하셨군요? 데이터의 안전성을 확인하려는 아주 훌륭한 접근입니다.":"Curious about how your grade data is processed? Verifying data safety is an excellent approach."}</strong>
+                <strong>{current.secP1}</strong>
               </p>
               <p className="mb-3">
-                {lang==='ko'?"본 포털의 GPA 계산 시스템은 철저하게 'Client-Side Only (클라이언트 단독 연산)' 아키텍처로 설계되었습니다. 쉽게 말씀드리면, 학우님이 입력하시는 모든 과목과 성적 정보는 서버는 물론, 외부 데이터베이스로 단 1바이트조차 전송되지 않습니다.":"This portal's GPA calculation system is strictly designed with a 'Client-Side Only' architecture. Simply put, absolutely zero bytes of your course and grade information are transmitted to any server or external database."}
+                {current.secP2}
               </p>
               <p className="mb-4">
-                {lang==='ko'?"데이터는 오직 학우님이 현재 접속하신 기기의 브라우저가 제공하는 표준 보안 저장소인 `Local Storage`에 물리적으로 격리되어 저장됩니다.":"The data is physically isolated and stored exclusively within the `Local Storage`, a standard secure repository provided by your current device's browser."}
+                {current.secP3}
+              </p>
+
+              <div className="bg-white dark:bg-gray-800 border border-emerald-200 dark:border-gray-600 rounded-xl p-3 mb-4 shadow-sm">
+                <p className="font-black text-emerald-800 dark:text-emerald-400 mb-2 text-center text-xs">{current.secBoxTitle}</p>
+                <ul className="space-y-1.5 text-[11px] md:text-xs">
+                  <li><span className="text-gray-500">▪ {current.secBul1Key}:</span> <strong>{current.secBul1Val}</strong></li>
+                  <li><span className="text-gray-500">▪ {current.secBul2Key}:</span> <strong>{current.secBul2Val}</strong></li>
+                  <li><span className="text-gray-500">▪ {current.secBul3Key}:</span> <strong>{current.secBul3Val}</strong></li>
+                </ul>
+              </div>
+
+              <p className="mb-1 text-emerald-600 dark:text-emerald-400 font-bold">
+                {current.secP4}
               </p>
             </div>
+            
             <button onClick={() => setShowSecurityInfo(false)} className="w-full bg-emerald-600 dark:bg-emerald-500 text-white py-3 md:py-4 rounded-xl font-black text-sm md:text-base hover:bg-emerald-700 transition shadow-lg">{current.secBtn}</button>
           </div>
         </div>
       )}
 
+      {/* ✅ 꽉 찬 디테일 모달창 복구 (V5 5.0) */}
       {showVersionInfo && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[150] p-4 backdrop-blur-sm" onClick={() => setShowVersionInfo(false)}>
           <div className="bg-white dark:bg-gray-800 p-6 md:p-8 rounded-3xl md:rounded-[2rem] max-w-3xl w-full shadow-2xl transform transition-all border-4 border-emerald-50 dark:border-gray-700 max-h-[90vh] overflow-y-auto" onClick={e=>e.stopPropagation()}>
-            <h3 className="text-2xl md:text-3xl font-black mb-1 text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-600 dark:from-emerald-400 dark:to-teal-400 text-center">GPA V5_Global ver Updates</h3>
-            <button onClick={() => setShowVersionInfo(false)} className="w-full mt-6 bg-gray-900 dark:bg-gray-700 text-white py-3 md:py-4 rounded-xl font-black text-base md:text-lg hover:bg-black transition shadow-lg">Confirm!</button>
+            {showModalConfetti && <div className="fixed inset-0 pointer-events-none z-[9999] flex items-center justify-center"><span className="emoji-burst text-6xl">🎉</span></div>}
+            
+            <h3 className="text-2xl md:text-3xl font-black mb-1 text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-600 dark:from-emerald-400 dark:to-teal-400 text-center">{current.modalTitle}</h3>
+            <p className="text-center text-gray-400 dark:text-gray-500 font-bold mb-6 text-[10px] md:text-xs tracking-tighter">{current.modalSub}</p>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 mt-2">
+              <div className="bg-gray-50 dark:bg-gray-700 p-5 rounded-2xl border-2 border-dashed border-gray-200 dark:border-gray-600">
+                <h4 className="text-gray-500 dark:text-gray-300 font-black text-sm mb-3 text-center">{current.modalPrevTitle}</h4>
+                <ul className="text-xs font-medium text-gray-500 dark:text-gray-400 space-y-2 text-center">
+                  <li>{current.modalPrev1}</li>
+                  <li>{current.modalPrev2}</li>
+                </ul>
+              </div>
+              <div className="bg-emerald-50 dark:bg-emerald-900/30 p-5 rounded-2xl border-2 border-emerald-200 dark:border-emerald-800 shadow-inner">
+                <h4 className="text-emerald-600 dark:text-emerald-400 font-black text-sm mb-3 text-center">{current.modalCurTitle}</h4>
+                <ul className="text-xs font-bold text-gray-700 dark:text-gray-200 space-y-2 text-center">
+                  <li>{current.modalCur1}</li>
+                  <li>{current.modalCur2}</li>
+                  <li>{current.modalCur3}</li>
+                  <li>{current.modalCur4}</li>
+                </ul>
+              </div>
+            </div>
+
+            <div className="bg-slate-50 dark:bg-gray-700/50 rounded-2xl p-6 mb-6 border border-gray-100 dark:border-gray-600">
+              <h4 className="text-center font-black text-slate-700 dark:text-slate-300 mb-4 text-sm flex justify-center items-center gap-2">{current.modalHistTitle}</h4>
+              <div className="space-y-3 text-[11px] md:text-xs px-2">
+                <p className="flex items-center gap-3 font-medium bg-white dark:bg-gray-800 p-2 rounded-lg shadow-sm"><span className="text-emerald-600 font-black min-w-[45px]">V1.0:</span><span className="text-slate-600 dark:text-gray-400">{current.modalHistV1}</span></p>
+                <p className="flex items-center gap-3 font-medium bg-white dark:bg-gray-800 p-2 rounded-lg shadow-sm"><span className="text-emerald-600 font-black min-w-[45px]">V2.0:</span><span className="text-slate-600 dark:text-gray-400">{current.modalHistV2}</span></p>
+                <p className="flex items-center gap-3 font-medium bg-white dark:bg-gray-800 p-2 rounded-lg shadow-sm"><span className="text-emerald-600 font-black min-w-[45px]">V3.5:</span><span className="text-slate-600 dark:text-gray-400">{current.modalHistV3}</span></p>
+                <p className="flex items-center gap-3 font-medium bg-white dark:bg-gray-800 p-2 rounded-lg shadow-sm"><span className="text-emerald-600 font-black min-w-[45px]">V4.0:</span><span className="text-slate-600 dark:text-gray-400">{current.modalHistV4}</span></p>
+                <p className="flex items-center gap-3 font-bold bg-white dark:bg-gray-800 p-2 rounded-lg shadow-sm"><span className="text-emerald-600 font-black min-w-[45px]">V5.0:</span><span className="text-slate-800 dark:text-gray-200 italic">{current.modalHistV5}</span></p>
+              </div>
+            </div>
+
+            <div className="bg-green-50 dark:bg-green-900/30 p-5 rounded-2xl border-2 border-green-200 dark:border-green-800 text-center mb-6 shadow-inner relative overflow-hidden">
+                <h4 className="text-xl font-black text-green-800 dark:text-green-400 mb-1">{current.modalFreeTitle}</h4>
+                <p className="text-green-700 dark:text-green-300 font-bold text-xs"><span className="font-black text-sm">{current.modalFreeDesc1}</span><br/>{current.modalFreeDesc2}</p>
+            </div>
+            <button onClick={() => setShowVersionInfo(false)} className="w-full bg-gray-900 dark:bg-gray-700 text-white py-3 md:py-4 rounded-xl font-black text-base md:text-lg hover:bg-black transition shadow-lg">{current.modalBtn}</button>
           </div>
         </div>
       )}
@@ -232,7 +327,7 @@ function GpaPage({ lang }) {
         <div className="flex justify-center mb-6 md:mb-8 px-2">
            <div className="bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-400 px-4 md:px-5 py-2 md:py-3 rounded-2xl text-[10px] md:text-xs font-bold flex items-center justify-center gap-2 shadow-sm break-keep text-center">
              <span className="text-sm md:text-base">🔒</span> 
-             <span>{lang==='ko'?"입력하신 성적 데이터는 본인의 기기에만 안전하게 저장되며, 외부로 공유되지 않습니다.":"Data is safely stored only on your local device and is not shared externally."}</span>
+             <span>{current.secBannerText}</span>
              <button onClick={() => setShowSecurityInfo(true)} className="ml-1 bg-emerald-200 dark:bg-emerald-700/50 text-emerald-800 dark:text-emerald-200 rounded-full w-5 h-5 flex items-center justify-center font-black text-[10px] hover:bg-emerald-300 dark:hover:bg-emerald-600 transition-colors shadow-sm cursor-pointer shrink-0">?</button>
            </div>
         </div>
