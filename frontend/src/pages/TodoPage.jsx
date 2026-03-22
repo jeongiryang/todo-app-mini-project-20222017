@@ -32,7 +32,7 @@ function TodoPage({ lang, timerMode, setTimerMode, timerTime, setTimerTime, time
 
   const API_URL = '/api/todo'; const COMMON_URL = '/api/items';
 
-  // ✅ 다국어 텍스트 사전 (모달 텍스트 완벽 복구)
+  // ✅ 다국어 텍스트 사전 (워터마크 번역 포함)
   const t = {
     ko: {
       tourSteps: [
@@ -47,7 +47,11 @@ function TodoPage({ lang, timerMode, setTimerMode, timerTime, setTimerTime, time
       addBtn: "추가하기", newQuote: "🔄 New Quote", remainDay: "일", remainLeft: "남음", expired: "만료됨", expiredIcon: "💀 만료",
       thImp: "우선순위", thTitle: "미션명", thRemain: "남은 시간", thAct: "관리", btnSave: "저장", btnCancel: "취소", btnEdit: "수정", btnDel: "삭제",
       impObj: { '긴급': '긴급', '보통': '보통', '낮음': '낮음' },
-      footerDept: "Department of Computer Science | Software Engineering Project: CWNU Portal System", footerCopy: "@ 2026 Jung Yi Ryang | Designed with Gemini AI Collaborative Works",
+      
+      // ✅ 워터마크 한국어 번역
+      footerDept: "컴퓨터공학과 | 소프트웨어공학 프로젝트: CWNU 포털 시스템", 
+      footerCopy: "@ 2026 정이량 | Gemini AI 협업 제작",
+      
       // 모달 번역 텍스트
       modalTitle: "Todo V5 5.0 ver 업데이트 내역", modalSub: "25년 2학기 웹프로그래밍 기말대체 과제 `todos_v4`의 최종 진화형!",
       modalPrevTitle: "🤔 이전 버전", modalPrev1: "❌ 타이머 및 스톱워치 부재", modalPrev2: "❌ 마감 기한 시각화 기능 부재",
@@ -69,7 +73,11 @@ function TodoPage({ lang, timerMode, setTimerMode, timerTime, setTimerTime, time
       addBtn: "Add Task", newQuote: "🔄 New Quote", remainDay: "d", remainLeft: "left", expired: "Expired", expiredIcon: "💀 Expired",
       thImp: "Priority", thTitle: "Mission", thRemain: "Remaining Time", thAct: "Action", btnSave: "Save", btnCancel: "Cancel", btnEdit: "Edit", btnDel: "Del",
       impObj: { '긴급': 'Urgent', '보통': 'Normal', '낮음': 'Low' },
-      footerDept: "Department of Computer Science | Software Engineering Project: CWNU Portal System", footerCopy: "@ 2026 Jung Yi Ryang | Designed with Gemini AI Collaborative Works",
+      
+      // ✅ 워터마크 영어 (기존 유지)
+      footerDept: "Department of Computer Science | Software Engineering Project: CWNU Portal System", 
+      footerCopy: "@ 2026 Jung Yi Ryang | Designed with Gemini AI Collaborative Works",
+      
       // 모달 번역 텍스트
       modalTitle: "Todo V5 5.0 ver Updates", modalSub: "The ultimate evolution of the Fall '25 Web Programming final project `todos_v4`!",
       modalPrevTitle: "🤔 Previous Version", modalPrev1: "❌ No timer and stopwatch", modalPrev2: "❌ No visual deadline tracking",

@@ -30,7 +30,7 @@ function GpaPage({ lang }) {
   const [simTargetGpa, setSimTargetGpa] = useState(4.0);
   const [simNextCredits, setSimNextCredits] = useState(18);
 
-  // ✅ 다국어 사전 (i18n) + 꽉 찬 모달 텍스트 및 보안 팝업 UI 텍스트 완벽 복구
+  // ✅ 다국어 사전 (워터마크, 모달, 보안창 UI 완벽 적용)
   const t = {
     ko: {
       tourSteps: [
@@ -42,7 +42,7 @@ function GpaPage({ lang }) {
       ],
       tourSkip: "건너뛰기", tourNext: "다음 ▶", help: "💡 도움말", verCheck: "(버전 클릭 시 업데이트 내역 확인)",
       
-      // 보안 안내 모달 (UI 복구용)
+      // 보안 안내 모달
       secTitle: "데이터 보안 안내", 
       secP1: "\"입력하신 성적 데이터가 어떻게 처리되는지 궁금하셨군요? 데이터의 안전성을 확인하려는 아주 훌륭한 접근입니다.\"",
       secP2: "본 포털의 GPA 계산 시스템은 철저하게 'Client-Side Only (클라이언트 단독 연산)' 아키텍처로 설계되었습니다. 쉽게 말씀드리면, 학우님이 입력하시는 모든 과목과 성적 정보는 창원대학교 서버는 물론, 제 외부 데이터베이스(DB)로도 단 1바이트조차 전송되지 않습니다.",
@@ -64,7 +64,11 @@ function GpaPage({ lang }) {
       thType: "분류", thName: "과목명", thCredit: "학점", thGrade: "성적", thAction: "관리",
       btnSave: "저장", btnCancel: "취소", btnEdit: "수정", btnDel: "Del", emptyList: "해당 학기에 등록된 성적이 없습니다.", delConfirm: "삭제하시겠습니까?",
       csvHeader: "학기,과목명,학점,성적,전공여부", csvMajor: "전공", csvElective: "교양",
-      footerDept: "Department of Computer Science | Software Engineering Project: CWNU Portal System", footerCopy: "@ 2026 Jung Yi Ryang | Designed with Gemini AI Collaborative Works",
+      
+      // ✅ 워터마크 한국어 번역
+      footerDept: "컴퓨터공학과 | 소프트웨어공학 프로젝트: CWNU 포털 시스템", 
+      footerCopy: "@ 2026 정이량 | Gemini AI 협업 제작",
+      
       // 버전 업데이트 모달
       modalTitle: "GPA V5 5.0 ver 업데이트 내역", modalSub: "25년 2학기 웹프로그래밍 기말대체 과제 `todos_v4`의 최종 진화형!",
       modalPrevTitle: "🤔 이전 버전", modalPrev1: "❌ 학점 계산기가 전무하여 와글에서 수동 확인", modalPrev2: "❌ 복잡하게 나열된 성적 입력 양식",
@@ -83,7 +87,7 @@ function GpaPage({ lang }) {
       ],
       tourSkip: "Skip", tourNext: "Next ▶", help: "💡 Guide", verCheck: "(Click version to check updates)",
       
-      // 보안 안내 모달 (UI 복구용 영문)
+      // 보안 안내 모달 영문
       secTitle: "Data Security Guide", 
       secP1: "\"Curious about how your grade data is processed? Verifying data safety is an excellent approach.\"",
       secP2: "This portal's GPA calculation system is strictly designed with a 'Client-Side Only' architecture. Simply put, absolutely zero bytes of your course and grade information are transmitted to any university server or external database.",
@@ -105,7 +109,11 @@ function GpaPage({ lang }) {
       thType: "Type", thName: "Course Name", thCredit: "Credits", thGrade: "Grade", thAction: "Action",
       btnSave: "Save", btnCancel: "Cancel", btnEdit: "Edit", btnDel: "Del", emptyList: "No grades registered for this semester.", delConfirm: "Are you sure you want to delete?",
       csvHeader: "Semester,Course Name,Credits,Grade,Major/Elective", csvMajor: "Major", csvElective: "Elective",
-      footerDept: "Department of Computer Science | Software Engineering Project: CWNU Portal System", footerCopy: "@ 2026 Jung Yi Ryang | Designed with Gemini AI Collaborative Works",
+      
+      // ✅ 워터마크 영어 (기존 유지)
+      footerDept: "Department of Computer Science | Software Engineering Project: CWNU Portal System", 
+      footerCopy: "@ 2026 Jung Yi Ryang | Designed with Gemini AI Collaborative Works",
+      
       // 버전 업데이트 모달
       modalTitle: "GPA V5 5.0 ver Updates", modalSub: "The ultimate evolution of the Fall '25 Web Programming final project `todos_v4`!",
       modalPrevTitle: "🤔 Previous Version", modalPrev1: "❌ No GPA calculator, manual check required", modalPrev2: "❌ Clunky and complicated input forms",
@@ -226,7 +234,7 @@ function GpaPage({ lang }) {
         </div>
       )}
 
-      {/* ✅ 데이터 보안 안내 모달 (UI 완벽 복구 & 다국어 지원) */}
+      {/* ✅ 데이터 보안 안내 모달 (회색 요약 박스 UI 완벽 복구 & 다국어) */}
       {showSecurityInfo && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[150] p-4 backdrop-blur-sm" onClick={() => setShowSecurityInfo(false)}>
           <div className="bg-white dark:bg-gray-800 p-6 md:p-8 rounded-3xl md:rounded-[2rem] max-w-md w-full shadow-2xl transform transition-all border-4 border-emerald-50 dark:border-gray-700" onClick={e=>e.stopPropagation()}>
@@ -234,16 +242,11 @@ function GpaPage({ lang }) {
             <h3 className="text-xl md:text-2xl font-black mb-4 text-emerald-700 dark:text-emerald-400 text-center tracking-tight">{current.secTitle}</h3>
             
             <div className="bg-emerald-50 dark:bg-gray-700/50 p-4 md:p-5 rounded-2xl mb-6 text-xs md:text-sm text-gray-700 dark:text-gray-300 leading-relaxed font-medium">
-              <p className="mb-3">
-                <strong>{current.secP1}</strong>
-              </p>
-              <p className="mb-3">
-                {current.secP2}
-              </p>
-              <p className="mb-4">
-                {current.secP3}
-              </p>
+              <p className="mb-3"><strong>{current.secP1}</strong></p>
+              <p className="mb-3">{current.secP2}</p>
+              <p className="mb-4">{current.secP3}</p>
 
+              {/* 형이 칭찬했던 바로 그 회색 박스 영역 (UI 원상복구) */}
               <div className="bg-white dark:bg-gray-800 border border-emerald-200 dark:border-gray-600 rounded-xl p-3 mb-4 shadow-sm">
                 <p className="font-black text-emerald-800 dark:text-emerald-400 mb-2 text-center text-xs">{current.secBoxTitle}</p>
                 <ul className="space-y-1.5 text-[11px] md:text-xs">
@@ -253,9 +256,7 @@ function GpaPage({ lang }) {
                 </ul>
               </div>
 
-              <p className="mb-1 text-emerald-600 dark:text-emerald-400 font-bold">
-                {current.secP4}
-              </p>
+              <p className="mb-1 text-emerald-600 dark:text-emerald-400 font-bold">{current.secP4}</p>
             </div>
             
             <button onClick={() => setShowSecurityInfo(false)} className="w-full bg-emerald-600 dark:bg-emerald-500 text-white py-3 md:py-4 rounded-xl font-black text-sm md:text-base hover:bg-emerald-700 transition shadow-lg">{current.secBtn}</button>
@@ -263,7 +264,7 @@ function GpaPage({ lang }) {
         </div>
       )}
 
-      {/* ✅ 꽉 찬 디테일 모달창 복구 (V5 5.0) */}
+      {/* ✅ 버전 업데이트 모달 (V5 5.0) */}
       {showVersionInfo && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[150] p-4 backdrop-blur-sm" onClick={() => setShowVersionInfo(false)}>
           <div className="bg-white dark:bg-gray-800 p-6 md:p-8 rounded-3xl md:rounded-[2rem] max-w-3xl w-full shadow-2xl transform transition-all border-4 border-emerald-50 dark:border-gray-700 max-h-[90vh] overflow-y-auto" onClick={e=>e.stopPropagation()}>

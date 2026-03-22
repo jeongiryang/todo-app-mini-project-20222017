@@ -4,7 +4,6 @@ import { Link } from 'react-router-dom';
 function MainPage({ lang }) {
   const [tourIndex, setTourIndex] = useState(-1);
 
-  // ✅ 신규: 메인 페이지 다국어 사전
   const t = {
     ko: {
       subtitle: "창원대학교 학우들을 위한 올인원 캠퍼스 솔루션",
@@ -17,8 +16,9 @@ function MainPage({ lang }) {
       noticeBtn1: "창원대학교 공지사항",
       noticeBtn2: "와글 (포털)",
       shortcutTitle: "CAMPUS SHORTCUTS",
-      footerDept: "Department of Computer Science | Software Engineering Project: CWNU Portal System",
-      footerCopy: "@ 2026 Jung Yi Ryang | Designed with Gemini AI Collaborative Works",
+      // ✅ 워터마크 한국어 번역 적용
+      footerDept: "컴퓨터공학과 | 소프트웨어공학 프로젝트: CWNU 포털 시스템",
+      footerCopy: "@ 2026 정이량 | Gemini AI 협업 제작",
       tourSteps: [
         { title: "👋 환영합니다!", desc: "창원대 학우들을 위한 스마트 포털입니다.", targetId: "tour-main-header" },
         { title: "🚀 핵심 서비스", desc: "중고 마켓, ToDo, 학점 계산기를 바로 이용해보세요.", targetId: "tour-main-services" },
