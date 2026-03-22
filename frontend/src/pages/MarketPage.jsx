@@ -16,7 +16,6 @@ function MarketPage() {
   const itemsPerPage = 6;
   const [likedItems, setLikedItems] = useState(() => new Set(JSON.parse(localStorage.getItem('likedItems') || '[]')))
   const [quote, setQuote] = useState(MARKET_QUOTES[0])
-  const [selectedDesc, setSelectedDesc] = useState(null)
   const [showVersionInfo, setShowVersionInfo] = useState(false)
   const [submitMentionIndex, setSubmitMentionIndex] = useState(0);
   const [tourIndex, setTourIndex] = useState(-1) 
@@ -31,6 +30,13 @@ function MarketPage() {
   useEffect(() => { const intervalId = setInterval(() => setSubmitMentionIndex(prev => (prev + 1) % SUBMIT_MENTIONS.length), 6000); return () => clearInterval(intervalId); }, []);
   useEffect(() => { if (showVersionInfo) { setShowModalConfetti(true); setTimeout(() => setShowModalConfetti(false), 2500); } }, [showVersionInfo]);
   
+  // App.jsx 도움말 버튼 연동
+  useEffect(() => {
+    const handleTourStart = () => setTourIndex(0);
+    window.addEventListener('start-tour', handleTourStart);
+    return () => window.removeEventListener('start-tour', handleTourStart);
+  }, []);
+
   useEffect(() => {
     if (tourIndex >= 0 && tourIndex < TOUR_STEPS.length) {
       const el = document.getElementById(TOUR_STEPS[tourIndex].targetId);
@@ -50,7 +56,17 @@ function MarketPage() {
     return formatted;
   }
 
-  const handleFreebie = () => { setForm({...form, price: 'free'}); setShowConfetti(true); setTimeout(() => setShowConfetti(false), 2000); }
+  // 무료나눔 토글 및 폭죽 이펙트 로직 수정
+  const handleFreebie = () => { 
+    if (form.price === 'free') {
+      setForm({...form, price: ''}); 
+    } else {
+      setForm({...form, price: 'free'}); 
+      setShowConfetti(true); 
+      setTimeout(() => setShowConfetti(false), 2000); 
+    }
+  }
+
   const addItem = async (e) => {
     e.preventDefault(); if (!form.title) return;
     const submitData = { ...form, price: form.price === 'free' ? 0 : form.price };
@@ -58,6 +74,7 @@ function MarketPage() {
     setItems([...items, res.data]); setForm({ title: '', price: '', deadline: '', studentId: '', sellerName: '', phone: '', location: '', description: '' });
     setCurrentPage(1);
   }
+
   const handleLike = async (id) => {
     const isLiked = likedItems.has(id); const val = isLiked ? -1 : 1;
     const res = await axios.patch(`${COMMON_URL}/${id}/like`, { value: val });
@@ -88,14 +105,30 @@ function MarketPage() {
   
   const currentItems = sortedItems.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
   const totalPages = Math.ceil(sortedItems.length / itemsPerPage) || 1;
-
-  /* 2. 숫자 페이지네이션 생성 로직 */
   const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1);
 
   return (
     <div className="max-w-7xl mx-auto p-4 md:p-6 flex flex-col min-h-screen relative text-gray-900 dark:text-gray-100 transition-colors">
-      {/* (스타일 및 가이드 투어 모달 생략 - 이전과 동일하게 유지) */}
+      <style>{`
+        .tour-popup { animation: slide-up 0.4s forwards; }
+        @keyframes slide-up { 0% { transform: translate(-50%, 50px); opacity: 0; } 100% { transform: translate(-50%, 0); opacity: 1; } }
+        @keyframes shoot-up { 0% { transform: translateY(0) scale(0.5); opacity: 1; } 100% { transform: translateY(-150px) scale(1); opacity: 0; } }
+        .emoji-burst { position: absolute; animation: shoot-up 1.5s ease-out forwards; z-index: 9999; pointer-events: none; }
+      `}</style>
       
+      {/* 팡파르 (무료 나눔 선택 시 화면 정중앙 렌더링) */}
+      {showConfetti && <div className="fixed inset-0 pointer-events-none z-[9999] flex items-center justify-center"><span className="emoji-burst text-6xl">🎉</span></div>}
+
+      {/* 도움말 투어 모달 */}
+      {tourIndex >= 0 && (
+        <div className="fixed z-[100] bg-white dark:bg-gray-800 p-5 md:p-6 rounded-3xl shadow-2xl border-[3px] border-blue-400 dark:border-blue-500 w-[92%] max-w-[350px] bottom-6 md:bottom-10 left-1/2 -translate-x-1/2 tour-popup flex flex-col pointer-events-auto">
+          <h3 className="text-blue-600 dark:text-blue-400 font-black mb-1 text-[10px] uppercase tracking-widest">Guide ({tourIndex + 1}/{TOUR_STEPS.length})</h3>
+          <h2 className="text-lg md:text-xl font-black mb-2 md:mb-3 dark:text-white">{TOUR_STEPS[tourIndex].title}</h2>
+          <p className="text-gray-600 dark:text-gray-300 text-xs md:text-sm font-bold mb-4 md:mb-5">{TOUR_STEPS[tourIndex].desc}</p>
+          <div className="flex justify-between gap-2"><button onClick={() => setTourIndex(-1)} className="px-3 py-1 text-gray-400 dark:text-gray-500 font-bold text-xs hover:text-gray-600 dark:hover:text-gray-300">건너뛰기</button><button onClick={() => setTourIndex(p => p+1 >= TOUR_STEPS.length ? -1 : p+1)} className="bg-blue-600 dark:bg-blue-500 text-white px-4 md:px-5 py-2 rounded-xl font-black text-xs shadow-md hover:bg-blue-700 transition">{tourIndex === TOUR_STEPS.length - 1 ? "투어 종료 🎉" : "다음 보기 ▶"}</button></div>
+        </div>
+      )}
+
       {/* 업데이트 내역 모달 */}
       {showVersionInfo && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[150] p-4 backdrop-blur-sm" onClick={() => setShowVersionInfo(false)}>
@@ -142,17 +175,19 @@ function MarketPage() {
       )}
 
       <div className="flex-grow">
+        {/* 헤더 부분 CWNU 텍스트 제거, 은은한 깜빡임 적용, 업데이트 안내 추가 */}
         <div id="tour-header" className="text-center mb-8 md:mb-10 relative">
           <h2 className="text-3xl md:text-5xl font-black text-[#002f6c] dark:text-blue-300 tracking-tighter flex justify-center items-center cursor-pointer">
-            CWNU MARKET <span onClick={() => setShowVersionInfo(true)} className="inline-block ml-2 md:ml-4 px-2 py-1 text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-orange-400 to-red-500 italic drop-shadow-lg text-2xl md:text-4xl">V5_super_4.0</span>
+            MARKET <span onClick={() => setShowVersionInfo(true)} className="inline-block ml-2 md:ml-4 px-2 py-1 text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-orange-400 to-red-500 italic drop-shadow-lg text-2xl md:text-4xl animate-[pulse_2s_ease-in-out_infinite] opacity-90">V5_super_4.0</span>
           </h2>
+          <p onClick={() => setShowVersionInfo(true)} className="text-[10px] md:text-xs text-blue-400 dark:text-blue-500 font-black mt-2 cursor-pointer hover:text-blue-600 transition tracking-widest">(버전 클릭 시 업데이트 내역 확인)</p>
         </div>
 
         <form onSubmit={addItem} className="bg-white dark:bg-gray-800 p-5 md:p-8 rounded-3xl md:rounded-[2.5rem] shadow-xl mb-6 md:mb-10 grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-5 border border-blue-50 dark:border-gray-700 relative z-10">
           <input placeholder="물품명" value={form.title} onChange={e=>setForm({...form, title: e.target.value})} className="border-2 border-gray-100 dark:border-gray-600 dark:bg-gray-700 p-3 md:p-4 text-sm md:text-base rounded-2xl outline-none focus:border-blue-400 transition"/>
           <div id="tour-freebie" className="flex gap-2">
             <input placeholder="가격(원)" type="number" min="0" value={form.price === 'free' ? '' : form.price} onChange={e=>setForm({...form, price: e.target.value})} className="border-2 border-gray-100 dark:border-gray-600 dark:bg-gray-700 p-3 md:p-4 text-sm md:text-base rounded-2xl outline-none focus:border-blue-400 transition flex-grow" disabled={form.price === 'free'}/>
-            <button type="button" onClick={handleFreebie} className="bg-green-500 text-white font-black text-xs px-4 rounded-2xl hover:bg-green-600 transition shadow-lg">{form.price === 'free' ? '취소' : '무료나눔'}</button>
+            <button type="button" onClick={handleFreebie} className={`${form.price === 'free' ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600'} text-white font-black text-xs px-4 rounded-2xl transition shadow-lg`}>{form.price === 'free' ? '취소' : '무료나눔'}</button>
           </div>
           <input id="tour-deadline" type="date" value={form.deadline} onChange={e=>setForm({...form, deadline: e.target.value})} className="border-2 border-gray-100 dark:border-gray-600 dark:bg-gray-700 p-3 md:p-4 text-sm md:text-base rounded-2xl outline-none focus:border-blue-400 cursor-pointer"/>
           <input placeholder="학번" value={form.studentId} onChange={e=>setForm({...form, studentId: e.target.value})} className="border-2 border-gray-100 dark:border-gray-600 dark:bg-gray-700 p-3 md:p-4 text-sm md:text-base rounded-2xl outline-none focus:border-blue-400 transition"/>
@@ -169,7 +204,6 @@ function MarketPage() {
           <input type="text" placeholder="찾으시는 중고 물품을 검색해보세요! (제목 또는 내용)" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full p-3 md:p-4 border-2 text-sm md:text-base border-blue-100 rounded-xl md:rounded-2xl shadow-sm focus:outline-none focus:border-blue-400 dark:bg-gray-800 dark:text-white transition-all font-bold text-gray-700"/>
         </div>
 
-        {/* 정렬 및 뷰 선택 생략 - 기존과 동일 */}
         <div className="flex flex-col sm:flex-row justify-between items-center gap-3 mb-6 relative z-10">
           <select value={sortType} onChange={(e) => {setSortType(e.target.value); setCurrentPage(1);}} className="bg-white dark:bg-gray-800 border-2 border-blue-100 px-4 py-2 w-full sm:w-auto rounded-xl font-black text-xs text-gray-700 dark:text-gray-200 outline-none cursor-pointer shadow-sm">
             <option value="latest">🔄 최신 등록순</option><option value="deadline">⏳ 마감 임박순</option><option value="priceLow">📉 가격 낮은순</option><option value="priceHigh">📈 가격 높은순</option><option value="likes">❤️ 찜 많은순</option>
@@ -190,7 +224,6 @@ function MarketPage() {
                   <div className="flex flex-col gap-2 z-10">
                     <input className="border-2 border-blue-100 dark:bg-gray-700 p-2 rounded-xl text-xs font-bold" placeholder="물품명" value={editForm.title} onChange={e=>setEditForm({...editForm, title: e.target.value})} />
                     <input className="border-2 border-blue-100 dark:bg-gray-700 p-2 rounded-xl text-xs font-bold" placeholder="가격" type="number" value={editForm.price} onChange={e=>setEditForm({...editForm, price: e.target.value})} />
-                    {/* 7. 수정 모드에서 전화번호 필드 추가 */}
                     <input className="border-2 border-blue-100 dark:bg-gray-700 p-2 rounded-xl text-xs font-bold" placeholder="전화번호" value={editForm.phone} onChange={e=>setEditForm({...editForm, phone: handlePhoneChange(e.target.value)})} />
                     <input className="border-2 border-blue-100 dark:bg-gray-700 p-2 rounded-xl text-xs font-bold" placeholder="희망처" value={editForm.location} onChange={e=>setEditForm({...editForm, location: e.target.value})} />
                     <textarea className="border-2 border-blue-100 dark:bg-gray-700 p-2 rounded-xl text-xs font-medium h-20" placeholder="설명" value={editForm.description} onChange={e=>setEditForm({...editForm, description: e.target.value})} />
@@ -232,7 +265,6 @@ function MarketPage() {
                     <td className="p-4 font-black text-sm relative">
                       {item.completed && <div className="absolute top-0 left-0 bg-red-500 text-white font-black text-[8px] px-2 py-0.5 rounded-br-lg shadow-sm">SOLD OUT</div>}
                       <span className={item.completed ? 'line-through' : 'text-gray-800 dark:text-gray-200'}>{item.title}</span> 
-                      {/* 1. 테이블 하트 클릭 버튼화 */}
                       <button onClick={() => handleLike(item._id)} className={`ml-2 text-[10px] font-black ${likedItems.has(item._id) ? 'text-red-500' : 'text-gray-300'}`}>♥{item.likes}</button>
                     </td>
                     <td className="p-4 font-black text-sm text-blue-600 dark:text-blue-400">{item.price === 0 ? "🎁 무료 나눔!" : `${Number(item.price).toLocaleString()}원`}</td>
@@ -249,7 +281,6 @@ function MarketPage() {
           </div>
         )}
 
-        {/* 2. 개선된 페이지네이션 (숫자 리스트 버튼형) */}
         {totalPages > 1 && (
           <div className="flex justify-center items-center gap-2 mb-10">
             <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="px-3 py-2 bg-white dark:bg-gray-800 border-2 border-gray-100 dark:border-gray-700 rounded-lg font-black text-xs text-gray-400 hover:text-blue-500 disabled:opacity-30 transition">PREV</button>
@@ -269,7 +300,6 @@ function MarketPage() {
         )}
       </div>
 
-    
 <footer className="py-8 md:py-12 text-center border-t border-gray-200 dark:border-gray-800 mt-16 md:mt-24 relative z-10 transition-colors">
   <p className="text-gray-600 dark:text-gray-400 font-black text-[10px] md:text-sm uppercase tracking-widest mb-1.5 md:mb-2 break-keep leading-relaxed">
     Department of Computer Science

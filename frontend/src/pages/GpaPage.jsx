@@ -9,7 +9,7 @@ const CREDIT_OPTIONS = [0, 1, 2, 3, 4];
 const SEMESTERS = ['1학년 1학기', '1학년 여름방학', '1학년 2학기', '1학년 겨울방학', '2학년 1학기', '2학년 여름방학', '2학년 2학기', '2학년 겨울방학', '3학년 1학기', '3학년 여름방학', '3학년 2학기', '3학년 겨울방학', '4학년 1학기', '4학년 여름방학', '4학년 2학기', '4학년 겨울방학', '5학년 1학기', '5학년 여름방학', '5학년 2학기', '5학년 겨울방학', '6학년 1학기', '6학년 여름방학', '6학년 2학기', '6학년 겨울방학', '기타학기'];
 
 const TOUR_STEPS = [
-  { title: "👋 CWNU GPA 오픈!", desc: "탭 인터페이스로 깔끔해진 성적 관리 도구입니다.", targetId: "tour-header" }, 
+  { title: "👋 GPA 오픈!", desc: "탭 인터페이스로 깔끔해진 성적 관리 도구입니다.", targetId: "tour-header" }, 
   { title: "📈 분석 그래프", desc: "학기별 추이를 한눈에 확인하세요.", targetId: "tour-chart" }, 
   { title: "📊 대시보드", desc: "전체, 전공, 최근 평점을 분석해드립니다.", targetId: "tour-dashboard" }, 
   { title: "📝 스마트 성적 등록", desc: "과목명, 학점, 성적을 입력하고 전공 여부를 체크하세요.", targetId: "tour-form" },
@@ -30,6 +30,13 @@ function GpaPage() {
   useEffect(() => { localStorage.setItem(STORAGE_KEY, JSON.stringify(courses)); }, [courses]);
   useEffect(() => { if (showVersionInfo) { setShowModalConfetti(true); setTimeout(() => setShowModalConfetti(false), 2500); } }, [showVersionInfo]);
   
+  // App.jsx 도움말 버튼 연동
+  useEffect(() => {
+    const handleTourStart = () => setTourIndex(0);
+    window.addEventListener('start-tour', handleTourStart);
+    return () => window.removeEventListener('start-tour', handleTourStart);
+  }, []);
+
   useEffect(() => {
     if (tourIndex >= 0 && tourIndex < TOUR_STEPS.length) {
       const el = document.getElementById(TOUR_STEPS[tourIndex].targetId);
@@ -41,15 +48,14 @@ function GpaPage() {
     }
   }, [tourIndex]);
 
-  // 5. CSV 다운로드 로직 (모바일/PC 지원)
   const handleDownload = () => {
     if (courses.length === 0) return alert("다운로드할 성적 데이터가 없습니다.");
     const headers = "학기,과목명,학점,성적,전공여부\n";
     const csvContent = courses.map(c => 
       `${c.semester},${c.name},${c.credit},${c.grade},${c.isMajor ? '전공' : '교양'}`
     ).join("\n");
-    const blob = new Blob(["\ufeff" + headers + csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
+    const blob = new Blob(["\ufeff" + headers], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(new Blob([blob, csvContent], { type: 'text/csv;charset=utf-8;' }));
     const link = document.createElement("a");
     link.href = url;
     link.setAttribute("download", `CWNU_GPA_Export.csv`);
@@ -112,7 +118,7 @@ function GpaPage() {
         .emoji-burst { position: absolute; animation: shoot-up 1.5s ease-out forwards; z-index: 9999; }
       `}</style>
 
-      {/* 2. 모바일 도움말 최적화 */}
+      {/* 도움말 모달 */}
       {tourIndex >= 0 && (
         <div className="fixed z-[100] bg-white dark:bg-gray-800 p-5 md:p-6 rounded-3xl shadow-2xl border-[3px] border-emerald-400 w-[92%] max-w-[350px] bottom-6 md:bottom-10 left-1/2 -translate-x-1/2 tour-popup flex flex-col pointer-events-auto">
           <h3 className="text-emerald-600 dark:text-emerald-400 font-black mb-1 text-[10px] uppercase">Guide ({tourIndex + 1}/{TOUR_STEPS.length})</h3>
@@ -172,16 +178,24 @@ function GpaPage() {
       )}
 
       <div className="flex-grow">
-        <div id="tour-header" className="text-center mb-6 md:mb-8 relative mt-4 md:mt-0">
+        {/* 헤더: CWNU 텍스트 제거, 은은한 깜빡임 적용, 업데이트 안내 추가 */}
+        <div id="tour-header" className="text-center mb-4 md:mb-6 relative mt-4 md:mt-0">
           <h2 className="text-4xl md:text-5xl font-black text-[#002f6c] dark:text-blue-300 tracking-tighter flex justify-center items-center cursor-pointer mt-4 md:mt-0">
-            CWNU GPA <span onClick={() => setShowVersionInfo(true)} className="inline-block ml-2 md:ml-3 px-2 py-1 text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-red-600 italic drop-shadow-lg text-2xl md:text-4xl animate-pulse">V5_super_4.0</span>
+            GPA <span onClick={() => setShowVersionInfo(true)} className="inline-block ml-2 md:ml-3 px-2 py-1 text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-red-600 italic drop-shadow-lg text-2xl md:text-4xl animate-[pulse_2s_ease-in-out_infinite] opacity-90">V5_super_4.0</span>
           </h2>
+          <p onClick={() => setShowVersionInfo(true)} className="text-[10px] md:text-xs text-emerald-400 dark:text-emerald-500 font-black mt-2 cursor-pointer hover:text-emerald-600 transition tracking-widest">(버전 클릭 시 업데이트 내역 확인)</p>
+        </div>
+
+        {/* 6. 데이터 보안 신뢰성 안내 텍스트 추가 */}
+        <div className="flex justify-center mb-6 md:mb-8 px-2">
+           <div className="bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-400 px-4 md:px-6 py-2 md:py-3 rounded-2xl text-[10px] md:text-xs font-bold flex items-center gap-2 shadow-sm break-keep text-center">
+             <span className="text-sm md:text-base">🔒</span> 입력하신 성적 데이터는 본인의 기기에만 안전하게 저장되며, 외부로 공유되지 않습니다.
+           </div>
         </div>
 
         <div id="tour-chart" className="bg-white dark:bg-gray-800 p-5 md:p-10 rounded-3xl md:rounded-[3rem] shadow-lg border-2 border-emerald-50 dark:border-gray-700 mb-8 md:mb-10 h-72 md:h-96 relative z-10 w-full">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg md:text-xl font-black text-gray-800 dark:text-white flex items-center gap-2 md:gap-3"><span className="text-2xl md:text-3xl">📈</span> 성적 추이 분석</h3>
-              {/* 5. 다운로드 버튼 추가 */}
               <button onClick={handleDownload} className="bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-400 px-3 py-1.5 rounded-xl font-black text-[10px] md:text-xs border border-emerald-200 dark:border-emerald-800 hover:bg-emerald-200 transition-colors">📥 엑셀(CSV) 저장</button>
             </div>
           {groupedCourses.length < 1 ? <div className="flex items-center justify-center h-full text-gray-400 font-bold text-xs bg-gray-50 dark:bg-gray-700 rounded-2xl border border-dashed border-gray-200">성적을 등록하면 그래프가 생성됩니다.</div> : <Chart type='bar' data={chartData} options={{ responsive: true, maintainAspectRatio: false, scales: { x: { ticks: { padding: 10, color: '#9ca3af', font: { size: 10 } } }, y1: { position: 'right', min: 0, max: 4.5, ticks: { color: '#9ca3af', font: { size: 10 } } }, y: { ticks: { color: '#9ca3af', font: { size: 10 } } } }, plugins: { legend: { labels: { color: '#9ca3af', font: { size: 10 } } } } }} />}

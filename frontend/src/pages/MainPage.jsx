@@ -7,11 +7,10 @@ function MainPage() {
     { title: "학점 계산기", desc: "실시간 그래프로 성적을 분석하세요.", icon: "🎓", path: "/gpa", color: "from-emerald-600 to-teal-700" },
   ];
 
-  // 2. 학사정보 삭제 및 6개 항목으로 최적화 완료
   const quickLinks = [
     { name: "e캠퍼스", url: "https://ecampus.changwon.ac.kr/login.php?mi=18314", icon: "💻" },
     { name: "학사일정", url: "https://www.changwon.ac.kr/haksa/sv/schdulView/schdulCalendarView.do?mi=10980", icon: "📅" },
-    { name: "학사안내", url: "https://www.changwon.ac.kr/haksa/main.do", icon: "📜" }, // 겹침 방지용 📜 적용 유지
+    { name: "학사안내", url: "https://www.changwon.ac.kr/haksa/main.do", icon: "📜" }, 
     { name: "수강신청", url: "https://chains.changwon.ac.kr/nonstop/suup/sugang/hakbu/index.php?mi=18302", icon: "📚" },
     { name: "드림캐치", url: "https://dreamcatch.changwon.ac.kr/main.do?mi=18316", icon: "🧭" },
     { name: "이뤄드림", url: "https://edream.changwon.ac.kr/?mi=18315", icon: "🌟" },
@@ -53,14 +52,12 @@ function MainPage() {
         {/* 통합 안내 및 퀵 링크 섹션 */}
         <div className="bg-blue-50/50 dark:bg-blue-900/20 p-6 md:p-12 rounded-3xl md:rounded-[3.5rem] border-2 border-blue-100/50 dark:border-blue-800/50 transition-colors relative overflow-hidden">
           
-          {/* 1. 공지사항 및 와글 배치 디자인 고도화 (OFFICIAL ANNOUNCEMENTS & WA-GLE) */}
+          {/* 공지사항 및 와글 배치 */}
           <div className="text-center mb-12 md:mb-16 relative z-10">
             <h4 className="text-sm md:text-base font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest text-center mb-6 md:mb-8 transition-colors">
               OFFICIAL ANNOUNCEMENTS & WA-GLE
             </h4>
-            {/* 모바일 세로, PC 가로 배치를 위한 flex 구조 */}
             <div className="flex flex-col sm:flex-row justify-center items-center gap-4 md:gap-6">
-              {/* 공지사항 버튼 */}
               <a 
                 href="https://www.changwon.ac.kr/portal/na/ntt/selectNttList.do?mi=13532&bbsId=2932" 
                 target="_blank" 
@@ -69,7 +66,6 @@ function MainPage() {
               >
                 창원대학교 공지사항 <span className="text-sm ml-1 transition-transform group-hover:translate-x-1">↗</span>
               </a>
-              {/* 와글 버튼 (추가됨) */}
               <a 
                 href="https://www.changwon.ac.kr/portal/main.do#" 
                 target="_blank" 
@@ -81,7 +77,7 @@ function MainPage() {
             </div>
           </div>
 
-          {/* 캠퍼스 바로가기 그리드 (md:grid-cols-6 적용) */}
+          {/* 캠퍼스 바로가기 그리드 */}
           <div className="relative z-10">
             <h4 className="text-sm md:text-base font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest text-center mb-6 transition-colors">
               CAMPUS SHORTCUTS
@@ -106,7 +102,6 @@ function MainPage() {
         </div>
       </div>
 
-     
 <footer className="py-8 md:py-12 text-center border-t border-gray-200 dark:border-gray-800 mt-16 md:mt-24 relative z-10 transition-colors">
   <p className="text-gray-600 dark:text-gray-400 font-black text-[10px] md:text-sm uppercase tracking-widest mb-1.5 md:mb-2 break-keep leading-relaxed">
     Department of Computer Science
