@@ -49,7 +49,6 @@ function TodoPage({ timerMode, setTimerMode, timerTime, setTimerTime, timerIsRun
   useEffect(() => { const intervalId = setInterval(() => { setTitleMentionIndex(p => (p + 1) % TITLE_MENTIONS.length); setPlaceholderIndex(p => (p + 1) % PLACEHOLDERS.length); }, 6000); return () => clearInterval(intervalId); }, []);
   useEffect(() => { if (showVersionInfo) { setShowModalConfetti(true); setTimeout(() => setShowModalConfetti(false), 2500); } }, [showVersionInfo]);
   
-  // App.jsx에서 넘어오는 도움말 이벤트 수신 로직 추가
   useEffect(() => {
     const handleTourStart = () => setTourIndex(0);
     window.addEventListener('start-tour', handleTourStart);
@@ -68,7 +67,6 @@ function TodoPage({ timerMode, setTimerMode, timerTime, setTimerTime, timerIsRun
     }
   }, [tourIndex, timerMode]);
 
-  // 일시정지(PAUSE) 시 타이머 시간을 인풋창에 연동
   useEffect(() => {
     if (!timerIsRunning && timerMode === 'timer') {
        const h = Math.floor(timerTime / 3600000);
@@ -86,20 +84,32 @@ function TodoPage({ timerMode, setTimerMode, timerTime, setTimerTime, timerIsRun
   const handleRandomize = () => { setQuote(QUOTES[Math.floor(Math.random() * QUOTES.length)]); setPlaceholderIndex(Math.floor(Math.random() * PLACEHOLDERS.length)); }
   const formatTime = (ms) => { const h = Math.floor(ms / 3600000); const m = Math.floor((ms % 3600000) / 60000); const s = Math.floor((ms % 60000) / 1000); const mi = Math.floor((ms % 1000) / 10); return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}.${String(mi).padStart(2,'0')}`; }
   
-  // 밀리초 반환 추가
   const getRemainingTime = (deadline) => { if (!deadline) return null; const diff = new Date(deadline) - now; if (diff <= 0) return "EXPIRED"; return { days: Math.floor(diff/86400000), hours: Math.floor((diff/3600000)%24), mins: Math.floor((diff/60000)%60), secs: Math.floor((diff/1000)%60), ms: Math.floor((diff%1000)/10) }; }
   
   const addTodo = async (e) => { e.preventDefault(); if(!title) return; await axios.post(API_URL, { title, importance, todoDeadline }); fetchTodos(); setTitle(''); setTodoDeadline(''); setCurrentPage(1); handleRandomize(); }
   const saveEditTodo = async (id) => { await axios.put(`${COMMON_URL}/${id}`, editForm); fetchTodos(); setEditingId(null); }
 
-  // 직접 시간 입력 제어 (예외처리 방어 로직)
+  // ✅ 2번 문제 해결: 백스페이스 자유롭게 허용 및 제한 로직 개선
   const handleTimeInput = (field, value) => {
-    if (value === '') { setInputs(prev => ({ ...prev, [field]: '' })); return; }
-    let num = parseInt(value.replace(/[^0-9]/g, ''), 10);
-    if (isNaN(num)) num = 0;
-    if (field === 'h' && num > 23) num = 23;
-    if ((field === 'm' || field === 's') && num > 59) num = 59;
-    setInputs(prev => ({ ...prev, [field]: String(num).padStart(2, '0') }));
+    const rawValue = value.replace(/[^0-9]/g, ''); // 숫자만 허용
+    if (rawValue.length > 2) return; // 최대 2자리까지만 입력 가능
+
+    let num = parseInt(rawValue, 10);
+    if (!isNaN(num)) {
+      if (field === 'h' && num > 23) num = 23;
+      if ((field === 'm' || field === 's') && num > 59) num = 59;
+      setInputs(prev => ({ ...prev, [field]: num.toString() })); // 문자열 그대로 저장 (00 패딩 안 함)
+    } else {
+      setInputs(prev => ({ ...prev, [field]: '' })); // 다 지우면 빈칸 유지
+    }
+  };
+
+  // ✅ 커서가 벗어날 때(onBlur) 예쁘게 두 자리로 맞춰줌
+  const handleTimeBlur = (field) => {
+    setInputs(prev => {
+      if (prev[field] === '') return { ...prev, [field]: '00' };
+      return { ...prev, [field]: String(prev[field]).padStart(2, '0') };
+    });
   };
 
   const handleStartPause = () => {
@@ -110,7 +120,7 @@ function TodoPage({ timerMode, setTimerMode, timerTime, setTimerTime, timerIsRun
       }
       setTimerIsRunning(true);
     } else {
-      setTimerIsRunning(false); // PAUSE
+      setTimerIsRunning(false); 
     }
   };
 
@@ -118,6 +128,9 @@ function TodoPage({ timerMode, setTimerMode, timerTime, setTimerTime, timerIsRun
   const totalPages = Math.ceil(filteredTodos.length / itemsPerPage) || 1;
   const currentTodos = filteredTodos.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
   const isTimerUrgent = timerMode === 'timer' && timerTime > 0 && timerTime <= 1800000 && isAlertEnabled;
+  
+  // ✅ 4번 문제 해결: 페이지네이션 숫자 배열 생성
+  const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1);
 
   return (
     <div className="max-w-4xl mx-auto p-4 md:p-6 flex flex-col min-h-screen relative text-gray-900 dark:text-gray-100 transition-colors">
@@ -188,12 +201,10 @@ function TodoPage({ timerMode, setTimerMode, timerTime, setTimerTime, timerIsRun
       )}
 
       <div className="flex-grow">
-        {/* 헤더 부분 CWNU 텍스트 제거 및 은은한 깜빡임 적용 */}
         <div id="tour-header" className="text-center mb-6 relative mt-4 md:mt-0">
           <h2 className="text-4xl md:text-5xl font-black text-[#002f6c] dark:text-blue-300 tracking-tighter flex justify-center items-center cursor-pointer mt-4 md:mt-0">
             TODO <span onClick={() => setShowVersionInfo(true)} className="inline-block ml-2 md:ml-3 px-2 py-1 text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-red-600 italic drop-shadow-lg text-2xl md:text-4xl animate-[pulse_2s_ease-in-out_infinite] opacity-90">V5_super_4.0</span>
           </h2>
-          {/* 업데이트 내역 안내 문구 */}
           <p onClick={() => setShowVersionInfo(true)} className="text-[10px] md:text-xs text-indigo-400 dark:text-indigo-500 font-black mt-2 cursor-pointer hover:text-indigo-600 transition tracking-widest">(버전 클릭 시 업데이트 내역 확인)</p>
         </div>
 
@@ -210,18 +221,17 @@ function TodoPage({ timerMode, setTimerMode, timerTime, setTimerTime, timerIsRun
             <button onClick={()=>{setTimerMode('stopwatch'); setTimerTime(0); setTimerIsRunning(false)}} className={`px-4 py-1.5 md:px-5 md:py-1.5 rounded-full text-[9px] md:text-[10px] font-black transition-all ${timerMode==='stopwatch'?'bg-indigo-600 shadow-lg shadow-indigo-500/50':'bg-gray-800 text-gray-500'}`}>스톱워치</button>
           </div>
           
-          {/* 타이머 시간 입력 & 디스플레이 로직 */}
+          {/* 타이머 시간 입력 (onBlur 속성 추가 적용) */}
           {!timerIsRunning && timerMode === 'timer' ? (
             <div className="flex justify-center items-center gap-2 text-5xl md:text-7xl font-black mb-6 md:mb-10 font-mono tracking-tighter">
-              <input value={inputs.h} onChange={e=>handleTimeInput('h', e.target.value)} className="w-20 md:w-28 bg-transparent text-center border-b-4 border-indigo-700 focus:border-indigo-400 outline-none placeholder-gray-700" placeholder="00" maxLength="2"/>:
-              <input value={inputs.m} onChange={e=>handleTimeInput('m', e.target.value)} className="w-20 md:w-28 bg-transparent text-center border-b-4 border-indigo-700 focus:border-indigo-400 outline-none placeholder-gray-700" placeholder="00" maxLength="2"/>:
-              <input value={inputs.s} onChange={e=>handleTimeInput('s', e.target.value)} className="w-20 md:w-28 bg-transparent text-center border-b-4 border-indigo-700 focus:border-indigo-400 outline-none placeholder-gray-700" placeholder="00" maxLength="2"/>
+              <input value={inputs.h} onBlur={()=>handleTimeBlur('h')} onChange={e=>handleTimeInput('h', e.target.value)} className="w-20 md:w-28 bg-transparent text-center border-b-4 border-indigo-700 focus:border-indigo-400 outline-none placeholder-gray-700" placeholder="00" maxLength="2"/>:
+              <input value={inputs.m} onBlur={()=>handleTimeBlur('m')} onChange={e=>handleTimeInput('m', e.target.value)} className="w-20 md:w-28 bg-transparent text-center border-b-4 border-indigo-700 focus:border-indigo-400 outline-none placeholder-gray-700" placeholder="00" maxLength="2"/>:
+              <input value={inputs.s} onBlur={()=>handleTimeBlur('s')} onChange={e=>handleTimeInput('s', e.target.value)} className="w-20 md:w-28 bg-transparent text-center border-b-4 border-indigo-700 focus:border-indigo-400 outline-none placeholder-gray-700" placeholder="00" maxLength="2"/>
             </div>
           ) : (
             <div className={`text-5xl md:text-7xl font-black mb-6 md:mb-10 font-mono tracking-tighter ${isTimerUrgent ? 'animate-[pulse_1s_ease-in-out_infinite] text-red-500' : ''}`}>{formatTime(timerTime)}</div>
           )}
           
-          {/* 일시정지(PAUSE) / 시작(START) UX 개선 */}
           <div className="flex justify-center gap-3 md:gap-4">
             <button onClick={handleStartPause} className={`px-8 py-3 md:px-12 md:py-4 rounded-full font-black text-sm md:text-lg transition-all ${timerIsRunning?'bg-red-600 text-white shadow-lg':'bg-white text-black hover:scale-105'}`}>
               {timerIsRunning ? 'PAUSE' : 'START'}
@@ -241,7 +251,6 @@ function TodoPage({ timerMode, setTimerMode, timerTime, setTimerTime, timerIsRun
           </div>
         </div>
 
-        {/* 할 일 검색 바 추가 */}
         <div className="mb-6 w-full relative z-10">
           <input 
             type="text" 
@@ -293,7 +302,6 @@ function TodoPage({ timerMode, setTimerMode, timerTime, setTimerTime, timerIsRun
                       <>
                         <td className="p-3 md:p-5"><span className={`px-2 py-1 md:px-3 md:py-1.5 rounded-full text-[9px] md:text-[10px] font-black text-white ${todo.importance==='긴급'?'bg-red-500':todo.importance==='보통'?'bg-yellow-400 text-gray-900':'bg-green-500'}`}>{todo.importance}</span></td> 
                         <td className="p-3 md:p-5 text-left font-black text-gray-800 dark:text-gray-100 text-sm md:text-lg">{todo.title}</td> 
-                        {/* 밀리초 카운트다운 렌더링 적용 */}
                         <td className="p-3 md:p-5 text-sm md:text-base font-black text-indigo-600 dark:text-indigo-400 whitespace-nowrap">{remain === "EXPIRED" ? "💀 만료" : remain ? `${remain.days}일 ${String(remain.hours).padStart(2,'0')}:${String(remain.mins).padStart(2,'0')}:${String(remain.secs).padStart(2,'0')}.${String(remain.ms).padStart(2,'0')}` : "-"}</td> 
                         <td className="p-3 md:p-5 flex justify-center gap-1.5">
                           <button onClick={() => {setEditingId(todo._id); setEditForm(todo)}} className="text-[10px] font-black uppercase text-indigo-400 hover:text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-full transition">Edit</button>
@@ -320,7 +328,6 @@ function TodoPage({ timerMode, setTimerMode, timerTime, setTimerTime, timerIsRun
                   ) : (
                     <>
                       <div className="flex items-center gap-3 w-full"><span className={`min-w-[12px] h-3 rounded-full shadow-inner ${todo.importance==='긴급'?'bg-red-500':todo.importance==='보통'?'bg-yellow-400':'bg-green-500'}`}></span><span className="font-black text-gray-800 dark:text-gray-100 text-lg md:text-xl truncate">{todo.title}</span></div> 
-                      {/* 밀리초 카운트다운 렌더링 적용 */}
                       {remain && <div className={`text-sm md:text-base font-black ml-6 mt-2 bg-gray-50 dark:bg-gray-700 inline-block px-3 py-1.5 rounded-lg border ${remain === "EXPIRED" ? "text-gray-400" : "text-indigo-600 border-indigo-100"}`}>⏱️ {remain === "EXPIRED" ? "만료됨" : `${remain.days}일 ${String(remain.hours).padStart(2,'0')}:${String(remain.mins).padStart(2,'0')}:${String(remain.secs).padStart(2,'0')}.${String(remain.ms).padStart(2,'0')} 남음`}</div>} 
                       <div className="flex gap-2 mt-4 ml-6"><button onClick={() => {setEditingId(todo._id); setEditForm(todo)}} className="px-4 py-2 bg-indigo-50 text-indigo-500 rounded-xl font-black text-[10px] uppercase hover:bg-indigo-600 hover:text-white transition">Edit</button><button onClick={async ()=>{await axios.delete(`${COMMON_URL}/${todo._id}`); fetchTodos()}} className="px-4 py-2 bg-red-50 text-red-400 rounded-xl font-black text-[10px] uppercase hover:bg-red-500 hover:text-white transition">Delete</button></div> 
                     </>
@@ -331,15 +338,22 @@ function TodoPage({ timerMode, setTimerMode, timerTime, setTimerTime, timerIsRun
           )}
         </div>
         
+        {/* ✅ 4번 문제 해결: 페이지네이션 마켓과 통일 */}
         {totalPages > 1 && (
           <div className="flex justify-center items-center gap-2 mb-10">
-            <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="px-3 py-2 bg-white dark:bg-gray-800 border-2 border-gray-100 rounded-lg font-black text-xs text-gray-400 hover:text-indigo-600 disabled:opacity-30 transition">PREV</button>
+            <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="px-3 py-2 bg-white dark:bg-gray-800 border-2 border-indigo-100 dark:border-gray-700 rounded-lg font-black text-xs text-gray-400 hover:text-indigo-600 disabled:opacity-30 transition">PREV</button>
             <div className="flex gap-1">
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map(num => (
-                <button key={num} onClick={() => setCurrentPage(num)} className={`w-9 h-9 rounded-lg font-black text-xs transition-all ${currentPage === num ? 'bg-indigo-900 text-white shadow-lg' : 'bg-white dark:bg-gray-800 text-gray-400 border-2 border-gray-100 hover:border-indigo-300'}`}>{num}</button>
+              {pageNumbers.map(num => (
+                <button 
+                  key={num} 
+                  onClick={() => setCurrentPage(num)} 
+                  className={`w-9 h-9 rounded-lg font-black text-xs transition-all ${currentPage === num ? 'bg-indigo-900 text-white shadow-lg' : 'bg-white dark:bg-gray-800 text-gray-400 border-2 border-indigo-100 dark:border-gray-700 hover:border-indigo-300'}`}
+                >
+                  {num}
+                </button>
               ))}
             </div>
-            <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="px-3 py-2 bg-white dark:bg-gray-800 border-2 border-gray-100 rounded-lg font-black text-xs text-gray-400 hover:text-indigo-600 disabled:opacity-30 transition">NEXT</button>
+            <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="px-3 py-2 bg-white dark:bg-gray-800 border-2 border-indigo-100 dark:border-gray-700 rounded-lg font-black text-xs text-gray-400 hover:text-indigo-600 disabled:opacity-30 transition">NEXT</button>
           </div>
         )}
       </div>

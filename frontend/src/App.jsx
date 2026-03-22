@@ -9,7 +9,7 @@ function App() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // 다크모드 상태 관리
+  // 1. 다크모드 상태 관리
   const [isDarkMode, setIsDarkMode] = useState(() => {
     return localStorage.getItem('cwnu_dark_mode') === 'true';
   });
@@ -57,7 +57,7 @@ function App() {
       : "text-white/70 hover:text-white hover:bg-white/10");
   };
 
-  // 도움말 실행 (커스텀 이벤트 발송)
+  // 도움말 투어 실행 (커스텀 이벤트 발송)
   const triggerTour = () => {
     window.dispatchEvent(new Event('start-tour'));
   };
@@ -70,7 +70,7 @@ function App() {
         {/* 왼쪽: 로고 (은은한 깜빡임 적용) */}
         <div className="flex items-center gap-4 w-full md:w-auto justify-between md:justify-start">
           <h1 className="text-xl md:text-2xl font-black tracking-tighter cursor-pointer" onClick={() => navigate('/')}>
-            CWNU PORTAL <span className="text-red-500 italic ml-1 md:ml-2 text-sm md:text-base animate-pulse opacity-90">V5_super_4.0</span>
+            CWNU PORTAL <span className="text-red-500 italic ml-1 md:ml-2 text-sm md:text-base animate-[pulse_2s_ease-in-out_infinite] opacity-90">V5_super_4.0</span>
           </h1>
           <button onClick={() => setIsDarkMode(!isDarkMode)} className="md:hidden p-2 bg-white/10 rounded-full">{isDarkMode ? '☀️' : '🌙'}</button>
         </div>
@@ -84,11 +84,12 @@ function App() {
 
         {/* 오른쪽: 외부 퀵 링크 & 도움말 & 다크모드 */}
         <div className="flex gap-2 md:gap-3 items-center w-full md:w-auto justify-center md:justify-end">
-          {/* 도움말 탭 (모바일에서는 hidden 처리) */}
+          
+          {/* ✅ 3번 문제 해결: 도움말 탭 (PC에서만 노출: hidden md:flex) */}
           {location.pathname !== '/' && (
             <button 
               onClick={triggerTour} 
-              className="hidden md:flex bg-yellow-500 text-white px-2.5 py-1.5 md:px-4 md:py-2 rounded-xl font-black text-[10px] md:text-xs shadow-md items-center gap-1.5 hover:bg-yellow-600 transition"
+              className="hidden md:flex bg-yellow-500 text-white px-3 py-1.5 md:px-4 md:py-2 rounded-xl font-black text-xs shadow-md items-center gap-1.5 hover:bg-yellow-600 hover:-translate-y-0.5 transition-all"
             >
               💡 도움말
             </button>
