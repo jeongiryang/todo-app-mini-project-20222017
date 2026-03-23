@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import axios from 'axios'
 
 // ✅ 다국어 배열 분리 (명언 유지)
@@ -61,9 +61,14 @@ function MarketPage({ lang }) {
   const [showConfetti, setShowConfetti] = useState(false)
   const [showModalConfetti, setShowModalConfetti] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
-  
-  // ✅ 설명 보기 토글용 상태 추가
   const [expandedId, setExpandedId] = useState(null)
+
+  // ✅ AI 비서 관련 상태 및 Ref 추가
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [showAiBox, setShowAiBox] = useState(false);
+  const [chatHistory, setChatHistory] = useState([]);
+  const [followUpInput, setFollowUpInput] = useState('');
+  const chatContainerRef = useRef(null);
 
   const API_URL = '/api/market'; const COMMON_URL = '/api/items'
 
@@ -73,6 +78,7 @@ function MarketPage({ lang }) {
         { title: "👋 환영합니다!", desc: "CWNU 마켓의 핵심 기능을 안내해 드릴게요.", targetId: "tour-header" }, 
         { title: "🎁 무료 나눔 & 가격", desc: "가격을 정하거나 '무료 나눔' 버튼을 누를 수 있습니다.", targetId: "tour-freebie" }, 
         { title: "📅 캘린더 마감일", desc: "클릭하여 쉽게 마감 기한을 정할 수 있어요.", targetId: "tour-deadline" }, 
+        { title: "🤖 AI 판매 도우미 (NEW!)", desc: "물건 이름만 적고 버튼을 누르면 AI가 기가 막힌 상세 설명을 써줍니다!", targetId: "tour-ai" }, 
         { title: "🔄 똑똑한 정렬", desc: "최신순, 마감임박순 등으로 원하는 물품을 골라보세요.", targetId: "tour-sort" }, 
         { title: "❤️ 실시간 찜하기", desc: "마음에 드는 물건 카드의 하트를 눌러보세요!", targetId: "tour-card" }
       ],
@@ -83,25 +89,24 @@ function MarketPage({ lang }) {
       sortOpt: { latest: "🔄 최신 등록순", deadline: "⏳ 마감 임박순", priceLow: "📉 가격 낮은순", priceHigh: "📈 가격 높은순", likes: "❤️ 찜 많은순" },
       currency: "원", freeBadge: "🎁 무료 나눔!", soldOut: "SOLD OUT", sellerPrefix: "👤", locPrefix: "📍 희망처:", deadlinePrefix: "📅 마감:", deadlineNone: "없음",
       btnEdit: "Edit", btnDel: "Del", btnDone: "Complete", btnUndo: "Cancel", btnSave: "수정 저장", btnEditCancel: "취소",
-      
-      // ✅ 설명 보기 텍스트 추가
       btnDescShow: "💬 상세 설명 보기", btnDescHide: "설명 닫기", descEmpty: "등록된 상세 설명이 없습니다.",
-      
       thItem: "Item", thPrice: "Price", thSeller: "Seller", thStatus: "Status", thAction: "Action", stDone: "거래완료", stSale: "판매중",
       footerDept: "컴퓨터공학과 | 소프트웨어공학 프로젝트: CWNU 포털 시스템", 
       footerCopy: "@ 2026 정이량 | Gemini AI 협업 제작",
       modalTitle: "Market V5 5.0 ver 업데이트 내역", modalSub: "25년 2학기 웹프로그래밍 기말대체 과제 `todos_v4`의 최종 진화형!",
       modalPrevTitle: "🤔 이전 버전 (todos_v4)", modalPrev1: "❌ 새로고침하면 데이터 소실", modalPrev2: "❌ 단순한 텍스트 위주의 투박한 디자인", modalPrev3: "❌ 찜하기 등 거래 부가 기능 전무",
-      modalCurTitle: "✨ 현재 버전 (V5 5.0)", modalCur1: "✅ MongoDB 연동으로 데이터 보존!", modalCur2: "✅ 트렌디한 카드 UI 및 정렬 기능", modalCur3: "✅ 실시간 찜하기 및 마켓 검색 기능 추가!", modalCur4: "✅ 글로벌 다국어(KOR/ENG) 완벽 지원!",
+      modalCurTitle: "✨ 현재 버전 (V5 5.0)", modalCur1: "✅ MongoDB 연동으로 데이터 보존!", modalCur2: "✅ 트렌디한 카드 UI 및 정렬 기능", modalCur3: "✅ 실시간 찜하기 및 마켓 검색 기능 추가!", modalCur4: "✅ 글로벌 다국어(KOR/ENG) 완벽 지원!", modalCur5: "🤖 AI 판매글 자동 완성 챗봇 도입!",
       modalHistTitle: "🛠️ CWNU PORTAL 발전 과정",
-      modalHistV1: "물품 등록 및 기본적인 목록 조회 시스템 구축", modalHistV2: "사용자 도움말 투어 및 거래 편의 기능 추가", modalHistV3: "실시간 찜하기 기능 및 카드/테이블 뷰 전환 도입", modalHistV4: "MongoDB 연동 데이터 보존 및 통합 검색 기능 강화", modalHistV5: "글로벌 다국어(KOR/ENG) 완벽 지원 및 UI 고도화",
-      modalFreeTitle: "\"근데 이거 유료라고요?\"", modalFreeDesc1: "아닙니다! 창대인을 위한 완전 무료 서비스입니다!", modalFreeDesc2: "쿨거래로 학우 간 따뜻한 정을 나눠보세요!", modalBtn: "확인 완료!"
+      modalHistV1: "물품 등록 및 기본적인 목록 조회 시스템 구축", modalHistV2: "사용자 도움말 투어 및 거래 편의 기능 추가", modalHistV3: "실시간 찜하기 기능 및 카드/테이블 뷰 전환 도입", modalHistV4: "MongoDB 연동 데이터 보존 및 통합 검색 기능 강화", modalHistV5: "글로벌 다국어 및 AI 기능 완벽 지원",
+      modalFreeTitle: "\"근데 이거 유료라고요?\"", modalFreeDesc1: "아닙니다! 창대인을 위한 완전 무료 서비스입니다!", modalFreeDesc2: "쿨거래로 학우 간 따뜻한 정을 나눠보세요!", modalBtn: "확인 완료!",
+      aiBtn: "✨ AI 판매글 쓰기", aiLoading: "⏳ 매력적인 글 작성 중...", aiEmpty: "무엇을 팔고 싶은지 '물품명'을 먼저 적어주세요!", aiFollowUpP: "AI에게 더 수정해 달라고 요청해보세요...", aiClear: "초기화", aiClose: "닫기", aiApply: "이 글로 설명 채우기"
     },
     en: {
       tourSteps: [
         { title: "👋 Welcome!", desc: "Let me guide you through the core features.", targetId: "tour-header" }, 
         { title: "🎁 Freebie & Price", desc: "Set a price or click 'Freebie'.", targetId: "tour-freebie" }, 
         { title: "📅 Deadline", desc: "Click to easily set a deadline.", targetId: "tour-deadline" }, 
+        { title: "🤖 AI Sales Helper (NEW!)", desc: "Type item name and let AI write a catchy description!", targetId: "tour-ai" },
         { title: "🔄 Smart Sort", desc: "Sort by latest, deadline, etc.", targetId: "tour-sort" }, 
         { title: "❤️ Real-time Like", desc: "Click the heart on items you like!", targetId: "tour-card" }
       ],
@@ -112,18 +117,16 @@ function MarketPage({ lang }) {
       sortOpt: { latest: "🔄 Latest", deadline: "⏳ Deadline", priceLow: "📉 Price Low", priceHigh: "📈 Price High", likes: "❤️ Most Liked" },
       currency: " KRW", freeBadge: "🎁 Freebie!", soldOut: "SOLD OUT", sellerPrefix: "👤", locPrefix: "📍 Loc:", deadlinePrefix: "📅 Due:", deadlineNone: "None",
       btnEdit: "Edit", btnDel: "Del", btnDone: "Done", btnUndo: "Undo", btnSave: "Save", btnEditCancel: "Cancel",
-      
-      // ✅ 설명 보기 텍스트 추가
       btnDescShow: "💬 View Details", btnDescHide: "Close Desc", descEmpty: "No detailed description provided.",
-      
       thItem: "Item", thPrice: "Price", thSeller: "Seller", thStatus: "Status", thAction: "Action", stDone: "Done", stSale: "On Sale",
       footerDept: "Department of Computer Science | Software Engineering Project: CWNU Portal System", footerCopy: "@ 2026 Jung Yi Ryang | Designed with Gemini AI Collaborative Works",
       modalTitle: "Market V5 5.0 ver Updates", modalSub: "The ultimate evolution of the Fall '25 Web Programming final project `todos_v4`!",
       modalPrevTitle: "🤔 Previous Version (todos_v4)", modalPrev1: "❌ Data lost on refresh", modalPrev2: "❌ Clunky text-based design", modalPrev3: "❌ No extra features like 'Like'",
-      modalCurTitle: "✨ Current Version (V5 5.0)", modalCur1: "✅ Data preserved with MongoDB!", modalCur2: "✅ Trendy card UI & sorting", modalCur3: "✅ Real-time 'Like' & Market search!", modalCur4: "✅ Global bilingual (KOR/ENG) support!",
+      modalCurTitle: "✨ Current Version (V5 5.0)", modalCur1: "✅ Data preserved with MongoDB!", modalCur2: "✅ Trendy card UI & sorting", modalCur3: "✅ Real-time 'Like' & Market search!", modalCur4: "✅ Global bilingual (KOR/ENG) support!", modalCur5: "🤖 AI Description Generator added!",
       modalHistTitle: "🛠️ CWNU PORTAL Evolution",
-      modalHistV1: "Basic item registration & list view system", modalHistV2: "User guide tour & trade convenience features", modalHistV3: "Real-time Like & Card/Table view toggle", modalHistV4: "MongoDB integration & advanced search", modalHistV5: "Full bilingual support (KOR/ENG) & UI enhancement",
-      modalFreeTitle: "\"Wait, is this paid?\"", modalFreeDesc1: "No! It's a completely free service for CWNU students!", modalFreeDesc2: "Share warmth through cool deals!", modalBtn: "Confirmed!"
+      modalHistV1: "Basic item registration & list view system", modalHistV2: "User guide tour & trade convenience features", modalHistV3: "Real-time Like & Card/Table view toggle", modalHistV4: "MongoDB integration & advanced search", modalHistV5: "Full bilingual support & AI feature enhancement",
+      modalFreeTitle: "\"Wait, is this paid?\"", modalFreeDesc1: "No! It's a completely free service for CWNU students!", modalFreeDesc2: "Share warmth through cool deals!", modalBtn: "Confirmed!",
+      aiBtn: "✨ AI Auto-Write", aiLoading: "⏳ Writing catchy text...", aiEmpty: "Please enter the 'Item Name' first!", aiFollowUpP: "Ask AI to edit...", aiClear: "Clear", aiClose: "Close", aiApply: "Apply to Description"
     }
   };
   const current = t[lang];
@@ -133,6 +136,13 @@ function MarketPage({ lang }) {
   useEffect(() => { const intervalId = setInterval(() => setSubmitMentionIndex(prev => (prev + 1) % SUBMIT_MENTIONS[lang].length), 6000); return () => clearInterval(intervalId); }, [lang]);
   useEffect(() => { if (showVersionInfo) { setShowModalConfetti(true); setTimeout(() => setShowModalConfetti(false), 2500); } }, [showVersionInfo]);
   
+  // 채팅창 스크롤 고정
+  useEffect(() => { 
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+    }
+  }, [chatHistory, isGenerating]);
+
   useEffect(() => {
     if (tourIndex >= 0 && tourIndex < current.tourSteps.length) {
       const el = document.getElementById(current.tourSteps[tourIndex].targetId);
@@ -142,12 +152,10 @@ function MarketPage({ lang }) {
         return () => { el.classList.remove('ring-[6px]', 'ring-blue-500', 'ring-offset-2', 'dark:ring-offset-gray-900', 'z-[80]', 'transition-all', 'rounded-3xl'); }; 
       }
     }
-  }, [tourIndex, current.tourSteps]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tourIndex, lang]);
 
-  const handleQuoteRefresh = () => {
-    setQuoteIndex(Math.floor(Math.random() * MARKET_QUOTES[lang].length));
-  };
-
+  const handleQuoteRefresh = () => { setQuoteIndex(Math.floor(Math.random() * MARKET_QUOTES[lang].length)); };
   const handlePhoneChange = (value) => {
     const numeric = value.replace(/[^0-9]/g, '');
     let formatted = numeric;
@@ -155,7 +163,6 @@ function MarketPage({ lang }) {
     else if (numeric.length > 7) formatted = `${numeric.slice(0, 3)}-${numeric.slice(3, 7)}-${numeric.slice(7, 11)}`;
     return formatted;
   }
-
   const handleFreebie = () => { 
     if (form.price === 'free') { setForm({...form, price: ''}); } 
     else { setForm({...form, price: 'free'}); setShowConfetti(true); setTimeout(() => setShowConfetti(false), 2000); }
@@ -165,7 +172,9 @@ function MarketPage({ lang }) {
     e.preventDefault(); if (!form.title) return;
     const submitData = { ...form, price: form.price === 'free' ? 0 : form.price };
     const res = await axios.post(API_URL, submitData);
-    setItems([...items, res.data]); setForm({ title: '', price: '', deadline: '', studentId: '', sellerName: '', phone: '', location: '', description: '' });
+    setItems([...items, res.data]); 
+    setForm({ title: '', price: '', deadline: '', studentId: '', sellerName: '', phone: '', location: '', description: '' });
+    setShowAiBox(false); setChatHistory([]);
     setCurrentPage(1);
   }
 
@@ -176,10 +185,60 @@ function MarketPage({ lang }) {
     const newLiked = new Set(likedItems); if (isLiked) newLiked.delete(id); else newLiked.add(id);
     setLikedItems(newLiked); localStorage.setItem('likedItems', JSON.stringify([...newLiked]));
   }
+  
+  // 수정 완료 저장
   const saveEdit = async (id) => {
     const res = await axios.put(`${COMMON_URL}/${id}`, { ...editForm, price: editForm.price === 'free' ? 0 : editForm.price })
     setItems(items.map(item => item._id === id ? res.data : item)); setEditingId(null)
   }
+
+  // ✅ 마켓용 AI 챗봇 호출 함수 (당근마켓 스타일 프롬프트 적용)
+  const askAi = async (inputText, isInitial = false) => {
+    // 초기 호출일 때는 입력창에 '물품명'만 써도 되도록 설정
+    const queryText = isInitial ? `'${inputText}' 중고거래 판매글 작성해줘` : inputText;
+
+    if (!form.title.trim() && isInitial) {
+      alert(current.aiEmpty);
+      return;
+    }
+    
+    setShowAiBox(true);
+    setIsGenerating(true);
+
+    const currentMsg = { sender: 'user', text: queryText };
+    let newHistory = isInitial ? [currentMsg] : [...chatHistory, currentMsg];
+    setChatHistory(newHistory);
+    if (!isInitial) setFollowUpInput(''); 
+
+    try {
+      let promptContext = lang === 'ko' 
+        ? `너는 '당근마켓'이나 '중고나라'에서 물건을 정말 잘 팔리게 글을 써주는 판매 전문가야.
+           다음 규칙을 무조건 지켜서 답변해:
+           1. 읽기 쉽게 이모지(아이콘)를 적절히 섞어서 친근하게 작성할 것.
+           2. 상태, 특징, 왜 파는지(스토리)를 그럴싸하게 꾸며서 작성할 것 (구매자가 매력적으로 느끼게).
+           3. 불필요한 서론/결론 빼고 바로 '상세 설명' 텍스트만 출력할 것.
+           \n[대화 내역]\n`
+        : `You are an expert at writing catchy descriptions for used item market apps.
+           Follow these rules:
+           1. Use emojis to make it friendly and readable.
+           2. Create a plausible story about the condition, features, and reason for selling to attract buyers.
+           3. NO intro or outro, output ONLY the description text itself.
+           \n[Chat History]\n`;
+      
+      newHistory.forEach(msg => { promptContext += `${msg.sender === 'user' ? 'User' : 'AI'}: ${msg.text}\n`; });
+      promptContext += "AI: ";
+
+      const res = await axios.post('/api/ai/generate', { prompt: promptContext });
+      const aiResult = res.data.text.trim(); 
+      
+      setChatHistory(prev => [...prev, { sender: 'ai', text: aiResult }]);
+    } catch (error) {
+      console.error("AI Generation Error:", error);
+      setChatHistory(prev => [...prev, { sender: 'ai', text: (lang === 'ko' ? "❌ 통신 중 오류가 발생했습니다." : "❌ Error connecting to server.") }]);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
   
   const filteredItems = items.filter((item) => {
     return (
@@ -208,6 +267,10 @@ function MarketPage({ lang }) {
         @keyframes slide-up { 0% { transform: translate(-50%, 50px); opacity: 0; } 100% { transform: translate(-50%, 0); opacity: 1; } }
         @keyframes shoot-up { 0% { transform: translateY(0) scale(0.5); opacity: 1; } 100% { transform: translateY(-150px) scale(1); opacity: 0; } }
         .emoji-burst { position: absolute; animation: shoot-up 1.5s ease-out forwards; z-index: 9999; pointer-events: none; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #93c5fd; border-radius: 10px; }
+        .dark .custom-scrollbar::-webkit-scrollbar-thumb { background: #3b82f6; }
       `}</style>
       
       {showConfetti && <div className="fixed inset-0 pointer-events-none z-[9999] flex items-center justify-center"><span className="emoji-burst text-6xl">🎉</span></div>}
@@ -245,6 +308,7 @@ function MarketPage({ lang }) {
                   <li>{current.modalCur2}</li>
                   <li>{current.modalCur3}</li>
                   <li>{current.modalCur4}</li>
+                  <li className="text-blue-600 dark:text-blue-400">{current.modalCur5}</li>
                 </ul>
               </div>
             </div>
@@ -295,8 +359,27 @@ function MarketPage({ lang }) {
           </div>
         </div>
 
+        {/* 입력 폼 영역 */}
         <form onSubmit={addItem} className="bg-white dark:bg-gray-800 p-5 md:p-8 rounded-3xl md:rounded-[2.5rem] shadow-xl mb-6 md:mb-10 grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-5 border border-blue-50 dark:border-gray-700 relative z-10 mt-4">
-          <input placeholder={current.phTitle} value={form.title} onChange={e=>setForm({...form, title: e.target.value})} className="border-2 border-gray-100 dark:border-gray-600 dark:bg-gray-700 p-3 md:p-4 text-sm md:text-base rounded-2xl outline-none focus:border-blue-400 transition"/>
+          
+          {/* ✅ AI 버튼이 포함된 제목 입력칸 */}
+          <div className="relative md:col-span-1" id="tour-ai">
+            <input 
+              placeholder={current.phTitle} 
+              value={form.title} 
+              onChange={e=>setForm({...form, title: e.target.value})} 
+              className="w-full border-2 border-gray-100 dark:border-gray-600 dark:bg-gray-700 p-3 md:p-4 pr-24 text-sm md:text-base rounded-2xl outline-none focus:border-blue-400 transition font-bold"
+            />
+            <button 
+              type="button" 
+              onClick={() => askAi(form.title, true)}
+              disabled={isGenerating}
+              className={`absolute right-2 top-1/2 -translate-y-1/2 px-2.5 py-1.5 rounded-xl font-black text-[10px] md:text-[11px] transition-all shadow-sm ${isGenerating ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white hover:scale-105 hover:shadow-md'}`}
+            >
+              {isGenerating && chatHistory.length === 0 ? current.aiLoading : current.aiBtn}
+            </button>
+          </div>
+
           <div id="tour-freebie" className="flex gap-2">
             <input 
               placeholder={form.price === 'free' ? current.phFree : current.phPrice} 
@@ -309,13 +392,75 @@ function MarketPage({ lang }) {
             />
             <button type="button" onClick={handleFreebie} className={`${form.price === 'free' ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600'} text-white font-black text-xs px-4 rounded-2xl transition shadow-lg`}>{form.price === 'free' ? current.btnCancel : current.btnFree}</button>
           </div>
+          
           <input id="tour-deadline" type="date" value={form.deadline} onChange={e=>setForm({...form, deadline: e.target.value})} className="border-2 border-gray-100 dark:border-gray-600 dark:bg-gray-700 p-3 md:p-4 text-sm md:text-base rounded-2xl outline-none focus:border-blue-400 cursor-pointer text-gray-500"/>
           <input placeholder={current.phId} value={form.studentId} onChange={e=>setForm({...form, studentId: e.target.value})} className="border-2 border-gray-100 dark:border-gray-600 dark:bg-gray-700 p-3 md:p-4 text-sm md:text-base rounded-2xl outline-none focus:border-blue-400 transition"/>
           <input placeholder={current.phSeller} value={form.sellerName} onChange={e=>setForm({...form, sellerName: e.target.value})} className="border-2 border-gray-100 dark:border-gray-600 dark:bg-gray-700 p-3 md:p-4 text-sm md:text-base rounded-2xl outline-none focus:border-blue-400 transition"/>
           <input placeholder={current.phPhone} value={form.phone} onChange={e=>setForm({...form, phone: handlePhoneChange(e.target.value)})} className="border-2 border-gray-100 dark:border-gray-600 dark:bg-gray-700 p-3 md:p-4 text-sm md:text-base rounded-2xl outline-none focus:border-blue-400 transition"/>
           <input placeholder={current.phLoc} value={form.location} onChange={e=>setForm({...form, location: e.target.value})} className="md:col-span-3 border-2 border-gray-100 dark:border-gray-600 dark:bg-gray-700 p-3 md:p-4 text-sm md:text-base rounded-2xl outline-none focus:border-blue-400 transition"/>
-          <textarea placeholder={current.phDesc} value={form.description} onChange={e=>setForm({...form, description: e.target.value})} className="md:col-span-3 border-2 border-gray-100 dark:border-gray-600 dark:bg-gray-700 p-3 md:p-4 text-sm md:text-base rounded-2xl h-14 focus:h-32 transition-all outline-none"></textarea>
-          <button className="md:col-span-3 bg-[#002f6c] dark:bg-blue-800 text-white p-4 md:p-5 rounded-2xl font-black text-base md:text-lg hover:bg-blue-800 transition shadow-xl h-16 flex justify-center items-center">
+          
+          {/* ✅ 텍스트 에어리어 (AI 글 자동 삽입 영역) */}
+          <textarea 
+            placeholder={current.phDesc} 
+            value={form.description} 
+            onChange={e=>setForm({...form, description: e.target.value})} 
+            className="md:col-span-3 border-2 border-gray-100 dark:border-gray-600 dark:bg-gray-700 p-3 md:p-4 text-sm md:text-base rounded-2xl min-h-[100px] focus:h-40 transition-all outline-none whitespace-pre-wrap"
+          ></textarea>
+
+          {/* ✅ 스르륵 열리는 AI 챗봇 영역 */}
+          {showAiBox && (
+            <div className="md:col-span-3 mt-2 p-4 md:p-5 bg-blue-50/50 dark:bg-gray-900/50 rounded-2xl border border-blue-200 dark:border-gray-700 shadow-inner flex flex-col animate-[slide-up_0.3s_ease-out]">
+              <div className="flex justify-between items-center mb-3">
+                <h4 className="text-sm font-black text-blue-600 dark:text-blue-400 flex items-center gap-2">
+                  ✨ AI 판매글 도우미
+                </h4>
+                <div className="flex gap-2">
+                  <button type="button" onClick={() => { setChatHistory([]); askAi(form.title, true); }} className="text-xs font-bold text-gray-500 hover:text-blue-600 transition bg-white dark:bg-gray-800 px-2 py-1 rounded-md border">{current.aiClear}</button>
+                  <button type="button" onClick={() => setShowAiBox(false)} className="text-xs font-bold text-gray-500 hover:text-red-500 transition bg-white dark:bg-gray-800 px-2 py-1 rounded-md border">{current.aiClose}</button>
+                </div>
+              </div>
+              
+              <div ref={chatContainerRef} className="flex flex-col gap-3 max-h-[300px] overflow-y-auto custom-scrollbar p-3 bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 mb-3">
+                {chatHistory.length === 0 && isGenerating && ( <div className="text-xs font-bold text-gray-400 p-2">{current.aiLoading}</div> )}
+                {chatHistory.map((chat, idx) => (
+                  <div key={idx} className={`flex w-full ${chat.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
+                    <div className={`flex flex-col max-w-[90%] ${chat.sender === 'user' ? 'items-end' : 'items-start'}`}>
+                      <div className={`p-3 rounded-2xl text-sm font-bold whitespace-pre-wrap leading-relaxed shadow-sm
+                        ${chat.sender === 'user' ? 'bg-blue-100 text-blue-900 dark:bg-blue-900/50 dark:text-blue-100 rounded-tr-none' : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200 rounded-tl-none border border-gray-200 dark:border-gray-600'}
+                      `}>
+                        {chat.text}
+                      </div>
+                      {/* ✅ AI 답변을 바로 상세 설명 칸에 박아넣는 버튼! */}
+                      {chat.sender === 'ai' && !isGenerating && idx === chatHistory.length - 1 && (
+                        <button 
+                          type="button" 
+                          onClick={() => { setForm({...form, description: chat.text}); setShowAiBox(false); }}
+                          className="mt-2 text-[10px] font-black bg-blue-600 text-white px-3 py-1.5 rounded-full shadow-md hover:bg-blue-700 hover:scale-105 transition-all"
+                        >
+                          {current.aiApply} ⬇️
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+                {isGenerating && chatHistory.length > 0 && ( <div className="flex w-full justify-start"><div className="bg-gray-100 dark:bg-gray-700 p-3 rounded-2xl rounded-tl-none text-sm font-bold text-gray-500 animate-pulse">...</div></div> )}
+              </div>
+
+              <div className="flex items-center gap-2 bg-white dark:bg-gray-800 p-1.5 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm focus-within:border-blue-400 transition-colors">
+                <input 
+                  type="text" value={followUpInput} onChange={(e) => setFollowUpInput(e.target.value)}
+                  onKeyDown={(e) => { if (e.nativeEvent.isComposing) return; if (e.key === 'Enter') { e.preventDefault(); askAi(followUpInput); } }}
+                  placeholder={current.aiFollowUpP}
+                  className="flex-grow p-2 outline-none bg-transparent text-sm font-bold text-gray-700 dark:text-gray-200"
+                />
+                <button type="button" onClick={() => askAi(followUpInput)} disabled={isGenerating || !followUpInput.trim()} className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white p-2 rounded-lg transition-colors flex items-center justify-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" /></svg>
+                </button>
+              </div>
+            </div>
+          )}
+
+          <button className="md:col-span-3 bg-[#002f6c] dark:bg-blue-800 text-white p-4 md:p-5 rounded-2xl font-black text-base md:text-lg hover:bg-blue-800 transition shadow-xl h-16 flex justify-center items-center mt-2">
             {SUBMIT_MENTIONS[lang][submitMentionIndex]}
           </button>
         </form>
@@ -325,10 +470,10 @@ function MarketPage({ lang }) {
         </div>
 
         <div className="flex flex-col sm:flex-row justify-between items-center gap-3 mb-6 relative z-10">
-          <select value={sortType} onChange={(e) => {setSortType(e.target.value); setCurrentPage(1);}} className="bg-white dark:bg-gray-800 border-2 border-blue-100 px-4 py-2 w-full sm:w-auto rounded-xl font-black text-xs text-gray-700 dark:text-gray-200 outline-none cursor-pointer shadow-sm">
+          <select id="tour-sort" value={sortType} onChange={(e) => {setSortType(e.target.value); setCurrentPage(1);}} className="bg-white dark:bg-gray-800 border-2 border-blue-100 px-4 py-2 w-full sm:w-auto rounded-xl font-black text-xs text-gray-700 dark:text-gray-200 outline-none cursor-pointer shadow-sm">
             <option value="latest">{current.sortOpt.latest}</option><option value="deadline">{current.sortOpt.deadline}</option><option value="priceLow">{current.sortOpt.priceLow}</option><option value="priceHigh">{current.sortOpt.priceHigh}</option><option value="likes">{current.sortOpt.likes}</option>
           </select>
-          <div className="flex gap-2 w-full sm:w-auto">
+          <div className="flex gap-2 w-full sm:w-auto" id="tour-list-buttons">
             <button onClick={() => setViewType('card')} className={`flex-1 sm:flex-none px-5 py-2 rounded-xl font-black text-xs transition-all ${viewType==='card'?'bg-[#002f6c] text-white':'bg-white dark:bg-gray-800 text-gray-400 border-2 border-gray-100'}`}>🎴 CARD</button>
             <button onClick={() => setViewType('table')} className={`flex-1 sm:flex-none px-5 py-2 rounded-xl font-black text-xs transition-all ${viewType==='table'?'bg-[#002f6c] text-white':'bg-white dark:bg-gray-800 text-gray-400 border-2 border-gray-100'}`}>📋 TABLE</button>
           </div>
@@ -340,13 +485,16 @@ function MarketPage({ lang }) {
               <div key={item._id} className={`p-6 md:p-8 rounded-3xl md:rounded-[3rem] border-4 transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl flex flex-col relative overflow-hidden ${item.completed ? 'border-red-500 bg-red-50 dark:bg-red-900/10' : 'border-blue-50 bg-white dark:bg-gray-800'}`}> 
                 {item.completed && <div className="absolute -right-10 top-10 bg-red-500 text-white font-black text-xs py-1 px-12 rotate-45 shadow-lg z-10">{current.soldOut}</div>}
                 
+                {/* 💡 [수술 1단계] 학번(studentId), 마감일자(deadline) 수정 인풋 추가! */}
                 {editingId === item._id ? (
                   <div className="flex flex-col gap-2 z-10">
                     <input className="border-2 border-blue-100 dark:bg-gray-700 p-2 rounded-xl text-xs font-bold" placeholder={current.phTitle} value={editForm.title} onChange={e=>setEditForm({...editForm, title: e.target.value})} />
                     <input className="border-2 border-blue-100 dark:bg-gray-700 p-2 rounded-xl text-xs font-bold" placeholder={current.phPrice} type="number" value={editForm.price} onChange={e=>setEditForm({...editForm, price: e.target.value})} />
+                    <input className="border-2 border-blue-100 dark:bg-gray-700 p-2 rounded-xl text-xs font-bold text-gray-500" type="date" value={editForm.deadline} onChange={e=>setEditForm({...editForm, deadline: e.target.value})} />
+                    <input className="border-2 border-blue-100 dark:bg-gray-700 p-2 rounded-xl text-xs font-bold" placeholder={current.phId} value={editForm.studentId} onChange={e=>setEditForm({...editForm, studentId: e.target.value})} />
                     <input className="border-2 border-blue-100 dark:bg-gray-700 p-2 rounded-xl text-xs font-bold" placeholder={current.phPhone} value={editForm.phone} onChange={e=>setEditForm({...editForm, phone: handlePhoneChange(e.target.value)})} />
                     <input className="border-2 border-blue-100 dark:bg-gray-700 p-2 rounded-xl text-xs font-bold" placeholder={current.phLoc} value={editForm.location} onChange={e=>setEditForm({...editForm, location: e.target.value})} />
-                    <textarea className="border-2 border-blue-100 dark:bg-gray-700 p-2 rounded-xl text-xs font-medium h-20" placeholder={current.phDesc} value={editForm.description} onChange={e=>setEditForm({...editForm, description: e.target.value})} />
+                    <textarea className="border-2 border-blue-100 dark:bg-gray-700 p-2 rounded-xl text-xs font-medium h-24 whitespace-pre-wrap" placeholder={current.phDesc} value={editForm.description} onChange={e=>setEditForm({...editForm, description: e.target.value})} />
                     <div className="flex gap-2">
                       <button onClick={()=>saveEdit(item._id)} className="bg-green-500 text-white rounded-xl py-2 flex-grow font-black text-xs">{current.btnSave}</button>
                       <button onClick={()=>setEditingId(null)} className="bg-gray-400 text-white rounded-xl py-2 flex-grow font-black text-xs">{current.btnEditCancel}</button>
@@ -366,7 +514,6 @@ function MarketPage({ lang }) {
                       <p className="text-blue-500 pb-2">{current.locPrefix} {item.location}</p>
                     </div>
                     
-                    {/* ✅ 설명 보기 토글 버튼 및 아코디언 영역 */}
                     <div className="flex flex-col w-full z-10 mb-4">
                       <button 
                         onClick={() => setExpandedId(expandedId === item._id ? null : item._id)} 
@@ -405,7 +552,6 @@ function MarketPage({ lang }) {
                       <span className={item.completed ? 'line-through' : 'text-gray-800 dark:text-gray-200'}>{item.title}</span> 
                       <button onClick={() => handleLike(item._id)} className={`ml-2 text-[10px] font-black ${likedItems.has(item._id) ? 'text-red-500' : 'text-gray-300'}`}>♥{item.likes}</button>
                       
-                      {/* ✅ 테이블 뷰에서도 설명 보기 기능 추가 */}
                       <div className="mt-2">
                         <button 
                           onClick={() => setExpandedId(expandedId === item._id ? null : item._id)} 
