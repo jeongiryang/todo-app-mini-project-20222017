@@ -37,6 +37,7 @@ function MarketPage({ lang }) {
   const [chatHistory, setChatHistory] = useState([]);
   const [followUpInput, setFollowUpInput] = useState('');
   const chatContainerRef = useRef(null);
+  const textareaRef = useRef(null); // ✅ [추가됨] 채팅창 텍스트 박스 높이 조절용 Ref
 
   const API_URL = '/api/market'; const COMMON_URL = '/api/items'
 
@@ -170,7 +171,6 @@ function MarketPage({ lang }) {
     setItems(items.map(item => item._id === id ? res.data : item)); setEditingId(null)
   }
 
-  // ✅ [수정됨] 새롭게 추가된 데이터 바구니(deadline, studentId 등)까지 모두 폼에 꽂아넣기
   const handleApplyAiData = (data, idx) => {
     setForm(prev => {
       const updated = { ...prev };
@@ -179,11 +179,10 @@ function MarketPage({ lang }) {
       else if (data.price && !isNaN(Number(data.price))) updated.price = data.price;
       if (data.location) updated.location = data.location;
       
-      // 새로 추가된 필드 적용
       if (data.deadline) updated.deadline = data.deadline;
       if (data.studentId) updated.studentId = data.studentId;
       if (data.sellerName) updated.sellerName = data.sellerName;
-      if (data.phone) updated.phone = handlePhoneChange(data.phone); // 자동 하이픈 적용
+      if (data.phone) updated.phone = handlePhoneChange(data.phone); 
       
       if (data.description) updated.description = data.description;
       return updated;
@@ -204,11 +203,9 @@ function MarketPage({ lang }) {
     let newHistory = [...chatHistory, currentMsg];
     setChatHistory(newHistory);
     setFollowUpInput(''); 
+    if (textareaRef.current) textareaRef.current.style.height = 'auto'; // 전송 후 높이 초기화
 
     try {
-      //  [수정됨] 프롬프트 튜닝: 1) 바구니 대폭 추가 2) 이모지 및 특수문자 절대 금지령
-     //  [수정됨] 프롬프트 튜닝: 특수문자 금지로 인한 AI 뇌정지 방지 & 끝까지 출력 강제
-      // ✅ [수정됨] 프롬프트 튜닝: '내용 확인' 대신 '버튼 클릭'을 유도하는 자연스러운 메시지로 변경
       let promptContext = lang === 'ko' 
         ? `너는 중고마켓 판매글 폼을 자동으로 채워주는 AI 비서야.
            사용자의 대화 내용을 분석해서 판매 물품, 가격, 장소, 마감일, 학번, 판매자명, 연락처, 상세 설명을 추출해내야 해.
@@ -225,7 +222,7 @@ function MarketPage({ lang }) {
                "studentId": "추출된 학번 (없으면 빈 문자열)",
                "sellerName": "추출된 판매자 이름 (없으면 빈 문자열)",
                "phone": "추출된 전화번호 (숫자만, 없으면 빈 문자열)",
-               "description": "제공된 정보를 바탕으로 작성된 깔끔하고 건조한 판매글 본문 (이모지 절대 금지)"
+               "description": "물품에 대한 설명 본문. 단, 학번, 전화번호, 마감일 등 이미 전용 칸이 있는 정보는 본문에 중복으로 적지 말 것. (이모지 절대 금지)"
              }
            }
            \n[대화 내역]\n`
@@ -243,7 +240,7 @@ function MarketPage({ lang }) {
                "studentId": "Student ID or empty string",
                "sellerName": "Seller name or empty string",
                "phone": "Phone number digits only or empty string",
-               "description": "A clean, formal sales description based on info provided (NO EMOJIS)"
+               "description": "A clean, formal sales description. DO NOT repeat the student ID, phone number, or deadline here as they have their own dedicated fields. (NO EMOJIS)"
              }
            }
            \n[Chat History]\n`;
@@ -264,7 +261,6 @@ function MarketPage({ lang }) {
       try {
         const parsed = JSON.parse(jsonString);
         
-        // ✅ [수정됨] 방어막 구축: 진짜 알맹이 데이터가 하나라도 있을 때만 pendingData로 인정
         const ext = parsed.extracted;
         const hasActualData = ext && (ext.title || ext.price || ext.location || ext.deadline || ext.studentId || ext.sellerName || ext.phone || ext.description);
 
@@ -406,10 +402,8 @@ function MarketPage({ lang }) {
           )}
         </div>
 
-        {/* 폼 영역 시작 */}
         <form onSubmit={addItem} className="bg-white dark:bg-gray-800 p-5 md:p-8 rounded-3xl md:rounded-[2.5rem] shadow-xl mb-6 md:mb-10 flex flex-col gap-3 md:gap-5 border border-blue-50 dark:border-gray-700 relative z-10 mt-4">
           
-          {/* ✅ 완전히 독립된 AI 챗봇 배너 버튼 */}
           <div id="tour-ai-btn" className="w-full mb-2">
             {!showAiBox ? (
               <button 
@@ -445,7 +439,6 @@ function MarketPage({ lang }) {
                         `}>
                           {chat.text}
                         </div>
-                        {/* ✅ pendingData가 있을 때만 예/아니오 버튼 UI 렌더링 */}
                         {chat.pendingData && (
                           <div className="mt-2 p-3 bg-blue-50 dark:bg-gray-700 rounded-xl border border-blue-200 dark:border-gray-600 shadow-sm w-full max-w-sm animate-[slide-up_0.3s_ease-out]">
                             <p className="text-xs font-black text-blue-800 dark:text-blue-300 mb-2">{current.aiConfirm}</p>
@@ -461,22 +454,43 @@ function MarketPage({ lang }) {
                   {isGenerating && ( <div className="flex w-full justify-start"><div className="bg-gray-100 dark:bg-gray-700 p-3 rounded-2xl rounded-tl-none text-sm font-bold text-blue-500 animate-pulse">{current.aiLoading}</div></div> )}
                 </div>
 
-                <div className="flex items-center gap-2 bg-white dark:bg-gray-800 p-1.5 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm focus-within:border-blue-400 transition-colors">
-                  <input 
-                    type="text" value={followUpInput} onChange={(e) => setFollowUpInput(e.target.value)}
-                    onKeyDown={(e) => { if (e.nativeEvent.isComposing) return; if (e.key === 'Enter') { e.preventDefault(); askAi(followUpInput); } }}
+                {/* ✅ [수정됨] 카카오톡 스타일: 글자 길어지면 자동 줄바꿈 & 높이 늘어나는 텍스트 에어리어 */}
+                <div className="flex items-end gap-2 bg-white dark:bg-gray-800 p-1.5 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm focus-within:border-blue-400 transition-colors">
+                  <textarea 
+                    ref={textareaRef}
+                    rows={1}
+                    value={followUpInput} 
+                    onChange={(e) => {
+                      setFollowUpInput(e.target.value);
+                      e.target.style.height = 'auto'; // 높이 초기화 후 재계산
+                      e.target.style.height = `${e.target.scrollHeight}px`;
+                    }}
+                    onKeyDown={(e) => { 
+                      if (e.nativeEvent.isComposing) return; 
+                      // 💡 Shift + Enter면 줄바꿈, 그냥 Enter면 전송
+                      if (e.key === 'Enter' && !e.shiftKey) { 
+                        e.preventDefault(); 
+                        askAi(followUpInput); 
+                      } 
+                    }}
                     placeholder={current.aiFollowUpP}
-                    className="flex-grow p-2 outline-none bg-transparent text-sm font-bold text-gray-700 dark:text-gray-200"
+                    className="flex-grow p-2 outline-none bg-transparent text-sm font-bold text-gray-700 dark:text-gray-200 resize-none max-h-[100px] overflow-y-auto custom-scrollbar leading-relaxed"
+                    style={{ minHeight: '36px' }}
                   />
-                  <button type="button" onClick={() => askAi(followUpInput)} disabled={isGenerating || !followUpInput.trim()} className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white p-2 rounded-lg transition-colors flex items-center justify-center">
+                  <button 
+                    type="button" 
+                    onClick={() => askAi(followUpInput)} 
+                    disabled={isGenerating || !followUpInput.trim()} 
+                    className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white p-2 mb-0.5 rounded-lg transition-colors flex items-center justify-center flex-shrink-0 h-9 w-9 shadow-sm"
+                  >
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" /></svg>
                   </button>
                 </div>
+
               </div>
             )}
           </div>
 
-          {/* ✅ 순수 입력 폼 그리드 (제목부터 장소까지 AI 자동 입력 연동됨) */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-5 w-full">
             <input 
               placeholder={current.phTitle} 
