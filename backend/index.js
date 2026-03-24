@@ -104,8 +104,8 @@ app.post('/api/ai/generate', async (req, res) => {
     const result = await model.generateContent({
       contents: [{ role: 'user', parts: [{ text: prompt }] }],
       generationConfig: {
-        maxOutputTokens: 1024, 
-        temperature: 0.5,      
+        maxOutputTokens: 4096,  // 💡 1024 -> 4096으로 대폭 상향! (숨통 트기)
+        temperature: 0.4,       // 💡 JSON 형식을 더 엄격하게 지키도록 살짝 낮춤
       }
     });
     

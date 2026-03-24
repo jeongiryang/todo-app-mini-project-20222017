@@ -3,24 +3,7 @@ import axios from 'axios'
 
 // 🔴 [명언 배열 - 복붙을 위해 비워두었습니다!]
 const MARKET_QUOTES = {
- ko: [
-    "안 쓰는 물건, 누군가에겐 보물입니다.", "빠른 쿨거래가 창대인의 매너를 만듭니다.", "네고는 둥글게, 거래는 확실하게!", 
-    "오늘 비운 공간, 내일의 여유가 됩니다.", "신뢰는 최고의 거래 조건입니다.", "자취방 이사 전 필수 코스! 방 빼기 전 물건부터 빼세요.",
-    "오늘 안 쓰는 전공책 팔아서 내일 치킨 시켜 먹자!", "잠수는 사절! 쿨거래는 창대인의 기본 소양입니다.",
-    "선배의 손때 묻은 전공책, 후배에겐 A+의 열쇠!", "통장 잔고가 위험할 때, 책상 서랍을 열어보세요.",
-    "충동구매의 최후... 눈물을 머금고 반값에 올립니다.", "버리면 쓰레기, 나누면 지구를 살리는 에코 라이프!",
-    "따뜻한 인사 한마디가 기분 좋은 거래를 만듭니다.", "가성비 넘치는 대학 생활의 비밀 무기, 마켓 직거래.",
-    "판매자에겐 쏠쏠한 용돈을, 구매자에겐 짜릿한 득템을!"
-  ],
-  en: [
-    "An unused item is someone else's treasure.", "Quick and cool deals make CWNU manners.", "Negotiate smoothly, deal surely!", 
-    "Space emptied today becomes tomorrow's leisure.", "Trust is the best deal condition.", "A must before moving out! Empty your items before emptying the room.",
-    "Sell unused textbooks today, order fried chicken tomorrow!", "No ghosting! Cool deals are the basics for CWNU students.",
-    "A senior's well-used textbook is a junior's key to an A+!", "When your bank balance is low, open your desk drawer.",
-    "The end of impulse buying... selling at half price with tears.", "Trash if thrown away, eco-life saving the earth if shared!",
-    "A warm greeting makes a pleasant transaction.", "The secret weapon for cost-effective college life, direct market deals.",
-    "Sweet pocket money for the seller, thrilling finds for the buyer!"
-  ]
+ 
 };
 
 const SUBMIT_MENTIONS = {
@@ -77,7 +60,6 @@ function MarketPage({ lang }) {
       thItem: "Item", thPrice: "Price", thSeller: "Seller", thStatus: "Status", thAction: "Action", stDone: "거래완료", stSale: "판매중",
       footerDept: "컴퓨터공학과 | 소프트웨어공학 프로젝트: CWNU 포털 시스템", footerCopy: "@ 2026 정이량 | Gemini AI 협업 제작",
       
-      // 💡 V6 6.0 버전에 맞춘 업데이트 내역 갱신
       modalTitle: "Market V6 6.0 ver 업데이트 내역", modalSub: "25년 2학기 웹프로그래밍 기말대체 과제 `todos_v4`의 최종 진화형!",
       modalPrevTitle: "🤔 이전 버전 (todos_v4)", modalPrev1: "❌ 새로고침하면 데이터 소실", modalPrev2: "❌ 단순한 텍스트 위주의 투박한 디자인", modalPrev3: "❌ 찜하기 등 거래 부가 기능 전무",
       modalCurTitle: "✨ 현재 버전 (V6 6.0)", modalCur1: "✅ MongoDB 연동으로 데이터 보존!", modalCur2: "✅ 트렌디한 카드 UI 및 정렬 기능", modalCur3: "✅ 실시간 찜하기 및 마켓 검색 기능 추가!", modalCur4: "✅ 글로벌 다국어(KOR/ENG) 완벽 지원!", modalCur5: "🤖 AI 판매글 폼 자동완성 기능 도입!",
@@ -85,7 +67,8 @@ function MarketPage({ lang }) {
       modalHistV1: "물품 등록 및 기본적인 목록 조회 시스템 구축", modalHistV2: "사용자 도움말 투어 및 거래 편의 기능 추가", modalHistV3: "실시간 찜하기 기능 및 카드/테이블 뷰 전환 도입", modalHistV4: "MongoDB 연동 데이터 보존 및 통합 검색 기능 강화", modalHistV5: "글로벌 다국어 완벽 지원 및 UI 고도화",
       modalHistV6: "🤖 대화형 Gemini AI 비서 및 폼 자동완성 전격 도입",
       modalFreeTitle: "\"근데 이거 유료라고요?\"", modalFreeDesc1: "아닙니다! 창대인을 위한 완전 무료 서비스입니다!", modalFreeDesc2: "쿨거래로 학우 간 따뜻한 정을 나눠보세요!", modalBtn: "확인 완료!",
-      aiOpenBtn: " AI 비서에게 판매글 쓰기 맡기기", aiLoading: "⏳ 폼을 분석하고 채우는 중...", aiEmpty: "채팅창에 정보를 입력해주세요!", aiFollowUpP: "물품명, 가격, 장소를 말해주면 폼을 채워드려요! (예: 버즈 5만원 정문직거래)", aiClear: "대화 초기화", aiClose: "AI 닫기", aiApply: "이 글로 설명 채우기"
+      aiOpenBtn: " AI 비서에게 판매글 쓰기 맡기기", aiLoading: "⏳ 폼을 분석하고 채우는 중...", aiEmpty: "채팅창에 정보를 입력해주세요!", aiFollowUpP: "물품명, 가격, 장소 등을 말해주면 폼을 채워드려요!", aiClear: "대화 초기화", aiClose: "AI 닫기", aiApply: "이 글로 설명 채우기",
+      aiConfirm: "✨ 이 정보를 폼에 추가하시겠습니까?", btnYes: "예, 추가하기", btnNo: "아니오"
     },
     en: {
       tourSteps: [
@@ -106,7 +89,6 @@ function MarketPage({ lang }) {
       thItem: "Item", thPrice: "Price", thSeller: "Seller", thStatus: "Status", thAction: "Action", stDone: "Done", stSale: "On Sale",
       footerDept: "Department of Computer Science | Software Engineering Project: CWNU Portal System", footerCopy: "@ 2026 Jung Yi Ryang | Designed with Gemini AI Collaborative Works",
       
-      // 💡 V6 6.0 버전에 맞춘 업데이트 내역 갱신
       modalTitle: "Market V6 6.0 ver Updates", modalSub: "The ultimate evolution of the Fall '25 Web Programming final project `todos_v4`!",
       modalPrevTitle: "🤔 Previous Version (todos_v4)", modalPrev1: "❌ Data lost on refresh", modalPrev2: "❌ Clunky text-based design", modalPrev3: "❌ No extra features like 'Like'",
       modalCurTitle: "✨ Current Version (V6 6.0)", modalCur1: "✅ Data preserved with MongoDB!", modalCur2: "✅ Trendy card UI & sorting", modalCur3: "✅ Real-time 'Like' & Market search!", modalCur4: "✅ Global bilingual (KOR/ENG) support!", modalCur5: "🤖 AI Form Auto-fill Feature added!",
@@ -114,7 +96,8 @@ function MarketPage({ lang }) {
       modalHistV1: "Basic item registration & list view system", modalHistV2: "User guide tour & trade convenience features", modalHistV3: "Real-time Like & Card/Table view toggle", modalHistV4: "MongoDB integration & advanced search", modalHistV5: "Full bilingual support & UI enhancement",
       modalHistV6: "🤖 Interactive Gemini AI & Auto-fill Form integrated",
       modalFreeTitle: "\"Wait, is this paid?\"", modalFreeDesc1: "No! It's a completely free service for CWNU students!", modalFreeDesc2: "Share warmth through cool deals!", modalBtn: "Confirmed!",
-      aiOpenBtn: "✨ Let AI write the sales post", aiLoading: "⏳ Analyzing and filling form...", aiEmpty: "Please type something in the chat!", aiFollowUpP: "Tell me item, price, location... (e.g., Galaxy Buds $50 Main Gate)", aiClear: "Clear", aiClose: "Close AI", aiApply: "Apply to Description"
+      aiOpenBtn: "✨ Let AI write the sales post", aiLoading: "⏳ Analyzing and filling form...", aiEmpty: "Please type something in the chat!", aiFollowUpP: "Tell me item, price, location, etc.", aiClear: "Clear", aiClose: "Close AI", aiApply: "Apply to Description",
+      aiConfirm: "✨ Do you want to apply this info to the form?", btnYes: "Yes, apply", btnNo: "No"
     }
   };
   const current = t[lang];
@@ -187,6 +170,31 @@ function MarketPage({ lang }) {
     setItems(items.map(item => item._id === id ? res.data : item)); setEditingId(null)
   }
 
+  // ✅ [수정됨] 새롭게 추가된 데이터 바구니(deadline, studentId 등)까지 모두 폼에 꽂아넣기
+  const handleApplyAiData = (data, idx) => {
+    setForm(prev => {
+      const updated = { ...prev };
+      if (data.title) updated.title = data.title;
+      if (data.price === 'free') updated.price = 'free';
+      else if (data.price && !isNaN(Number(data.price))) updated.price = data.price;
+      if (data.location) updated.location = data.location;
+      
+      // 새로 추가된 필드 적용
+      if (data.deadline) updated.deadline = data.deadline;
+      if (data.studentId) updated.studentId = data.studentId;
+      if (data.sellerName) updated.sellerName = data.sellerName;
+      if (data.phone) updated.phone = handlePhoneChange(data.phone); // 자동 하이픈 적용
+      
+      if (data.description) updated.description = data.description;
+      return updated;
+    });
+    setChatHistory(prev => prev.map((msg, i) => i === idx ? { ...msg, pendingData: null, text: msg.text + (lang === 'ko' ? "\n\n✅ 폼에 성공적으로 추가되었습니다!" : "\n\n✅ Successfully applied to the form!") } : msg));
+  };
+
+  const handleRejectAiData = (idx) => {
+    setChatHistory(prev => prev.map((msg, i) => i === idx ? { ...msg, pendingData: null, text: msg.text + (lang === 'ko' ? "\n\n❌ 추가를 취소했습니다." : "\n\n❌ Canceled.") } : msg));
+  };
+
   const askAi = async (inputText) => {
     if (!inputText.trim()) return;
     
@@ -198,30 +206,44 @@ function MarketPage({ lang }) {
     setFollowUpInput(''); 
 
     try {
+      //  [수정됨] 프롬프트 튜닝: 1) 바구니 대폭 추가 2) 이모지 및 특수문자 절대 금지령
+     //  [수정됨] 프롬프트 튜닝: 특수문자 금지로 인한 AI 뇌정지 방지 & 끝까지 출력 강제
+      // ✅ [수정됨] 프롬프트 튜닝: '내용 확인' 대신 '버튼 클릭'을 유도하는 자연스러운 메시지로 변경
       let promptContext = lang === 'ko' 
-        ? `너는 당근마켓 판매글 폼을 자동으로 채워주는 천재 AI 비서야.
-           사용자의 대화 내용을 분석해서 판매 물품, 가격, 장소, 상세 설명을 추출해내야 해.
-           [절대 규칙]: 답변은 반드시 아래 형태의 순수한 JSON 구조로만 반환해. 
+        ? `너는 중고마켓 판매글 폼을 자동으로 채워주는 AI 비서야.
+           사용자의 대화 내용을 분석해서 판매 물품, 가격, 장소, 마감일, 학번, 판매자명, 연락처, 상세 설명을 추출해내야 해.
+           [절대 규칙 1]: 답변은 반드시 아래 형태의 순수한 JSON 구조로만 반환하고, 중간에 끊기지 않게 닫는 괄호(})까지 완벽하게 작성해!
+           [절대 규칙 2]: 텍스트에 이모지(😎, ✨ 등)는 절대 사용하지 마. 단, JSON 문법에 필요한 따옴표나 기호는 정상적으로 작성해. 매우 건조하고 진중한 텍스트로만 작성할 것.
            마크다운(\`\`\`) 기호, 서론, 결론 등 다른 텍스트는 1글자도 포함하면 안 돼.
            {
-             "message": "사용자에게 할 대답 (예: 입력하신 정보를 폼에 채워드렸습니다! 설명도 매력적으로 써봤어요.)",
+             "message": "사용자에게 할 대답 (반드시 이런 뉘앙스로 작성: '요청하신 정보를 바탕으로 폼에 들어갈 내용을 준비했습니다! 아래 버튼을 눌러 자동 입력을 완료해 보세요.')",
              "extracted": {
                "title": "추출된 물품명 (없으면 빈 문자열)",
                "price": "추출된 가격 (숫자만 작성. '무료/나눔'이면 'free', 없으면 빈 문자열)",
                "location": "추출된 거래 희망 장소 (없으면 빈 문자열)",
-               "description": "제공된 정보를 바탕으로 살을 붙인 매력적인 당근마켓 판매글 본문 (이모지 포함)"
+               "deadline": "추출된 마감일 (YYYY-MM-DD 형식, 없으면 빈 문자열)",
+               "studentId": "추출된 학번 (없으면 빈 문자열)",
+               "sellerName": "추출된 판매자 이름 (없으면 빈 문자열)",
+               "phone": "추출된 전화번호 (숫자만, 없으면 빈 문자열)",
+               "description": "제공된 정보를 바탕으로 작성된 깔끔하고 건조한 판매글 본문 (이모지 절대 금지)"
              }
            }
            \n[대화 내역]\n`
         : `You are an AI assistant that auto-fills used item marketplace forms.
-           Extract info from the chat and return it ONLY in this exact JSON format. NO markdown (\`\`\`), NO extra text.
+           Extract info from the chat and return it ONLY in this exact JSON format. 
+           [RULE 1]: NO markdown (\`\`\`), NO extra text. MUST output complete JSON until the closing bracket (}).
+           [RULE 2]: ABSOLUTELY NO emojis. Use a dry, clean, and formal tone.
            {
-             "message": "Friendly response to user",
+             "message": "Friendly response to user (MUST use this exact tone: 'I have prepared the form details based on your input! Click the button below to apply them.')",
              "extracted": {
                "title": "Item name or empty string",
                "price": "Numbers only, 'free' if freebie, or empty string",
                "location": "Trade location or empty string",
-               "description": "A catchy sales description based on info provided"
+               "deadline": "Deadline in YYYY-MM-DD format or empty string",
+               "studentId": "Student ID or empty string",
+               "sellerName": "Seller name or empty string",
+               "phone": "Phone number digits only or empty string",
+               "description": "A clean, formal sales description based on info provided (NO EMOJIS)"
              }
            }
            \n[Chat History]\n`;
@@ -232,22 +254,25 @@ function MarketPage({ lang }) {
       const res = await axios.post('/api/ai/generate', { prompt: promptContext });
       let aiText = res.data.text.trim(); 
       
-      aiText = aiText.replace(/```json/gi, '').replace(/```/g, '').trim();
+      let jsonString = aiText.replace(/```json/gi, '').replace(/```/g, '').trim();
+      const jsonStart = jsonString.indexOf('{');
+      const jsonEnd = jsonString.lastIndexOf('}');
+      if (jsonStart !== -1 && jsonEnd !== -1) {
+        jsonString = jsonString.substring(jsonStart, jsonEnd + 1);
+      }
 
       try {
-        const parsed = JSON.parse(aiText);
-        setChatHistory(prev => [...prev, { sender: 'ai', text: parsed.message }]);
+        const parsed = JSON.parse(jsonString);
         
-        setForm(prev => {
-          const updated = { ...prev };
-          if (parsed.extracted.title) updated.title = parsed.extracted.title;
-          if (parsed.extracted.price === 'free') updated.price = 'free';
-          else if (parsed.extracted.price && !isNaN(Number(parsed.extracted.price))) updated.price = parsed.extracted.price;
-          if (parsed.extracted.location) updated.location = parsed.extracted.location;
-          if (parsed.extracted.description) updated.description = parsed.extracted.description;
-          return updated;
-        });
+        // ✅ [수정됨] 방어막 구축: 진짜 알맹이 데이터가 하나라도 있을 때만 pendingData로 인정
+        const ext = parsed.extracted;
+        const hasActualData = ext && (ext.title || ext.price || ext.location || ext.deadline || ext.studentId || ext.sellerName || ext.phone || ext.description);
 
+        setChatHistory(prev => [...prev, { 
+          sender: 'ai', 
+          text: parsed.message, 
+          pendingData: hasActualData ? ext : null 
+        }]);
       } catch (parseError) {
         setChatHistory(prev => [...prev, { sender: 'ai', text: res.data.text }]);
       }
@@ -357,7 +382,6 @@ function MarketPage({ lang }) {
       <div className="flex-grow">
         <div id="tour-header" className="text-center mb-6 md:mb-8 relative mt-4 md:mt-0">
           <div className="flex items-center justify-center gap-4 mb-2">
-            {/* 💡 헤더 V6 6.0 반영 */}
             <h2 className="text-3xl md:text-5xl font-black text-[#002f6c] dark:text-blue-300 tracking-tighter flex justify-center items-center cursor-pointer mt-4 md:mt-0">
               MARKET <span onClick={() => setShowVersionInfo(true)} className="inline-block ml-2 md:ml-4 px-2 py-1 text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-orange-400 to-red-500 italic drop-shadow-lg text-2xl md:text-4xl animate-[pulse_2s_ease-in-out_infinite] opacity-90">6.0</span>
             </h2>
@@ -410,7 +434,7 @@ function MarketPage({ lang }) {
                 <div ref={chatContainerRef} className="flex flex-col gap-3 max-h-[300px] overflow-y-auto custom-scrollbar p-3 bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 mb-3">
                   {chatHistory.length === 0 && !isGenerating && (
                     <div className="text-xs font-bold text-gray-400 p-2 text-center bg-gray-50 dark:bg-gray-700 rounded-lg">
-                      어떤 물건을 얼마에 팔고 싶으신가요? 편하게 말씀해주세요!<br/>(예: "아이패드 50만원에 정문에서 팔래. 설명도 잘 써줘")
+                      어떤 물건을 얼마에 팔고 싶으신가요? 편하게 말씀해주세요!<br/>(예: "12월 31일까지, 학번 20222017, 정이량, 01012341234 아이패드 50만원에 정문직거래")
                     </div>
                   )}
                   {chatHistory.map((chat, idx) => (
@@ -421,6 +445,16 @@ function MarketPage({ lang }) {
                         `}>
                           {chat.text}
                         </div>
+                        {/* ✅ pendingData가 있을 때만 예/아니오 버튼 UI 렌더링 */}
+                        {chat.pendingData && (
+                          <div className="mt-2 p-3 bg-blue-50 dark:bg-gray-700 rounded-xl border border-blue-200 dark:border-gray-600 shadow-sm w-full max-w-sm animate-[slide-up_0.3s_ease-out]">
+                            <p className="text-xs font-black text-blue-800 dark:text-blue-300 mb-2">{current.aiConfirm}</p>
+                            <div className="flex gap-2">
+                              <button onClick={() => handleApplyAiData(chat.pendingData, idx)} className="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold py-2 rounded-lg transition-colors">{current.btnYes}</button>
+                              <button onClick={() => handleRejectAiData(idx)} className="flex-1 bg-gray-300 hover:bg-gray-400 dark:bg-gray-600 dark:hover:bg-gray-500 text-gray-800 dark:text-gray-100 text-xs font-bold py-2 rounded-lg transition-colors">{current.btnNo}</button>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
                   ))}

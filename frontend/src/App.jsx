@@ -64,7 +64,7 @@ function App() {
   // ✅ 신규: 헤더 다국어 사전 (인스타 텍스트는 이제 SVG로 대체되므로 사용하지 않지만 구조 유지를 위해 둠)
   const t = {
     ko: { market: "MARKET", todo: "TODO", gpa: "GPA 계산기", food: "학식↗", lib: " 도서관↗", insta: "📸 인스타" },
-    en: { market: "MARKET", todo: "TODO", gpa: "GPA Calc", food: "Food", lib: " Library", insta: "📸 Insta" }
+    en: { market: "MARKET", todo: "TODO", gpa: "GPA Calc", food: "Food↗", lib: " Library↗", insta: "📸 Insta" }
   };
 
   return (
