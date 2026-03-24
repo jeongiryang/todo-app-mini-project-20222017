@@ -12,8 +12,7 @@ const PLACEHOLDERS = {
 };
 
 // 🔴 [명언 배열]
-const QUOTES = [ 
-  // 🎬 영화 명언 (한국어 '中', 영어 'from' 추가 완료)
+const QUOTES = [ // 🎬 영화 명언 (한국어 '中', 영어 'from' 추가 완료)
   { ko: "어제는 역사, 내일은 미스터리, 오늘은 선물. 그래서 우리는 현재(Present)라고 부른다. - 우그웨이 (쿵푸팬더 中)", en: "Yesterday is history, tomorrow is a mystery, today is a gift. That's why we call it the present. - Oogway (from Kung Fu Panda)" },
   { ko: "하거나, 하지 않거나 둘 중 하나다. '해본다'는 건 없다. - 요다 (스타워즈 中)", en: "Do or do not. There is no try. - Yoda (from Star Wars)" },
   { ko: "인생은 초콜릿 상자와 같다. 네가 무엇을 고를지 아무도 모르니까. - 포레스트 검프 (포레스트 검프 中)", en: "Life was like a box of chocolates. You never know what you're gonna get. - Forrest Gump (from Forrest Gump)" },
@@ -98,6 +97,7 @@ const QUOTES = [
   { ko: "나는 실패한 적이 없다. 단지 작동하지 않는 10,000가지 방법을 발견했을 뿐이다. - 토머스 에디슨", en: "I have not failed. I've just found 10,000 ways that won't work. - Thomas Edison" },
   { ko: "성공은 최종적인 것이 아니며, 실패는 치명적인 것이 아니다. 중요한 것은 계속하려는 용기이다. - 윈스턴 처칠", en: "Success is not final, failure is not fatal: it is the courage to continue that counts. - Winston Churchill" },
   { ko: "위대한 일을 할 수 없다면 작은 일을 위대하게 하라. - 나폴레옹 힐", en: "If you cannot do great things, do small things in a great way. - Napoleon Hill" }
+  
 ];
 
 function TodoPage({ lang, timerMode, setTimerMode, timerTime, setTimerTime, timerIsRunning, setTimerIsRunning }) {
@@ -111,6 +111,8 @@ function TodoPage({ lang, timerMode, setTimerMode, timerTime, setTimerTime, time
   const [searchTerm, setSearchTerm] = useState(''); 
   const [dragItemIndex, setDragItemIndex] = useState(null);
   const [dragOverItemIndex, setDragOverItemIndex] = useState(null);
+
+  const [expandedTodos, setExpandedTodos] = useState({});
   
   const [sortBy, setSortBy] = useState('default');
 
@@ -481,18 +483,30 @@ function TodoPage({ lang, timerMode, setTimerMode, timerTime, setTimerTime, time
             <select value={importance} onChange={e=>setImportance(e.target.value)} className="w-full md:w-auto bg-gray-50 dark:bg-gray-700 dark:text-white p-3 md:px-5 rounded-2xl font-black text-sm outline-none border border-gray-100 z-10"><option value="긴급">{current.impObj['긴급']}</option><option value="보통">{current.impObj['보통']}</option><option value="낮음">{current.impObj['낮음']}</option></select>
             
             <div className="w-full md:w-auto flex-grow flex items-center bg-transparent border border-gray-100 md:border-none rounded-2xl md:rounded-none z-10 relative">
-              <input 
-                type="text"
+              <textarea 
                 placeholder={PLACEHOLDERS[lang][placeholderIndex]} 
                 value={title} 
-                onChange={e=>setTitle(e.target.value)} 
-                className="w-full p-3 pr-24 outline-none bg-transparent font-bold text-gray-800 dark:text-white text-base md:text-lg focus:border-blue-400"
+                onChange={e => {
+                  setTitle(e.target.value);
+                  e.target.style.height = 'auto';
+                  e.target.style.height = (e.target.scrollHeight) + 'px';
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    if(title) document.getElementById('tour-add').requestSubmit();
+                  }
+                }}
+                className="w-full p-3 pt-[14px] pr-24 outline-none bg-transparent font-bold text-gray-800 dark:text-white text-base md:text-lg focus:border-blue-400 resize-none overflow-y-auto max-h-[120px] custom-scrollbar leading-snug break-words"
+                rows="1"
+                style={{ minHeight: '52px' }}
               />
+
               <button 
                 type="button" 
                 onClick={() => askAi(title, true)}
                 disabled={isGenerating}
-                className={`absolute right-2 px-3 py-1.5 rounded-xl font-black text-[10px] md:text-xs transition-all shadow-sm ${isGenerating ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white hover:scale-105 hover:shadow-md'}`}
+                className={`absolute right-2 top-1/2 -translate-y-1/2 px-3 py-1.5 rounded-xl font-black text-[10px] md:text-xs transition-all shadow-sm ${isGenerating ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white hover:scale-105 hover:shadow-md'}`}
               >
                 {isGenerating && chatHistory.length === 0 ? current.aiLoading : current.aiBtn}
               </button>
@@ -596,7 +610,21 @@ function TodoPage({ lang, timerMode, setTimerMode, timerTime, setTimerTime, time
                       <td colSpan="4" className="p-3 md:p-4 bg-blue-50/50 dark:bg-blue-900/20">
                         <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-center">
                           <select value={editForm.importance} onChange={e=>setEditForm({...editForm, importance: e.target.value})} className="w-full sm:w-auto p-2 border dark:border-gray-600 dark:bg-gray-700 rounded-xl font-bold text-xs"><option value="긴급">{current.impObj['긴급']}</option><option value="보통">{current.impObj['보통']}</option><option value="낮음">{current.impObj['낮음']}</option></select>
-                          <input type="text" value={editForm.title} onChange={e=>setEditForm({...editForm, title: e.target.value})} className="w-full sm:flex-grow p-2 border dark:border-gray-600 dark:bg-gray-700 rounded-xl font-bold text-sm outline-none"/>
+                          
+                          
+<textarea 
+  value={editForm.title} 
+  onChange={e => {
+    setEditForm({...editForm, title: e.target.value});
+    e.target.style.height = 'auto';
+    e.target.style.height = e.target.scrollHeight + 'px';
+  }} 
+  className="w-full sm:flex-grow p-2 border dark:border-gray-600 dark:bg-gray-700 rounded-xl font-bold text-sm outline-none resize-none overflow-y-auto min-h-[44px] max-h-[120px] custom-scrollbar"
+  rows="1"
+/>
+                         
+                         
+                         
                           <input type="datetime-local" value={editForm.todoDeadline} onChange={e=>setEditForm({...editForm, todoDeadline: e.target.value})} className="w-full sm:w-auto p-2 border dark:border-gray-600 dark:bg-gray-700 rounded-xl text-xs font-bold outline-none"/>
                           <div className="flex gap-2 w-full sm:w-auto">
                             <button onClick={() => saveEditTodo(todo._id)} className="flex-1 sm:flex-none bg-green-500 text-white px-4 py-2 rounded-xl font-black text-xs">{current.btnSave}</button>
@@ -607,7 +635,24 @@ function TodoPage({ lang, timerMode, setTimerMode, timerTime, setTimerTime, time
                     ) : (
                       <>
                         <td className="p-3 md:p-5 flex items-center justify-center gap-2"><span className="text-gray-300 dark:text-gray-600 mr-1 hidden sm:inline" title="드래그하여 순서 변경">☰</span><span className={`px-2 py-1 md:px-3 md:py-1.5 rounded-full text-[9px] md:text-[10px] font-black text-white ${todo.importance==='긴급'?'bg-red-500':todo.importance==='보통'?'bg-yellow-400 text-gray-900':'bg-green-500'}`}>{current.impObj[todo.importance] || todo.importance}</span></td> 
-                        <td className="p-3 md:p-5 text-left font-black text-gray-800 dark:text-gray-100 text-sm md:text-lg">{todo.title}</td> 
+                       
+                       
+                      <td className="p-3 md:p-5 text-left w-full max-w-[200px]">
+  <div className={`font-black text-gray-800 dark:text-gray-100 text-sm md:text-lg break-words whitespace-pre-wrap ${expandedTodos[todo._id] ? '' : 'line-clamp-2'}`}>
+    {todo.title}
+  </div>
+  {todo.title.length > 20 && (
+    <button 
+      onClick={(e) => { e.preventDefault(); setExpandedTodos(prev => ({...prev, [todo._id]: !prev[todo._id]})) }} 
+      className="text-[10px] text-blue-500 font-bold mt-1 hover:text-blue-700"
+    >
+      {expandedTodos[todo._id] ? '접기 ▲' : '자세히 보기 ▼'}
+    </button>
+  )}
+</td>
+                        
+                        
+                        
                         <td className="p-3 md:p-5 text-sm md:text-base font-black text-blue-600 dark:text-blue-300 whitespace-nowrap">{remain === "EXPIRED" ? current.expiredIcon : remain ? `${remain.days}${current.remainDay} ${String(remain.hours).padStart(2,'0')}:${String(remain.mins).padStart(2,'0')}:${String(remain.secs).padStart(2,'0')}.${String(remain.ms).padStart(2,'0')}` : "-"}</td> 
                         <td className="p-3 md:p-5 flex justify-center gap-1.5">
                           <button onClick={() => {setEditingId(todo._id); setEditForm(todo)}} className="text-[10px] font-black uppercase text-blue-500 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 bg-blue-50 dark:bg-blue-900/30 px-3 py-1.5 rounded-full transition">{current.btnEdit}</button>
@@ -627,7 +672,23 @@ function TodoPage({ lang, timerMode, setTimerMode, timerTime, setTimerTime, time
                   {editingId === todo._id ? (
                     <div className="flex flex-col gap-2 md:gap-3">
                       <select value={editForm.importance} onChange={e=>setEditForm({...editForm, importance: e.target.value})} className="p-2 border-2 border-blue-100 dark:border-gray-600 dark:bg-gray-700 rounded-xl font-bold text-xs"><option value="긴급">{current.impObj['긴급']}</option><option value="보통">{current.impObj['보통']}</option><option value="낮음">{current.impObj['낮음']}</option></select>
-                      <input type="text" value={editForm.title} onChange={e=>setEditForm({...editForm, title: e.target.value})} className="p-2 border-2 border-blue-100 dark:border-gray-600 dark:bg-gray-700 rounded-xl font-black outline-none text-sm"/>
+                     
+                     
+                    <textarea 
+  value={editForm.title} 
+  onChange={e => {
+    setEditForm({...editForm, title: e.target.value});
+    e.target.style.height = 'auto';
+    e.target.style.height = e.target.scrollHeight + 'px';
+  }} 
+  className="p-2 border-2 border-blue-100 dark:border-gray-600 dark:bg-gray-700 rounded-xl font-black outline-none text-sm resize-none overflow-y-auto min-h-[44px] max-h-[120px] custom-scrollbar w-full"
+  rows="1"
+/>
+
+
+
+
+
                       <input type="datetime-local" value={editForm.todoDeadline} onChange={e=>setEditForm({...editForm, todoDeadline: e.target.value})} className="p-2 border-2 border-blue-100 dark:border-gray-600 dark:bg-gray-700 rounded-xl text-xs font-bold"/>
                       <div className="flex gap-2"><button onClick={() => saveEditTodo(todo._id)} className="bg-green-500 text-white flex-grow py-2 rounded-xl font-black text-xs">{current.btnSave}</button><button onClick={() => setEditingId(null)} className="bg-gray-400 text-white flex-grow py-2 rounded-xl font-black text-xs">{current.btnCancel}</button></div>
                     </div>
@@ -636,7 +697,23 @@ function TodoPage({ lang, timerMode, setTimerMode, timerTime, setTimerTime, time
                       <div className="flex items-center gap-3 w-full">
                         <span className="text-gray-300 dark:text-gray-600" title="드래그하여 순서 변경">☰</span>
                         <span className={`min-w-[12px] h-3 rounded-full shadow-inner ${todo.importance==='긴급'?'bg-red-500':todo.importance==='보통'?'bg-yellow-400':'bg-green-500'}`}></span>
-                        <span className="font-black text-gray-800 dark:text-gray-100 text-lg md:text-xl truncate">{todo.title}</span>
+                       
+                      <div className="flex flex-col w-full min-w-0 overflow-hidden">
+  <span className={`font-black text-gray-800 dark:text-gray-100 text-lg md:text-xl break-words whitespace-pre-wrap ${expandedTodos[todo._id] ? '' : 'line-clamp-2'}`}>
+    {todo.title}
+  </span>
+  {todo.title.length > 20 && (
+    <button 
+      onClick={(e) => { e.preventDefault(); setExpandedTodos(prev => ({...prev, [todo._id]: !prev[todo._id]})) }} 
+      className="self-start text-[10px] md:text-xs text-blue-500 font-bold mt-1 hover:text-blue-700 transition"
+    >
+      {expandedTodos[todo._id] ? '접기 ▲' : '자세히 보기 ▼'}
+    </button>
+  )}
+</div>
+                      
+                      
+                      
                       </div> 
                       {remain && <div className={`text-sm md:text-base font-black ml-9 mt-2 inline-block self-start px-3 py-1.5 rounded-lg border ${remain === "EXPIRED" ? "bg-gray-50 dark:bg-gray-800 text-gray-400 dark:text-gray-500 border-gray-200 dark:border-gray-600" : "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-300 border-blue-100 dark:border-blue-500/30"}`}>⏱️ {remain === "EXPIRED" ? current.expired : `${remain.days}${current.remainDay} ${String(remain.hours).padStart(2,'0')}:${String(remain.mins).padStart(2,'0')}:${String(remain.secs).padStart(2,'0')}.${String(remain.ms).padStart(2,'0')} ${current.remainLeft}`}</div>} 
                       <div className="flex gap-2 mt-4 ml-9"><button onClick={() => {setEditingId(todo._id); setEditForm(todo)}} className="px-4 py-2 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-xl font-black text-[10px] uppercase hover:bg-blue-600 dark:hover:bg-blue-500 hover:text-white dark:hover:text-white transition">{current.btnEdit}</button><button onClick={async ()=>{await axios.delete(`${COMMON_URL}/${todo._id}`); fetchTodos()}} className="px-4 py-2 bg-red-50 dark:bg-red-900/30 text-red-500 dark:text-red-400 rounded-xl font-black text-[10px] uppercase hover:bg-red-500 dark:hover:bg-red-600 hover:text-white dark:hover:text-white transition">{current.btnDel}</button></div> 
