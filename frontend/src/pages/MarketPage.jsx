@@ -1,9 +1,41 @@
 import { useState, useEffect, useRef } from 'react'
 import axios from 'axios'
 
-// 🔴 [명언 배열 - 복붙을 위해 비워두었습니다!]
 const MARKET_QUOTES = {
- 
+  ko: [
+    "안 쓰는 물건, 누군가에겐 보물입니다.", 
+    "빠른 쿨거래가 창대인의 매너를 만듭니다.", 
+    "네고는 둥글게, 거래는 확실하게!", 
+    "오늘 비운 공간, 내일의 여유가 됩니다.", 
+    "신뢰는 최고의 거래 조건입니다.",
+    "자취방 이사 전 필수 코스! 방 빼기 전 물건부터 빼세요.",
+    "오늘 안 쓰는 전공책 팔아서 내일 치킨 시켜 먹자!",
+    "잠수는 사절! 쿨거래는 창대인의 기본 소양입니다.",
+    "선배의 손때 묻은 전공책, 후배에겐 A+의 열쇠!",
+    "통장 잔고가 위험할 때, 책상 서랍을 열어보세요.",
+    "충동구매의 최후... 눈물을 머금고 반값에 올립니다.",
+    "버리면 쓰레기, 나누면 지구를 살리는 에코 라이프!",
+    "따뜻한 인사 한마디가 기분 좋은 거래를 만듭니다.",
+    "가성비 넘치는 대학 생활의 비밀 무기, 마켓 직거래.",
+    "판매자에겐 쏠쏠한 용돈을, 구매자에겐 짜릿한 득템을!"
+  ],
+  en: [
+    "An unused item is someone else's treasure.", 
+    "Quick and cool deals make CWNU manners.", 
+    "Negotiate smoothly, deal surely!", 
+    "Space emptied today becomes tomorrow's leisure.", 
+    "Trust is the best deal condition.",
+    "A must before moving out! Empty your items before emptying the room.",
+    "Sell unused textbooks today, order fried chicken tomorrow!",
+    "No ghosting! Cool deals are the basics for CWNU students.",
+    "A senior's well-used textbook is a junior's key to an A+!",
+    "When your bank balance is low, open your desk drawer.",
+    "The end of impulse buying... selling at half price with tears.",
+    "Trash if thrown away, eco-life saving the earth if shared!",
+    "A warm greeting makes a pleasant transaction.",
+    "The secret weapon for cost-effective college life, direct market deals.",
+    "Sweet pocket money for the seller, thrilling finds for the buyer!"
+  ]
 };
 
 const SUBMIT_MENTIONS = {
@@ -54,14 +86,14 @@ function MarketPage({ lang }) {
       tourSkip: "건너뛰기", tourNext: "다음 보기 ▶", tourEnd: "투어 종료 🎉", help: "💡 도움말", verCheck: "(버전 클릭 시 업데이트 내역 확인)",
       phTitle: "물품명 (예: 전공책, 마우스)", phPrice: "가격(원)", phFree: "🎁 무료 나눔 설정됨", phId: "학번", phSeller: "판매자", phPhone: "전화번호", phLoc: "거래 희망처", phDesc: "상세 설명",
       btnFree: "무료나눔", btnCancel: "취소", searchP: "찾으시는 중고 물품을 검색해보세요! (제목 또는 내용)",
-      sortOpt: { latest: "🔄 최신 등록순", deadline: "⏳ 마감 임박순", priceLow: "📉 가격 낮은순", priceHigh: "📈 가격 높은순", likes: "❤️ 찜 많은순" },
-      currency: "원", freeBadge: "🎁 무료 나눔!", soldOut: "SOLD OUT", sellerPrefix: "👤", locPrefix: "📍 희망처:", deadlinePrefix: "📅 마감:", deadlineNone: "없음",
+      sortOpt: { latest: "최신 등록순", deadline: "마감 임박순", priceLow: "가격 낮은순", priceHigh: "가격 높은순", likes: "찜 많은순 ❤️" },
+      currency: "원", freeBadge: "🎁 무료 나눔!", soldOut: "SOLD OUT", sellerPrefix: "👤", locPrefix: "희망처:", deadlinePrefix: "📅 마감:", deadlineNone: "없음",
       btnEdit: "수정", btnDel: "삭제", btnDone: "거래완료", btnUndo: "판매중으로 변경", btnSave: "수정 저장", btnEditCancel: "취소",
       btnDescShow: "💬 상세 설명 보기", btnDescHide: "설명 닫기", descEmpty: "등록된 상세 설명이 없습니다.",
       thItem: "Item", thPrice: "Price", thSeller: "Seller", thStatus: "Status", thAction: "Action", stDone: "거래완료", stSale: "판매중",
       footerDept: "컴퓨터공학과 | 소프트웨어공학 프로젝트: CWNU 포털 시스템", footerCopy: "@ 2026 정이량 | Gemini AI 협업 제작",
       
-      modalTitle: "Market V6 6.0 ver 업데이트 내역", modalSub: "25년 2학기 웹프로그래밍 기말대체 과제 `todos_v4`의 최종 진화형!",
+      modalTitle: "Market V6 6.0 ver 업데이트 내역", modalSub: "25년 1학기 웹프로그래밍 기말대체 과제 `todos_v4`의 최종 진화형!",
       modalPrevTitle: "🤔 이전 버전 (todos_v4)", modalPrev1: "❌ 새로고침하면 데이터 소실", modalPrev2: "❌ 단순한 텍스트 위주의 투박한 디자인", modalPrev3: "❌ 찜하기 등 거래 부가 기능 전무",
       modalCurTitle: "✨ 현재 버전 (V6 6.0)", modalCur1: "✅ MongoDB 연동으로 데이터 보존!", modalCur2: "✅ 트렌디한 카드 UI 및 정렬 기능", modalCur3: "✅ 실시간 찜하기 및 마켓 검색 기능 추가!", modalCur4: "✅ 글로벌 다국어(KOR/ENG) 완벽 지원!", modalCur5: "🤖 AI 판매글 폼 자동완성 기능 도입!",
       modalHistTitle: "🛠️ CWNU PORTAL 발전 과정",
@@ -76,6 +108,7 @@ function MarketPage({ lang }) {
         { title: "👋 Welcome!", desc: "Let me guide you through the core features.", targetId: "tour-header" }, 
         { title: "🤖 AI Auto-fill", desc: "Tell AI what to sell, and it fills the form!", targetId: "tour-ai-btn" }, 
         { title: "🎁 Freebie & Price", desc: "Set a price or click 'Freebie'.", targetId: "tour-freebie" }, 
+
         { title: "📅 Deadline", desc: "Click to easily set a deadline.", targetId: "tour-deadline" }, 
         { title: "🔄 Smart Sort", desc: "Sort by latest, deadline, etc.", targetId: "tour-sort" }, 
         { title: "❤️ Real-time Like", desc: "Click the heart on items you like!", targetId: "tour-card" }
@@ -83,21 +116,21 @@ function MarketPage({ lang }) {
       tourSkip: "Skip", tourNext: "Next ▶", tourEnd: "End Tour 🎉", help: "💡 Guide", verCheck: "(Click version to check updates)",
       phTitle: "Item Name", phPrice: "Price (KRW)", phFree: "🎁 Freebie Set", phId: "Student ID", phSeller: "Seller", phPhone: "Phone Number", phLoc: "Trade Location", phDesc: "Description",
       btnFree: "Freebie", btnCancel: "Cancel", searchP: "Search for used items! (Title or Description)",
-      sortOpt: { latest: "🔄 Latest", deadline: "⏳ Deadline", priceLow: "📉 Price Low", priceHigh: "📈 Price High", likes: "❤️ Most Liked" },
-      currency: " KRW", freeBadge: "🎁 Freebie!", soldOut: "SOLD OUT", sellerPrefix: "👤", locPrefix: "📍 Loc:", deadlinePrefix: "📅 Due:", deadlineNone: "None",
+      sortOpt: { latest: "Latest", deadline: "Deadline", priceLow: "Price Low", priceHigh: "Price High", likes: "Most Liked❤️" },
+      currency: " KRW", freeBadge: "🎁 Freebie!", soldOut: "SOLD OUT", sellerPrefix: "👤", locPrefix: "Loc:", deadlinePrefix: "📅 Due:", deadlineNone: "None",
       btnEdit: "Edit", btnDel: "Del", btnDone: "Done", btnUndo: "Undo", btnSave: "Save", btnEditCancel: "Cancel",
       btnDescShow: "💬 View Details", btnDescHide: "Close Desc", descEmpty: "No detailed description provided.",
       thItem: "Item", thPrice: "Price", thSeller: "Seller", thStatus: "Status", thAction: "Action", stDone: "Done", stSale: "On Sale",
       footerDept: "Department of Computer Science | Software Engineering Project: CWNU Portal System", footerCopy: "@ 2026 Jung Yi Ryang | Designed with Gemini AI Collaborative Works",
       
-      modalTitle: "Market V6 6.0 ver Updates", modalSub: "The ultimate evolution of the Fall '25 Web Programming final project `todos_v4`!",
+      modalTitle: "Market V6 6.0 ver Updates", modalSub: "The ultimate evolution of the Spring '25 Web Programming final project `todos_v4`!",
       modalPrevTitle: "🤔 Previous Version (todos_v4)", modalPrev1: "❌ Data lost on refresh", modalPrev2: "❌ Clunky text-based design", modalPrev3: "❌ No extra features like 'Like'",
       modalCurTitle: "✨ Current Version (V6 6.0)", modalCur1: "✅ Data preserved with MongoDB!", modalCur2: "✅ Trendy card UI & sorting", modalCur3: "✅ Real-time 'Like' & Market search!", modalCur4: "✅ Global bilingual (KOR/ENG) support!", modalCur5: "🤖 AI Form Auto-fill Feature added!",
       modalHistTitle: "🛠️ CWNU PORTAL Evolution",
       modalHistV1: "Basic item registration & list view system", modalHistV2: "User guide tour & trade convenience features", modalHistV3: "Real-time Like & Card/Table view toggle", modalHistV4: "MongoDB integration & advanced search", modalHistV5: "Full bilingual support & UI enhancement",
       modalHistV6: "🤖 Interactive Gemini AI & Auto-fill Form integrated",
       modalFreeTitle: "\"Wait, is this paid?\"", modalFreeDesc1: "No! It's a completely free service for CWNU students!", modalFreeDesc2: "Share warmth through cool deals!", modalBtn: "Confirmed!",
-      aiOpenBtn: "✨ Let AI write the sales post", aiLoading: "⏳ Analyzing and filling form...", aiEmpty: "Please type something in the chat!", aiFollowUpP: "Tell me item, price, location, etc.", aiClear: "Clear", aiClose: "Close AI", aiApply: "Apply to Description",
+      aiOpenBtn: " Let AI write the sales post", aiLoading: "⏳ Analyzing and filling form...", aiEmpty: "Please type something in the chat!", aiFollowUpP: "Tell me item, price, location, etc.", aiClear: "Clear", aiClose: "Close AI", aiApply: "Apply to Description",
       aiConfirm: "✨ Do you want to apply this info to the form?", btnYes: "Yes, apply", btnNo: "No"
     }
   };
@@ -666,10 +699,50 @@ function MarketPage({ lang }) {
         )}
       </div>
 
+    
       <footer className="py-8 md:py-12 text-center border-t border-gray-200 dark:border-gray-800 mt-16 md:mt-24 relative z-10 transition-colors">
-        <p className="text-gray-600 dark:text-gray-400 font-black text-[10px] md:text-sm uppercase tracking-widest mb-1.5 md:mb-2 break-keep leading-relaxed">{current.footerDept}</p>
-        <p className="text-gray-400 dark:text-gray-500 text-[10px] md:text-sm font-bold mt-1 md:mt-2">{current.footerCopy}</p>
-      </footer>
+  {/* 1. 학과 정보 */}
+  <p className="text-gray-600 dark:text-gray-400 font-black text-[10px] md:text-sm uppercase tracking-widest mb-1.5 md:mb-2 break-keep leading-relaxed">
+    {current.footerDept}
+  </p>
+
+  {/* 2. 저작권 문구 + 툴팁 기능이 있는 깃허브 아이콘 */}
+  <div className="flex items-center justify-center gap-4 mt-2 md:mt-3">
+    <p className="text-gray-400 dark:text-gray-500 text-[10px] md:text-sm font-bold">
+      {current.footerCopy}
+    </p>
+    
+    {/* 💡 툴팁 구현을 위한 group 클래스 추가 */}
+    <div className="relative group flex flex-col items-center">
+      <a 
+        href="https://github.com/eryang11188/todo-app-mini-project-20222017.git" 
+        target="_blank" 
+        rel="noopener noreferrer"
+        className="text-gray-400 dark:text-gray-500 hover:text-gray-900 dark:hover:text-gray-100 transition-all hover:scale-110"
+      >
+        {/* 요청하신 사이즈 35px 적용 */}
+        <svg 
+          height="35" 
+          width="35" 
+          viewBox="0 0 16 16" 
+          fill="currentColor" 
+          className="opacity-80 hover:opacity-100"
+        >
+          <path d="M8 0c4.42 0 8 3.58 8 8a8.01 8.01 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z" />
+        </svg>
+      </a>
+
+      {/* ✨ 마우스를 올리면(hover) 나타나는 툴팁 박스 */}
+      <div className="absolute bottom-full mb-2 hidden group-hover:flex flex-col items-center animate-bounce">
+        <span className="relative z-10 p-2 text-xs leading-none text-white whitespace-no-wrap bg-gray-800 dark:bg-gray-700 shadow-lg rounded-md font-bold">
+          Github Profile
+        </span>
+        {/* 삼각형 꼬리 */}
+        <div className="w-3 h-3 -mt-2 rotate-45 bg-gray-800 dark:bg-gray-700"></div>
+      </div>
+    </div>
+  </div>
+</footer>
     </div>
   )
 }

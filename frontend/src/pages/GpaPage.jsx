@@ -44,7 +44,7 @@ function GpaPage({ lang }) {
       
       // 보안 안내 모달
       secTitle: "데이터 보안 안내", 
-      secP1: "\"입력하신 성적 데이터가 어떻게 처리되는지 궁금하셨군요? 데이터의 안전성을 확인하려는 아주 훌륭한 접근입니다.\"",
+      secP1: "\"입력하신 성적 데이터가 어떻게 처리되는지 궁금하셨군요?\"",
       secP2: "본 포털의 GPA 계산 시스템은 철저하게 'Client-Side Only (클라이언트 단독 연산)' 아키텍처로 설계되었습니다. 쉽게 말씀드리면, 학우님이 입력하시는 모든 과목과 성적 정보는 창원대학교 서버는 물론, 제 외부 데이터베이스(DB)로도 단 1바이트조차 전송되지 않습니다.",
       secP3: "데이터는 오직 학우님이 현재 접속하신 기기(스마트폰/PC)의 브라우저가 제공하는 표준 보안 저장소인 `Local Storage (로컬 스토리지)`에 물리적으로 격리되어 저장됩니다.",
       secBoxTitle: "성적 데이터 처리 방침 요약",
@@ -70,7 +70,7 @@ function GpaPage({ lang }) {
       footerCopy: "@ 2026 정이량 | Gemini AI 협업 제작",
       
       // 버전 업데이트 모달
-      modalTitle: "GPA V5 5.0 ver 업데이트 내역", modalSub: "25년 2학기 웹프로그래밍 기말대체 과제 `todos_v4`의 최종 진화형!",
+      modalTitle: "GPA V5 5.0 ver 업데이트 내역", modalSub: "25년 1학기 웹프로그래밍 기말대체 과제 `todos_v4`의 최종 진화형!",
       modalPrevTitle: "🤔 이전 버전", modalPrev1: "❌ 학점 계산기가 전무하여 와글에서 수동 확인", modalPrev2: "❌ 복잡하게 나열된 성적 입력 양식",
       modalCurTitle: "✨ 현재 버전 (V5 5.0)", modalCur1: "✅ 학기 탭 기반 인터페이스로 깔끔한 관리", modalCur2: "✅ 3단 대시보드 및 평점 시각화 분석", modalCur3: "✅ 성적 데이터 다운로드 및 목표 학점 시뮬레이터 탑재!", modalCur4: "✅ 글로벌 다국어(KOR/ENG) 완벽 지원!",
       modalHistTitle: "🛠️ CWNU PORTAL 발전 과정",
@@ -89,7 +89,7 @@ function GpaPage({ lang }) {
       
       // 보안 안내 모달 영문
       secTitle: "Data Security Guide", 
-      secP1: "\"Curious about how your grade data is processed? Verifying data safety is an excellent approach.\"",
+      secP1: "\"Wondering how your entered grade data is processed?\"",
       secP2: "This portal's GPA calculation system is strictly designed with a 'Client-Side Only' architecture. Simply put, absolutely zero bytes of your course and grade information are transmitted to any university server or external database.",
       secP3: "The data is physically isolated and stored exclusively within the `Local Storage`, a standard secure repository provided by your current device's browser.",
       secBoxTitle: "Grade Data Processing Policy Summary",
@@ -115,7 +115,7 @@ function GpaPage({ lang }) {
       footerCopy: "@ 2026 Jung Yi Ryang | Designed with Gemini AI Collaborative Works",
       
       // 버전 업데이트 모달
-      modalTitle: "GPA V5 5.0 ver Updates", modalSub: "The ultimate evolution of the Fall '25 Web Programming final project `todos_v4`!",
+      modalTitle: "GPA V5 5.0 ver Updates", modalSub: "The ultimate evolution of the Spring '25 Web Programming final project `todos_v4`!",
       modalPrevTitle: "🤔 Previous Version", modalPrev1: "❌ No GPA calculator, manual check required", modalPrev2: "❌ Clunky and complicated input forms",
       modalCurTitle: "✨ Current Version (V5 5.0)", modalCur1: "✅ Clean management with tab interface", modalCur2: "✅ 3-tier dashboard & GPA visualization", modalCur3: "✅ Data export & Target GPA Simulator added!", modalCur4: "✅ Global bilingual (KOR/ENG) support!",
       modalHistTitle: "🛠️ CWNU PORTAL Evolution",
@@ -469,8 +469,47 @@ function GpaPage({ lang }) {
       </div>
       
 <footer className="py-8 md:py-12 text-center border-t border-gray-200 dark:border-gray-800 mt-16 md:mt-24 relative z-10 transition-colors">
-  <p className="text-gray-600 dark:text-gray-400 font-black text-[10px] md:text-sm uppercase tracking-widest mb-1.5 md:mb-2 break-keep leading-relaxed">{current.footerDept}</p>
-  <p className="text-gray-400 dark:text-gray-500 text-[10px] md:text-sm font-bold mt-1 md:mt-2">{current.footerCopy}</p>
+  {/* 1. 학과 정보 */}
+  <p className="text-gray-600 dark:text-gray-400 font-black text-[10px] md:text-sm uppercase tracking-widest mb-1.5 md:mb-2 break-keep leading-relaxed">
+    {current.footerDept}
+  </p>
+
+  {/* 2. 저작권 문구 + 툴팁 기능이 있는 깃허브 아이콘 */}
+  <div className="flex items-center justify-center gap-4 mt-2 md:mt-3">
+    <p className="text-gray-400 dark:text-gray-500 text-[10px] md:text-sm font-bold">
+      {current.footerCopy}
+    </p>
+    
+    {/* 💡 툴팁 구현을 위한 group 클래스 추가 */}
+    <div className="relative group flex flex-col items-center">
+      <a 
+        href="https://github.com/eryang11188/todo-app-mini-project-20222017.git" 
+        target="_blank" 
+        rel="noopener noreferrer"
+        className="text-gray-400 dark:text-gray-500 hover:text-gray-900 dark:hover:text-gray-100 transition-all hover:scale-110"
+      >
+        {/* 요청하신 사이즈 35px 적용 */}
+        <svg 
+          height="35" 
+          width="35" 
+          viewBox="0 0 16 16" 
+          fill="currentColor" 
+          className="opacity-80 hover:opacity-100"
+        >
+          <path d="M8 0c4.42 0 8 3.58 8 8a8.01 8.01 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z" />
+        </svg>
+      </a>
+
+      {/* ✨ 마우스를 올리면(hover) 나타나는 툴팁 박스 */}
+      <div className="absolute bottom-full mb-2 hidden group-hover:flex flex-col items-center animate-bounce">
+        <span className="relative z-10 p-2 text-xs leading-none text-white whitespace-no-wrap bg-gray-800 dark:bg-gray-700 shadow-lg rounded-md font-bold">
+          Github Profile
+        </span>
+        {/* 삼각형 꼬리 */}
+        <div className="w-3 h-3 -mt-2 rotate-45 bg-gray-800 dark:bg-gray-700"></div>
+      </div>
+    </div>
+  </div>
 </footer>
     </div>
   );

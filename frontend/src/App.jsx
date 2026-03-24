@@ -73,7 +73,7 @@ function App() {
         
         <div className="flex items-center gap-4 w-full md:w-auto justify-between md:justify-start">
           <h1 className="text-xl md:text-2xl font-black tracking-tighter cursor-pointer" onClick={() => navigate('/')}>
-            CWNU PORTAL <span className="text-red-500 italic ml-1 md:ml-2 text-sm md:text-base animate-[pulse_2s_ease-in-out_infinite] opacity-90">6.0</span>
+            CWNU PORTAL <span className="text-red-500 italic ml-1 md:ml-2 text-sm md:text-base animate-[pulse_2s_ease-in-out_infinite] opacity-90"></span>
           </h1>
           <div className="flex gap-2">
             {/* ✅ 언어 토글 버튼 */}
