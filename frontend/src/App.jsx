@@ -4,34 +4,28 @@ import MainPage from './pages/MainPage';
 import MarketPage from './pages/MarketPage';
 import TodoPage from './pages/TodoPage';
 import GpaPage from './pages/GpaPage';
+// ✅ 신규: 분실물 센터 페이지 불러오기
+import LostPage from './pages/LostPage';
 
 function App() {
   // [스위치 유동적으로] 내 컴퓨터(localhost)가 아닐 때만 true(차단)로 작동
   // 나중에 완전히 공개하고 싶을 땐 맨 뒤의 true를 false로만 바꾸면 된다.
-  // why? AND 연산으로 인해 isOff는 무조건 false가 되고, 그러면 사이트는 항상 열리게(아래 코드가 작동이 안됨) 되므로
-  // 로컬에서 내가 편하게 작업하고, 실제 작동중인 서버는 작동 중지를 하기 위해서 이 기능을 도입
-  
-  /* - 이전에 사이트를 원할때 작동중이게 하고, 원하지 않을때는 작동하지 않게 하기를 원했음.
-  그런데 이렇게 하니 로컬에서도 작동이 안 됨. 
-
-- 따라서 편리하게 작업하기 위해, 로컬에서는 항시로 사이트가 켜지고, vercel에서 배포될 때는 내가 true를 false로 하지 않으면 무조건 사이트는 작동 중지됨.
-   */
-
   const isOff = window.location.hostname !== 'localhost' && true;
 
   if (isOff) {
     return (
       <div className="min-h-screen bg-gray-900 flex flex-col items-center justify-center text-white text-center p-5 z-[9999] relative">
-        <span className="text-6xl mb-6 animate-bounce"></span>
+        <span className="text-6xl mb-6 animate-bounce">🚧</span>
         <h1 className="text-3xl md:text-5xl font-black mb-4 tracking-tighter">
           CWNU 포털 <span className="text-blue-500">업데이트 중</span>
         </h1>
         <p className="text-gray-400 font-bold text-lg">
-          더 멋진 기능으로 찾아오겠습니다. 조금만 기다려주세요! 
+          더 멋진 기능으로 찾아오겠습니다. 조금만 기다려주세요! 😎
         </p>
       </div>
     );
   }
+  
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -40,7 +34,7 @@ function App() {
     return localStorage.getItem('cwnu_dark_mode') === 'true';
   });
 
-  // ✅ 신규: 다국어(언어) 상태 관리 (기본값 'ko')
+  // ✅ 다국어(언어) 상태 관리
   const [lang, setLang] = useState(() => {
     return localStorage.getItem('cwnu_lang') || 'ko';
   });
@@ -87,11 +81,11 @@ function App() {
       : "text-white/70 hover:text-white hover:bg-white/10");
   };
 
-  // ✅ 신규: 헤더 다국어 사전 (인스타 텍스트는 이제 SVG로 대체되므로 사용하지 않지만 구조 유지를 위해 둠)
- const t = {
-  ko: { market: "MARKET", todo: "TODO", gpa: "GPA 계산기", copykiller: "카피킬러↗", food: "학식↗", lib: " 도서관↗", insta: "📸 인스타" },
-  en: { market: "MARKET", todo: "TODO", gpa: "GPA Calc", copykiller: "CopyKiller↗", food: "Food↗", lib: " Library↗", insta: "📸 Insta" }
-};
+  // ✅ 다국어 사전 (분실물 센터 및 교육과정 추가)
+  const t = {
+    ko: { market: "MARKET", lost: "분실물 센터", todo: "TODO", gpa: "GPA 계산기", curriculum: "교육과정↗", copykiller: "카피킬러↗", food: "학식↗", lib: " 도서관↗", insta: "📸 인스타" },
+    en: { market: "MARKET", lost: "Lost&Found", todo: "TODO", gpa: "GPA Calc", curriculum: "Curriculum↗", copykiller: "CopyKiller↗", food: "Food↗", lib: " Library↗", insta: "📸 Insta" }
+  };
 
   return (
     <div className={`min-h-screen ${isDarkMode ? 'dark' : ''} bg-white dark:bg-gray-900 transition-colors`}>
@@ -102,7 +96,6 @@ function App() {
             CWNU PORTAL <span className="text-red-500 italic ml-1 md:ml-2 text-sm md:text-base animate-[pulse_2s_ease-in-out_infinite] opacity-90"></span>
           </h1>
           <div className="flex gap-2">
-            {/* ✅ 언어 토글 버튼 */}
             <button onClick={() => setLang(lang === 'ko' ? 'en' : 'ko')} className="p-2 md:p-2.5 rounded-xl bg-white/10 border-2 border-white/20 text-white font-black text-[10px] md:text-xs hover:bg-white/20 transition-all">
               {lang === 'ko' ? '🌐 ENG' : '🌐 KOR'}
             </button>
@@ -113,6 +106,8 @@ function App() {
         {location.pathname !== '/' && (
           <nav className="flex items-center gap-1 md:gap-4 bg-black/20 p-1 md:p-1.5 rounded-2xl">
             <Link to="/market" className={getMenuClass('/market')}>🏪 <span className="hidden sm:inline">{t[lang].market}</span><span className="sm:hidden text-[10px]">{t[lang].market}</span></Link>
+            {/* ✅ 신규: 분실물 센터 상단 메뉴 추가 */}
+            <Link to="/lost" className={getMenuClass('/lost')}>🔍 <span className="hidden sm:inline">{t[lang].lost}</span><span className="sm:hidden text-[10px]">분실물</span></Link>
             <Link to="/todo" className={getMenuClass('/todo')}>📝 <span className="hidden sm:inline">{t[lang].todo}</span><span className="sm:hidden text-[10px]">{t[lang].todo}</span></Link>
             <Link to="/gpa" className={getMenuClass('/gpa')}>🎓 <span className="hidden sm:inline">{t[lang].gpa}</span><span className="sm:hidden text-[10px]">GPA</span></Link>
           </nav>
@@ -120,15 +115,24 @@ function App() {
 
         <div className="flex gap-2 md:gap-3 items-center w-full md:w-auto justify-center md:justify-end">
           
+          {/* ✅ 교육과정 바로가기 */}
+          <a href="https://www.changwon.ac.kr/haksa/cm/cntnts/cntntsView.do?mi=18077&cntntsId=6530" target="_blank" rel="noreferrer" className="bg-[#2563eb] text-white px-2.5 py-1.5 md:px-4 md:py-2 rounded-xl font-black text-[10px] md:text-xs shadow-md flex items-center gap-1.5 hover:bg-[#1d4ed8] transition">
+            📚 {t[lang].curriculum}
+          </a>
+
+          {/* ✅ 카피킬러 버튼 */}
+          <a href="https://changwongrad.copykiller.com/welcome" target="_blank" rel="noreferrer" className="bg-[#be123c] text-white px-2.5 py-1.5 md:px-4 md:py-2 rounded-xl font-black text-[10px] md:text-xs shadow-md flex items-center gap-1.5 hover:bg-[#9f1239] transition">
+            📝 {t[lang].copykiller}
+          </a>
+
+          <a href="https://app.changwon.ac.kr/campus/campus_001.do" target="_blank" rel="noreferrer" className="bg-[#634432] text-white px-2.5 py-1.5 md:px-4 md:py-2 rounded-xl font-black text-[10px] md:text-xs shadow-md flex items-center gap-1.5 hover:bg-[#4d3527] transition">
+            {t[lang].food}
+          </a>
+          <a href="https://lib.changwon.ac.kr/" target="_blank" rel="noreferrer" className="bg-[#059669] text-white px-2.5 py-1.5 md:px-4 md:py-2 rounded-xl font-black text-[10px] md:text-xs shadow-md flex items-center gap-1.5 hover:bg-[#047857] transition">
+            {t[lang].lib}
+          </a>
           
-          {/* ✅ 여기에 카피킬러 버튼을 똭! 끼워 넣으세요 (학식 바로 왼쪽 위치) */}
-  <a href="https://changwongrad.copykiller.com/welcome" target="_blank" rel="noreferrer" className="bg-[#be123c] text-white px-2.5 py-1.5 md:px-4 md:py-2 rounded-xl font-black text-[10px] md:text-xs shadow-md flex items-center gap-1.5 hover:bg-[#9f1239] transition">
-    📝 {t[lang].copykiller}
-  </a>
-          <a href="https://app.changwon.ac.kr/campus/campus_001.do" target="_blank" rel="noreferrer" className="bg-[#634432] text-white px-2.5 py-1.5 md:px-4 md:py-2 rounded-xl font-black text-[10px] md:text-xs shadow-md flex items-center gap-1.5 hover:bg-[#4d3527] transition">{t[lang].food}</a>
-          <a href="https://lib.changwon.ac.kr/" target="_blank" rel="noreferrer" className="bg-[#059669] text-white px-2.5 py-1.5 md:px-4 md:py-2 rounded-xl font-black text-[10px] md:text-xs shadow-md flex items-center gap-1.5 hover:bg-[#047857] transition">{t[lang].lib}</a>
-          
-          {/* ✅ 신규: 인스타그램 SVG 로고 버튼 (텍스트 없음, 호버 시 핑크색 강조) */}
+          {/* ✅ 인스타그램 SVG 로고 버튼 */}
           <a 
             href="https://www.instagram.com/cwnu_official/?mi=18361" 
             target="_blank" 
@@ -156,6 +160,8 @@ function App() {
         <Routes>
           <Route path="/" element={<MainPage lang={lang} />} />
           <Route path="/market" element={<MarketPage lang={lang} />} />
+          {/* ✅ 신규: 분실물 센터 라우트 연결 */}
+          <Route path="/lost" element={<LostPage lang={lang} />} />
           <Route path="/todo" element={
             <TodoPage 
               lang={lang}

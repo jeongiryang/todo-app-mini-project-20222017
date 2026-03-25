@@ -1,0 +1,460 @@
+import { useState, useEffect, useRef } from 'react'
+import axios from 'axios'
+
+const LOST_QUOTES = {
+  ko: [
+    "작은 관심이 누군가에겐 큰 기적이 됩니다.", 
+    "잃어버린 물건, 창대인이 함께 찾아줍니다.", 
+    "소중한 추억이 담긴 물건일지도 모릅니다.", 
+    "습득물 신고는 가장 따뜻한 매너입니다.", 
+    "물건을 잃어버렸나요? 너무 걱정하지 마세요!"
+  ],
+  en: [
+    "A small attention can be a great miracle to someone.", 
+    "CWNU students will help you find your lost items.", 
+    "It might be an item full of precious memories.", 
+    "Reporting a found item is the warmest manners.", 
+    "Lost something? Don't worry too much!"
+  ]
+};
+
+const SUBMIT_MENTIONS = {
+  ko: ["분실물 / 습득물 등록하기", "애타게 찾는 주인에게 정보 알리기", "게시글 올리고 도움 요청하기"],
+  en: ["Register Lost / Found Item", "Notify the anxious owner", "Upload post to ask for help"]
+};
+
+function LostPage({ lang }) {
+  const [items, setItems] = useState([])
+  const [form, setForm] = useState({ title: '', price: '', deadline: '', studentId: '', sellerName: '', phone: '', location: '', description: '' })
+  const [viewType, setViewType] = useState('card')
+  const [editingId, setEditingId] = useState(null)
+  const [editForm, setEditForm] = useState({})
+  const [sortType, setSortType] = useState('latest')
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 6;
+  const [likedItems, setLikedItems] = useState(() => new Set(JSON.parse(localStorage.getItem('likedLostItems') || '[]')))
+  
+  const [quoteIndex, setQuoteIndex] = useState(0)
+  const [submitMentionIndex, setSubmitMentionIndex] = useState(0);
+  const [tourIndex, setTourIndex] = useState(-1) 
+  const [searchTerm, setSearchTerm] = useState('')
+  const [expandedId, setExpandedId] = useState(null)
+
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [showAiBox, setShowAiBox] = useState(false);
+  const [chatHistory, setChatHistory] = useState([]);
+  const [followUpInput, setFollowUpInput] = useState('');
+  const chatContainerRef = useRef(null);
+  const textareaRef = useRef(null); 
+
+  // ✅ API 주소 (분실물 전용)
+  const API_URL = '/api/lost'; const COMMON_URL = '/api/items'
+
+  const t = {
+    ko: {
+      tourSteps: [
+        { title: "👋 환영합니다!", desc: "분실물 센터의 기능을 안내해 드릴게요.", targetId: "tour-header" }, 
+        { title: "🤖 AI 자동 작성", desc: "분실/습득 상황을 말하면 폼을 알아서 채워줍니다!", targetId: "tour-ai-btn" }, 
+        { title: "📍 장소 및 일시", desc: "물건을 잃어버리거나 주운 장소와 시간을 적어주세요.", targetId: "tour-location" }, 
+      ],
+      tourSkip: "건너뛰기", tourNext: "다음 보기 ▶", tourEnd: "투어 종료 🎉", help: "💡 도움말", verCheck: "(버전 클릭 시 업데이트 내역 확인)",
+      phTitle: "[분실/습득] 물품명 (예: [습득] 검은색 에어팟)", phPrice: "사례금 (선택사항, 숫자만)", phFree: "사례금 없음", phId: "학번", phSeller: "작성자명", phPhone: "연락처", phLoc: "분실/습득 장소 (예: 도서관 2층)", phDesc: "상세 설명 (색상, 특징, 보관 장소 등)",
+      btnFree: "사례금 없음", btnCancel: "취소", searchP: "찾으시는 분실물을 검색해보세요! (에어팟, 지갑 등)",
+      sortOpt: { latest: "최신 등록순", deadline: "분실/습득 일자순", priceHigh: "사례금 높은순", likes: "관심 많은순 👀" },
+      currency: "원", freeBadge: "사례금 없음", soldOut: "주인 찾음/해결완료", sellerPrefix: "👤", locPrefix: "장소:", deadlinePrefix: "📅 일시:", deadlineNone: "미상",
+      btnEdit: "수정", btnDel: "삭제", btnDone: "해결완료", btnUndo: "진행중으로 변경", btnSave: "수정 저장", btnEditCancel: "취소",
+      btnDescShow: "💬 자세히 보기", btnDescHide: "자세히 보기 닫기", descEmpty: "등록된 상세 설명이 없습니다.",
+      thItem: "Item", thPrice: "Reward", thSeller: "Author", thStatus: "Status", thAction: "Action", stDone: "해결됨", stSale: "찾는중",
+      aiOpenBtn: " AI 비서에게 분실/습득글 작성 맡기기", aiLoading: "⏳ 상황을 분석하고 폼을 채우는 중...", aiEmpty: "채팅창에 정보를 입력해주세요!", aiFollowUpP: "무엇을 언제 어디서 잃어버렸는지/주웠는지 말해주세요!", aiClear: "대화 초기화", aiClose: "AI 닫기", aiApply: "이 글로 설명 채우기",
+      aiConfirm: "✨ 이 정보를 폼에 추가하시겠습니까?", btnYes: "예, 추가하기", btnNo: "아니오"
+    },
+    en: {
+      tourSteps: [
+        { title: "👋 Welcome!", desc: "Let me guide you through the Lost & Found.", targetId: "tour-header" }, 
+        { title: "🤖 AI Auto-fill", desc: "Describe the situation, and AI fills the form!", targetId: "tour-ai-btn" }, 
+        { title: "📍 Location & Time", desc: "Enter where and when it happened.", targetId: "tour-location" }, 
+      ],
+      tourSkip: "Skip", tourNext: "Next ▶", tourEnd: "End Tour 🎉", help: "💡 Guide", verCheck: "(Click version to check updates)",
+      phTitle: "[Lost/Found] Item Name", phPrice: "Reward (Optional, numbers)", phFree: "No Reward", phId: "Student ID", phSeller: "Author Name", phPhone: "Phone Number", phLoc: "Location (e.g., Library 2F)", phDesc: "Description (Color, Features, etc.)",
+      btnFree: "No Reward", btnCancel: "Cancel", searchP: "Search for lost items! (AirPods, Wallet, etc.)",
+      sortOpt: { latest: "Latest", deadline: "Date", priceHigh: "Highest Reward", likes: "Most Viewed 👀" },
+      currency: " KRW", freeBadge: "No Reward", soldOut: "RESOLVED", sellerPrefix: "👤", locPrefix: "Loc:", deadlinePrefix: "📅 Date:", deadlineNone: "Unknown",
+      btnEdit: "Edit", btnDel: "Del", btnDone: "Resolved", btnUndo: "Undo", btnSave: "Save", btnEditCancel: "Cancel",
+      btnDescShow: "💬 View Details", btnDescHide: "Close Details", descEmpty: "No description provided.",
+      thItem: "Item", thPrice: "Reward", thSeller: "Author", thStatus: "Status", thAction: "Action", stDone: "Resolved", stSale: "Looking",
+      aiOpenBtn: " Let AI write the post", aiLoading: "⏳ Analyzing and filling form...", aiEmpty: "Please type something!", aiFollowUpP: "Tell me what, when, and where!", aiClear: "Clear", aiClose: "Close AI", aiApply: "Apply to Description",
+      aiConfirm: "✨ Apply this info to the form?", btnYes: "Yes, apply", btnNo: "No"
+    }
+  };
+  const current = t[lang];
+
+  useEffect(() => { 
+    fetchItems(); 
+    if (LOST_QUOTES[lang]?.length > 0) {
+      setQuoteIndex(Math.floor(Math.random() * LOST_QUOTES[lang].length)); 
+    }
+  }, [lang])
+  
+  const fetchItems = async () => { try { const res = await axios.get(API_URL); setItems(res.data) } catch(e){} }
+  useEffect(() => { const intervalId = setInterval(() => setSubmitMentionIndex(prev => (prev + 1) % SUBMIT_MENTIONS[lang].length), 6000); return () => clearInterval(intervalId); }, [lang]);
+  
+  useEffect(() => { 
+    if (chatContainerRef.current) { chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight; }
+  }, [chatHistory, isGenerating]);
+
+  const handleQuoteRefresh = () => { 
+    if (LOST_QUOTES[lang]?.length > 0) setQuoteIndex(Math.floor(Math.random() * LOST_QUOTES[lang].length)); 
+  };
+  
+  const handlePhoneChange = (value) => {
+    const numeric = value.replace(/[^0-9]/g, '');
+    let formatted = numeric;
+    if (numeric.length > 3 && numeric.length <= 7) formatted = `${numeric.slice(0, 3)}-${numeric.slice(3)}`;
+    else if (numeric.length > 7) formatted = `${numeric.slice(0, 3)}-${numeric.slice(3, 7)}-${numeric.slice(7, 11)}`;
+    return formatted;
+  }
+  
+  const handleFreebie = () => { 
+    if (form.price === 'free') { setForm({...form, price: ''}); } 
+    else { setForm({...form, price: 'free'}); }
+  }
+
+  const addItem = async (e) => {
+    e.preventDefault(); if (!form.title) return;
+    const submitData = { ...form, price: form.price === 'free' ? 0 : form.price };
+    const res = await axios.post(API_URL, submitData);
+    setItems([...items, res.data]); 
+    setForm({ title: '', price: '', deadline: '', studentId: '', sellerName: '', phone: '', location: '', description: '' });
+    setShowAiBox(false); setChatHistory([]); setCurrentPage(1);
+  }
+
+  const handleLike = async (id) => {
+    const isLiked = likedItems.has(id); const val = isLiked ? -1 : 1;
+    const res = await axios.patch(`${COMMON_URL}/${id}/like`, { value: val });
+    setItems(items.map(item => item._id === id ? res.data : item));
+    const newLiked = new Set(likedItems); if (isLiked) newLiked.delete(id); else newLiked.add(id);
+    setLikedItems(newLiked); localStorage.setItem('likedLostItems', JSON.stringify([...newLiked]));
+  }
+  
+  const saveEdit = async (id) => {
+    const res = await axios.put(`${COMMON_URL}/${id}`, { ...editForm, price: editForm.price === 'free' ? 0 : editForm.price })
+    setItems(items.map(item => item._id === id ? res.data : item)); setEditingId(null)
+  }
+
+  const handleApplyAiData = (data, idx) => {
+    setForm(prev => {
+      const updated = { ...prev };
+      if (data.title) updated.title = data.title;
+      if (data.price === 'free') updated.price = 'free';
+      else if (data.price && !isNaN(Number(data.price))) updated.price = data.price;
+      if (data.location) updated.location = data.location;
+      if (data.deadline) updated.deadline = data.deadline;
+      if (data.studentId) updated.studentId = data.studentId;
+      if (data.sellerName) updated.sellerName = data.sellerName;
+      if (data.phone) updated.phone = handlePhoneChange(data.phone); 
+      if (data.description) updated.description = data.description;
+      return updated;
+    });
+    setChatHistory(prev => prev.map((msg, i) => i === idx ? { ...msg, pendingData: null, text: msg.text + (lang === 'ko' ? "\n\n✅ 폼에 성공적으로 추가되었습니다!" : "\n\n✅ Successfully applied to the form!") } : msg));
+  };
+
+  const handleRejectAiData = (idx) => {
+    setChatHistory(prev => prev.map((msg, i) => i === idx ? { ...msg, pendingData: null, text: msg.text + (lang === 'ko' ? "\n\n❌ 추가를 취소했습니다." : "\n\n❌ Canceled.") } : msg));
+  };
+
+  const askAi = async (inputText) => {
+    if (!inputText.trim()) return;
+    setIsGenerating(true);
+    const currentMsg = { sender: 'user', text: inputText };
+    let newHistory = [...chatHistory, currentMsg];
+    setChatHistory(newHistory);
+    setFollowUpInput(''); 
+    if (textareaRef.current) textareaRef.current.style.height = 'auto';
+
+    try {
+      let promptContext = lang === 'ko' 
+        ? `너는 대학 분실물 센터 게시글 폼을 자동으로 채워주는 AI 비서야.
+           사용자의 대화 내용을 분석해서 [습득/분실] 여부와 물품명, 사례금(없으면 free), 장소, 일시, 학번, 작성자명, 연락처, 상세 설명을 추출해.
+           [절대 규칙 1]: 답변은 반드시 아래 형태의 순수한 JSON 구조로만 반환해! 이모지 절대 금지.
+           {
+             "message": "요청하신 정보를 바탕으로 폼에 들어갈 내용을 준비했습니다! 아래 버튼을 눌러보세요.",
+             "extracted": {
+               "title": "[분실] 검은색 에어팟",
+               "price": "50000",
+               "location": "도서관 2층 열람실",
+               "deadline": "2026-03-25",
+               "studentId": "20222017",
+               "sellerName": "정이량",
+               "phone": "010-1234-1234",
+               "description": "케이스에 스누피 스티커가 붙어있습니다."
+             }
+           }\n[대화 내역]\n`
+        : `You are an AI assistant for a Lost & Found board. Output ONLY pure JSON.\n[Chat History]\n`;
+      
+      newHistory.forEach(msg => { promptContext += `${msg.sender === 'user' ? 'User' : 'AI'}: ${msg.text}\n`; });
+      promptContext += "AI: ";
+
+      const res = await axios.post('/api/ai/generate', { prompt: promptContext });
+      let aiText = res.data.text.trim(); 
+      let jsonString = aiText.replace(/```json/gi, '').replace(/```/g, '').trim();
+      const jsonStart = jsonString.indexOf('{');
+      const jsonEnd = jsonString.lastIndexOf('}');
+      if (jsonStart !== -1 && jsonEnd !== -1) { jsonString = jsonString.substring(jsonStart, jsonEnd + 1); }
+
+      try {
+        const parsed = JSON.parse(jsonString);
+        const ext = parsed.extracted;
+        const hasActualData = ext && (ext.title || ext.price || ext.location || ext.deadline || ext.studentId || ext.sellerName || ext.phone || ext.description);
+        setChatHistory(prev => [...prev, { sender: 'ai', text: parsed.message, pendingData: hasActualData ? ext : null }]);
+      } catch (parseError) {
+        setChatHistory(prev => [...prev, { sender: 'ai', text: res.data.text }]);
+      }
+    } catch (error) {
+      setChatHistory(prev => [...prev, { sender: 'ai', text: (lang === 'ko' ? "❌ 서버 통신 중 오류가 발생했습니다." : "❌ Error.") }]);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+  
+  const filteredItems = items.filter((item) => {
+    return (item.title.toLowerCase().includes(searchTerm.toLowerCase()) || (item.description && item.description.toLowerCase().includes(searchTerm.toLowerCase())));
+  });
+
+  const sortedItems = [...filteredItems].sort((a, b) => {
+    if (sortType === 'latest') return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
+    if (sortType === 'deadline') return new Date(a.deadline || '9999') - new Date(b.deadline || '9999');
+    if (sortType === 'priceHigh') return b.price - a.price;
+    if (sortType === 'likes') return b.likes - a.likes;
+    return 0;
+  });
+  
+  const currentItems = sortedItems.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const totalPages = Math.ceil(sortedItems.length / itemsPerPage) || 1;
+  const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1);
+
+  return (
+    <div className="max-w-7xl mx-auto p-4 md:p-6 flex flex-col min-h-screen relative text-gray-900 dark:text-gray-100 transition-colors">
+      <style>{`
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #fdba74; border-radius: 10px; }
+        .dark .custom-scrollbar::-webkit-scrollbar-thumb { background: #f97316; }
+      `}</style>
+      
+      <div className="flex-grow">
+        <div id="tour-header" className="text-center mb-6 md:mb-8 relative mt-4 md:mt-0">
+          <div className="flex items-center justify-center gap-4 mb-2">
+            <h2 className="text-3xl md:text-5xl font-black text-orange-600 dark:text-orange-400 tracking-tighter flex justify-center items-center cursor-pointer mt-4 md:mt-0">
+              LOST & FOUND 
+            </h2>
+          </div>
+          
+          {LOST_QUOTES[lang]?.length > 0 && (
+            <div className="flex justify-center items-center gap-3 mt-5 md:mt-7 mb-2 px-2">
+              <div className="px-5 md:px-8 py-2 md:py-3 border border-orange-300 dark:border-orange-700 rounded-full text-orange-600 dark:text-orange-300 bg-orange-50 dark:bg-orange-900/30 font-bold text-xs md:text-sm shadow-sm transition-colors text-center break-keep">
+                "{LOST_QUOTES[lang][quoteIndex]}"
+              </div>
+              <button onClick={handleQuoteRefresh} className="w-8 h-8 flex items-center justify-center rounded-full border bg-white dark:bg-gray-800 shadow-sm"><span className="text-orange-500 font-black">🔄</span></button>
+            </div>
+          )}
+        </div>
+
+        {/* 입력 폼 (오렌지 테마) */}
+        <form onSubmit={addItem} className="bg-white dark:bg-gray-800 p-5 md:p-8 rounded-3xl md:rounded-[2.5rem] shadow-xl mb-6 md:mb-10 flex flex-col gap-3 md:gap-5 border border-orange-100 dark:border-gray-700 relative z-10 mt-4">
+          
+          <div id="tour-ai-btn" className="w-full mb-2">
+            {!showAiBox ? (
+              <button type="button" onClick={() => setShowAiBox(true)} className="w-full bg-gradient-to-r from-orange-400 via-red-500 to-pink-500 text-white font-black py-4 rounded-2xl shadow-lg hover:scale-[1.01] transition-all flex justify-center items-center gap-2">
+                <span>✨</span> {current.aiOpenBtn}
+              </button>
+            ) : (
+              <div className="w-full p-4 bg-orange-50 dark:bg-gray-900/50 rounded-2xl border border-orange-200 shadow-inner flex flex-col animate-[slide-up_0.3s_ease-out]">
+                <div className="flex justify-between items-center mb-3">
+                  <h4 className="text-sm font-black text-orange-600 flex items-center gap-2">✨ AI 분실물 비서</h4>
+                  <div className="flex gap-2">
+                    <button type="button" onClick={() => setChatHistory([])} className="text-xs font-bold text-gray-500 bg-white px-2 py-1 rounded-md border">{current.aiClear}</button>
+                    <button type="button" onClick={() => setShowAiBox(false)} className="text-xs font-bold text-gray-500 bg-white px-2 py-1 rounded-md border hover:text-red-500">{current.aiClose}</button>
+                  </div>
+                </div>
+                
+                <div ref={chatContainerRef} className="flex flex-col gap-3 max-h-[300px] overflow-y-auto custom-scrollbar p-3 bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 mb-3">
+                  {chatHistory.length === 0 && !isGenerating && (
+                    <div className="text-xs font-bold text-gray-400 p-2 text-center bg-gray-50 dark:bg-gray-700 rounded-lg">
+                      무엇을 잃어버리셨나요? 혹은 주우셨나요?<br/>(예: "어제 중앙도서관 2층에서 검은색 지갑을 주웠습니다. 학번 20222017 정이량")
+                    </div>
+                  )}
+                  {chatHistory.map((chat, idx) => (
+                    <div key={idx} className={`flex w-full ${chat.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
+                      <div className={`flex flex-col max-w-[90%] ${chat.sender === 'user' ? 'items-end' : 'items-start'}`}>
+                        <div className={`p-3 rounded-2xl text-sm font-bold whitespace-pre-wrap ${chat.sender === 'user' ? 'bg-orange-100 text-orange-900 rounded-tr-none' : 'bg-gray-100 text-gray-800 rounded-tl-none border'}`}>
+                          {chat.text}
+                        </div>
+                        {chat.pendingData && (
+                          <div className="mt-2 p-3 bg-orange-50 rounded-xl border border-orange-200 shadow-sm w-full max-w-sm">
+                            <p className="text-xs font-black text-orange-800 mb-2">{current.aiConfirm}</p>
+                            <div className="flex gap-2">
+                              <button onClick={() => handleApplyAiData(chat.pendingData, idx)} className="flex-1 bg-orange-500 text-white text-xs font-bold py-2 rounded-lg">{current.btnYes}</button>
+                              <button onClick={() => handleRejectAiData(idx)} className="flex-1 bg-gray-300 text-gray-800 text-xs font-bold py-2 rounded-lg">{current.btnNo}</button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                  {isGenerating && ( <div className="flex w-full justify-start"><div className="bg-gray-100 p-3 rounded-2xl rounded-tl-none text-sm font-bold text-orange-500 animate-pulse">{current.aiLoading}</div></div> )}
+                </div>
+
+                <div className="flex items-end gap-2 bg-white p-1.5 rounded-xl border focus-within:border-orange-400">
+                  <textarea 
+                    ref={textareaRef} rows={1} value={followUpInput} 
+                    onChange={(e) => { setFollowUpInput(e.target.value); e.target.style.height = 'auto'; e.target.style.height = `${e.target.scrollHeight}px`; }}
+                    onKeyDown={(e) => { if (e.nativeEvent.isComposing) return; if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); askAi(followUpInput); } }}
+                    placeholder={current.aiFollowUpP}
+                    className="flex-grow p-2 outline-none bg-transparent text-sm font-bold text-gray-700 resize-none max-h-[100px] custom-scrollbar"
+                  />
+                  <button type="button" onClick={() => askAi(followUpInput)} disabled={isGenerating || !followUpInput.trim()} className="bg-orange-500 hover:bg-orange-600 disabled:bg-gray-400 text-white p-2 rounded-lg h-9 w-9 shadow-sm flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" /></svg>
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-5 w-full">
+            <input placeholder={current.phTitle} value={form.title} onChange={e=>setForm({...form, title: e.target.value})} className="md:col-span-1 border-2 border-gray-100 p-3 rounded-2xl outline-none focus:border-orange-400 font-bold dark:bg-gray-700"/>
+            <div className="flex gap-2 md:col-span-1">
+              <input placeholder={form.price === 'free' ? current.phFree : current.phPrice} type={form.price === 'free' ? "text" : "number"} min="0" value={form.price === 'free' ? '' : form.price} onChange={e=>setForm({...form, price: e.target.value})} className={`border-2 p-3 rounded-2xl outline-none focus:border-orange-400 flex-grow ${form.price === 'free' ? 'border-gray-300 bg-gray-100 text-gray-500 font-black' : 'border-gray-100 dark:bg-gray-700'}`} disabled={form.price === 'free'}/>
+              <button type="button" onClick={handleFreebie} className={`${form.price === 'free' ? 'bg-orange-500' : 'bg-gray-400'} text-white font-black text-xs px-4 rounded-2xl shadow-lg`}>{form.price === 'free' ? current.btnCancel : current.btnFree}</button>
+            </div>
+            <input id="tour-location" type="date" value={form.deadline} onChange={e=>setForm({...form, deadline: e.target.value})} className="md:col-span-1 border-2 border-gray-100 p-3 rounded-2xl outline-none focus:border-orange-400 text-gray-500 dark:bg-gray-700"/>
+            <input placeholder={current.phId} value={form.studentId} onChange={e=>setForm({...form, studentId: e.target.value})} className="border-2 border-gray-100 p-3 rounded-2xl outline-none focus:border-orange-400 dark:bg-gray-700"/>
+            <input placeholder={current.phSeller} value={form.sellerName} onChange={e=>setForm({...form, sellerName: e.target.value})} className="border-2 border-gray-100 p-3 rounded-2xl outline-none focus:border-orange-400 dark:bg-gray-700"/>
+            <input placeholder={current.phPhone} value={form.phone} onChange={e=>setForm({...form, phone: handlePhoneChange(e.target.value)})} className="border-2 border-gray-100 p-3 rounded-2xl outline-none focus:border-orange-400 dark:bg-gray-700"/>
+            <input placeholder={current.phLoc} value={form.location} onChange={e=>setForm({...form, location: e.target.value})} className="md:col-span-3 border-2 border-gray-100 p-3 rounded-2xl outline-none focus:border-orange-400 dark:bg-gray-700"/>
+            <textarea placeholder={current.phDesc} value={form.description} onChange={e=>setForm({...form, description: e.target.value})} className="md:col-span-3 border-2 border-gray-100 p-3 rounded-2xl min-h-[120px] outline-none focus:border-orange-400 font-medium dark:bg-gray-700"></textarea>
+          </div>
+
+          <button className="w-full bg-orange-600 text-white p-4 rounded-2xl font-black text-lg hover:bg-orange-700 shadow-xl h-16 flex justify-center items-center mt-2">
+            {SUBMIT_MENTIONS[lang][submitMentionIndex]}
+          </button>
+        </form>
+
+        {/* 검색 및 정렬 */}
+        <div className="mb-4 w-full relative z-10">
+          <input type="text" placeholder={current.searchP} value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full p-3 border-2 border-orange-100 rounded-xl shadow-sm focus:outline-none focus:border-orange-400 font-bold dark:bg-gray-800"/>
+        </div>
+
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-3 mb-6 relative z-10">
+          <select value={sortType} onChange={(e) => {setSortType(e.target.value); setCurrentPage(1);}} className="bg-white border-2 border-orange-100 px-4 py-2 rounded-xl font-black text-xs outline-none shadow-sm dark:bg-gray-800">
+            <option value="latest">{current.sortOpt.latest}</option><option value="deadline">{current.sortOpt.deadline}</option><option value="priceHigh">{current.sortOpt.priceHigh}</option><option value="likes">{current.sortOpt.likes}</option>
+          </select>
+          <div className="flex gap-2">
+            <button onClick={() => setViewType('card')} className={`px-5 py-2 rounded-xl font-black text-xs ${viewType==='card'?'bg-orange-600 text-white':'bg-white text-gray-400 border-2'}`}>🎴 CARD</button>
+            <button onClick={() => setViewType('table')} className={`px-5 py-2 rounded-xl font-black text-xs ${viewType==='table'?'bg-orange-600 text-white':'bg-white text-gray-400 border-2'}`}>📋 TABLE</button>
+          </div>
+        </div>
+
+        {/* 👇 ✅ 카드 뷰 - 오렌지 톤으로 맞춘 중고 마켓 스타일의 '자세히 보기' 세팅 */}
+        {viewType === 'card' ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8 w-full relative z-10">
+            {currentItems.map(item => ( 
+              <div key={item._id} className={`p-6 md:p-8 rounded-[3rem] border-4 hover:-translate-y-1 hover:shadow-2xl flex flex-col relative overflow-hidden ${item.completed ? 'border-gray-400 bg-gray-50' : 'border-orange-50 bg-white dark:bg-gray-800'}`}> 
+                {item.completed && <div className="absolute -right-10 top-10 bg-gray-500 text-white font-black text-xs py-1 px-12 rotate-45 shadow-lg z-10">{current.soldOut}</div>}
+                
+                {editingId === item._id ? (
+                  <div className="flex flex-col gap-2 z-10">
+                    <input className="border-2 border-orange-100 p-2 rounded-xl text-xs font-bold" value={editForm.title} onChange={e=>setEditForm({...editForm, title: e.target.value})} />
+                    <input className="border-2 border-orange-100 p-2 rounded-xl text-xs font-bold" type="number" value={editForm.price} onChange={e=>setEditForm({...editForm, price: e.target.value})} />
+                    <input className="border-2 border-orange-100 p-2 rounded-xl text-xs font-bold" type="date" value={editForm.deadline} onChange={e=>setEditForm({...editForm, deadline: e.target.value})} />
+                    <input className="border-2 border-orange-100 p-2 rounded-xl text-xs font-bold" value={editForm.location} onChange={e=>setEditForm({...editForm, location: e.target.value})} />
+                    <div className="flex gap-2"><button onClick={()=>saveEdit(item._id)} className="bg-green-500 text-white rounded-xl py-2 flex-grow font-black text-xs">저장</button></div>
+                  </div>
+                ) : (
+                  <>
+                    <div className="flex justify-between items-start mb-4 z-10"><h3 className={`text-xl font-black ${item.completed ? 'text-gray-500 line-through' : 'text-gray-800 dark:text-gray-100'}`}>{item.title}</h3></div> 
+                    <div className="flex justify-between items-center mb-6 z-10 relative">
+                      <p className={`text-2xl font-black ${item.completed ? 'text-gray-400' : 'text-orange-600'}`}>{item.price === 0 ? current.freeBadge : `사례금 ${Number(item.price).toLocaleString()}${current.currency}`}</p>
+                      <button onClick={() => handleLike(item._id)} className={`flex flex-col items-center hover:scale-110 ${likedItems.has(item._id) ? 'text-red-500' : 'text-gray-200'}`}><span className="text-2xl drop-shadow-md">👀</span><span className="text-[10px] font-black">{item.likes}</span></button>
+                    </div> 
+                    <div className="text-xs text-gray-500 font-bold mb-4 space-y-2 flex-grow z-10">
+                      <p className="border-b pb-2">{current.sellerPrefix} {item.sellerName} <span className="text-gray-400 ml-2">{item.studentId}</span></p>
+                      <p className="border-b pb-2">📞 {item.phone}</p>
+                      <p className="border-b pb-2">{current.deadlinePrefix} {item.deadline || current.deadlineNone}</p>
+                      <p className="text-orange-500 pb-2">{current.locPrefix} {item.location}</p>
+                    </div>
+
+                    <div className="flex flex-col w-full z-10 mb-4 mt-2">
+                      <button 
+                        onClick={() => setExpandedId(expandedId === item._id ? null : item._id)} 
+                        className="bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 py-1.5 px-3 rounded-lg text-[10px] font-black w-full flex justify-between items-center hover:bg-orange-100 dark:hover:bg-orange-800 transition shadow-sm border border-orange-100 dark:border-orange-800"
+                      >
+                        <span>{expandedId === item._id ? current.btnDescHide : current.btnDescShow}</span>
+                        <span>{expandedId === item._id ? '▲' : '▼'}</span>
+                      </button>
+                      
+                      {expandedId === item._id && (
+                        <div className="mt-2 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg text-xs text-gray-700 dark:text-gray-300 whitespace-pre-wrap border-2 border-dashed border-gray-200 dark:border-gray-600 shadow-inner font-semibold leading-relaxed">
+                          {item.description || <span className="text-gray-400 italic">{current.descEmpty}</span>}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex gap-2 z-10 mt-2">
+                      <button onClick={async() => {await axios.put(`${COMMON_URL}/${item._id}`,{completed: !item.completed}); fetchItems()}} className={`flex-grow py-2 rounded-xl font-black text-[10px] uppercase shadow-sm ${item.completed?'bg-gray-500 text-white':'bg-gray-100 text-gray-500 hover:bg-orange-500 hover:text-white'}`}>{item.completed ? current.btnUndo : current.btnDone}</button>
+                      <button onClick={() => {setEditingId(item._id); setEditForm(item)}} className="px-4 bg-white border-2 rounded-xl text-gray-400 hover:text-orange-500 text-[10px] font-black uppercase">{current.btnEdit}</button>
+                      <button onClick={async() => {await axios.delete(`${COMMON_URL}/${item._id}`); fetchItems()}} className="px-4 bg-white border-2 rounded-xl text-gray-400 hover:text-red-500 text-[10px] font-black uppercase">{current.btnDel}</button>
+                    </div> 
+                  </>
+                )}
+              </div> 
+            ))}
+          </div>
+        ) : (
+          <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-xl overflow-x-auto border-2 border-gray-100 dark:border-gray-700 mb-8 relative z-10">
+             <table className="w-full text-center min-w-[600px]">
+              <thead className="bg-orange-600 text-white text-xs font-bold tracking-widest uppercase"><tr><th className="p-4">{current.thItem}</th><th className="p-4">{current.thPrice}</th><th className="p-4">{current.thSeller}</th><th className="p-4">{current.thStatus}</th><th className="p-4">{current.thAction}</th></tr></thead>
+              <tbody>
+                {currentItems.map(item => (
+                  <tr key={item._id} className="border-b dark:border-gray-700 hover:bg-orange-50 dark:hover:bg-orange-900/10 transition-colors">
+                    <td className="p-4 text-left font-black text-sm relative">
+                      <span className={item.completed ? 'line-through text-gray-400' : 'text-gray-800 dark:text-gray-200'}>{item.title}</span>
+                      <button onClick={() => handleLike(item._id)} className={`ml-2 text-[10px] font-black ${likedItems.has(item._id) ? 'text-red-500' : 'text-gray-300'}`}>👀{item.likes}</button>
+                      <div className="mt-2">
+                        <button onClick={() => setExpandedId(expandedId === item._id ? null : item._id)} className="text-[10px] text-orange-500 hover:text-orange-700 dark:hover:text-orange-300 font-bold flex items-center gap-1">
+                          {expandedId === item._id ? current.btnDescHide : current.btnDescShow}
+                        </button>
+                        {expandedId === item._id && (
+                          <div className="mt-1 p-2 bg-gray-50 dark:bg-gray-700 rounded-lg text-xs font-medium text-gray-600 dark:text-gray-300 whitespace-pre-wrap shadow-inner border border-gray-100 dark:border-gray-600 leading-relaxed">
+                            {item.description || <span className="text-gray-400 italic">{current.descEmpty}</span>}
+                          </div>
+                        )}
+                      </div>
+                    </td>
+                    <td className="p-4 font-black text-sm text-orange-600 dark:text-orange-400">{item.price === 0 ? current.freeBadge : `${Number(item.price).toLocaleString()}${current.currency}`}</td>
+                    <td className="p-4 font-bold text-gray-500 dark:text-gray-400 text-xs">{item.sellerName}</td>
+                    <td className="p-4"><span className={`px-4 py-1 rounded-full text-[10px] font-black shadow-sm ${item.completed ? 'bg-gray-500 text-white' : 'bg-orange-500 text-white'}`}>{item.completed ? current.stDone : current.stSale}</span></td>
+                    <td className="p-4 flex gap-1 justify-center">
+                      <button onClick={async() => {await axios.put(`${COMMON_URL}/${item._id}`,{completed: !item.completed}); fetchItems()}} className="text-[9px] font-black uppercase text-orange-500 hover:text-orange-700 bg-orange-50 dark:bg-orange-900/30 px-3 py-1 rounded-full w-20">{current.btnDone}/{current.btnUndo}</button>
+                      <button onClick={async() => {await axios.delete(`${COMMON_URL}/${item._id}`); fetchItems()}} className="text-red-400 hover:text-red-500 bg-red-50 dark:bg-red-900/30 px-3 py-1 rounded-full font-black text-[9px] uppercase w-20">{current.btnDel}</button>
+                    </td>
+                  </tr> 
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+        
+        {totalPages > 1 && (
+          <div className="flex justify-center items-center gap-2 mb-10">
+            <div className="flex gap-1">
+              {pageNumbers.map(num => (
+                <button key={num} onClick={() => setCurrentPage(num)} className={`w-9 h-9 rounded-lg font-black text-xs ${currentPage === num ? 'bg-orange-600 text-white' : 'bg-white text-gray-400 border-2'}`}>{num}</button>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+export default LostPage;

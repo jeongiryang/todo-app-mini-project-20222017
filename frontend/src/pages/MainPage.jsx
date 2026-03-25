@@ -37,7 +37,14 @@ function MainPage({ lang }) {
         { name: "수강신청", url: "https://chains.changwon.ac.kr/nonstop/suup/sugang/hakbu/index.php?mi=18302", icon: "📚" },
         { name: "드림캐치", url: "https://dreamcatch.changwon.ac.kr/main.do?mi=18316", icon: "🧭" },
         { name: "이뤄드림", url: "https://edream.changwon.ac.kr/?mi=18315", icon: "🌟" }
-      ]
+      ],
+      services: [
+  { title: "중고 마켓", desc: "학우들과 즐겁게 물건을 나누세요.", icon: "🏪", path: "/market", color: "from-blue-600 to-indigo-700" },
+  { title: "ToDo List", desc: "집중 타이머와 함께 일정을 관리하세요.", icon: "📝", path: "/todo", color: "from-indigo-600 to-purple-700" },
+  { title: "학점 계산기", desc: "실시간 그래프로 성적을 분석하세요.", icon: "🎓", path: "/gpa", color: "from-emerald-600 to-teal-700" },
+  // 👇 이 줄을 새로 추가하세요!
+  { title: "분실물 센터", desc: "잃어버린 물건, 창대인이 함께 찾아요.", icon: "🔍", path: "/lost", color: "from-orange-500 to-red-600" }
+],
     },
     en: {
       subtitle: "All-in-one Campus Solution for CWNU Students",
@@ -70,8 +77,16 @@ function MainPage({ lang }) {
         { name: "Course Reg.", url: "https://chains.changwon.ac.kr/nonstop/suup/sugang/hakbu/index.php?mi=18302", icon: "📚" },
         { name: "Dream Catch", url: "https://dreamcatch.changwon.ac.kr/main.do?mi=18316", icon: "🧭" },
         { name: "E-Dream", url: "https://edream.changwon.ac.kr/?mi=18315", icon: "🌟" }
-      ]
+      ],
+      services: [
+  { title: "Flea Market", desc: "Share items happily with peers.", icon: "🏪", path: "/market", color: "from-blue-600 to-indigo-700" },
+  { title: "ToDo List", desc: "Manage tasks with a focus timer.", icon: "📝", path: "/todo", color: "from-indigo-600 to-purple-700" },
+  { title: "GPA Calculator", desc: "Analyze grades with real-time graphs.", icon: "🎓", path: "/gpa", color: "from-emerald-600 to-teal-700" },
+  // 👇 이 줄을 새로 추가하세요!
+  { title: "Lost & Found", desc: "Let's find lost items together.", icon: "🔍", path: "/lost", color: "from-orange-500 to-red-600" }
+],
     }
+    
   };
 
   const current = t[lang];
