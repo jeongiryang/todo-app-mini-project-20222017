@@ -47,7 +47,6 @@ function LostPage({ lang }) {
   const chatContainerRef = useRef(null);
   const textareaRef = useRef(null); 
 
-  // ✅ API 주소 (분실물 전용)
   const API_URL = '/api/lost'; const COMMON_URL = '/api/items'
 
   const t = {
@@ -65,6 +64,8 @@ function LostPage({ lang }) {
       btnEdit: "수정", btnDel: "삭제", btnDone: "해결완료", btnUndo: "진행중으로 변경", btnSave: "수정 저장", btnEditCancel: "취소",
       btnDescShow: "💬 자세히 보기", btnDescHide: "자세히 보기 닫기", descEmpty: "등록된 상세 설명이 없습니다.",
       thItem: "Item", thPrice: "Reward", thSeller: "Author", thStatus: "Status", thAction: "Action", stDone: "해결됨", stSale: "찾는중",
+      footerDept: "컴퓨터공학과 | 소프트웨어공학 프로젝트: CWNU 포털 시스템", 
+      footerCopy: "@ 2026 정이량 | Gemini AI 협업 제작",
       aiOpenBtn: " AI 비서에게 분실/습득글 작성 맡기기", aiLoading: "⏳ 상황을 분석하고 폼을 채우는 중...", aiEmpty: "채팅창에 정보를 입력해주세요!", aiFollowUpP: "무엇을 언제 어디서 잃어버렸는지/주웠는지 말해주세요!", aiClear: "대화 초기화", aiClose: "AI 닫기", aiApply: "이 글로 설명 채우기",
       aiConfirm: "✨ 이 정보를 폼에 추가하시겠습니까?", btnYes: "예, 추가하기", btnNo: "아니오"
     },
@@ -82,6 +83,8 @@ function LostPage({ lang }) {
       btnEdit: "Edit", btnDel: "Del", btnDone: "Resolved", btnUndo: "Undo", btnSave: "Save", btnEditCancel: "Cancel",
       btnDescShow: "💬 View Details", btnDescHide: "Close Details", descEmpty: "No description provided.",
       thItem: "Item", thPrice: "Reward", thSeller: "Author", thStatus: "Status", thAction: "Action", stDone: "Resolved", stSale: "Looking",
+      footerDept: "Department of Computer Science | Software Engineering Project: CWNU Portal System", 
+      footerCopy: "@ 2026 Jung Yi Ryang | Designed with Gemini AI Collaborative Works",
       aiOpenBtn: " Let AI write the post", aiLoading: "⏳ Analyzing and filling form...", aiEmpty: "Please type something!", aiFollowUpP: "Tell me what, when, and where!", aiClear: "Clear", aiClose: "Close AI", aiApply: "Apply to Description",
       aiConfirm: "✨ Apply this info to the form?", btnYes: "Yes, apply", btnNo: "No"
     }
@@ -259,9 +262,7 @@ function LostPage({ lang }) {
           )}
         </div>
 
-        {/* 입력 폼 (오렌지 테마) */}
         <form onSubmit={addItem} className="bg-white dark:bg-gray-800 p-5 md:p-8 rounded-3xl md:rounded-[2.5rem] shadow-xl mb-6 md:mb-10 flex flex-col gap-3 md:gap-5 border border-orange-100 dark:border-gray-700 relative z-10 mt-4">
-          
           <div id="tour-ai-btn" className="w-full mb-2">
             {!showAiBox ? (
               <button type="button" onClick={() => setShowAiBox(true)} className="w-full bg-gradient-to-r from-orange-400 via-red-500 to-pink-500 text-white font-black py-4 rounded-2xl shadow-lg hover:scale-[1.01] transition-all flex justify-center items-center gap-2">
@@ -276,11 +277,10 @@ function LostPage({ lang }) {
                     <button type="button" onClick={() => setShowAiBox(false)} className="text-xs font-bold text-gray-500 bg-white px-2 py-1 rounded-md border hover:text-red-500">{current.aiClose}</button>
                   </div>
                 </div>
-                
                 <div ref={chatContainerRef} className="flex flex-col gap-3 max-h-[300px] overflow-y-auto custom-scrollbar p-3 bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 mb-3">
                   {chatHistory.length === 0 && !isGenerating && (
                     <div className="text-xs font-bold text-gray-400 p-2 text-center bg-gray-50 dark:bg-gray-700 rounded-lg">
-                      무엇을 잃어버리셨나요? 혹은 주우셨나요?<br/>(예: "어제 중앙도서관 2층에서 검은색 지갑을 주웠습니다. 학번 20222017 정이량")
+                      무엇을 잃어버리셨나요? 혹은 주우셨나요?<br/>(예: "중도 2층에서 에어팟 주웠습니다")
                     </div>
                   )}
                   {chatHistory.map((chat, idx) => (
@@ -293,8 +293,8 @@ function LostPage({ lang }) {
                           <div className="mt-2 p-3 bg-orange-50 rounded-xl border border-orange-200 shadow-sm w-full max-w-sm">
                             <p className="text-xs font-black text-orange-800 mb-2">{current.aiConfirm}</p>
                             <div className="flex gap-2">
-                              <button onClick={() => handleApplyAiData(chat.pendingData, idx)} className="flex-1 bg-orange-500 text-white text-xs font-bold py-2 rounded-lg">{current.btnYes}</button>
-                              <button onClick={() => handleRejectAiData(idx)} className="flex-1 bg-gray-300 text-gray-800 text-xs font-bold py-2 rounded-lg">{current.btnNo}</button>
+                              <button type="button" onClick={() => handleApplyAiData(chat.pendingData, idx)} className="flex-1 bg-orange-500 text-white text-xs font-bold py-2 rounded-lg">{current.btnYes}</button>
+                              <button type="button" onClick={() => handleRejectAiData(idx)} className="flex-1 bg-gray-300 text-gray-800 text-xs font-bold py-2 rounded-lg">{current.btnNo}</button>
                             </div>
                           </div>
                         )}
@@ -303,15 +303,8 @@ function LostPage({ lang }) {
                   ))}
                   {isGenerating && ( <div className="flex w-full justify-start"><div className="bg-gray-100 p-3 rounded-2xl rounded-tl-none text-sm font-bold text-orange-500 animate-pulse">{current.aiLoading}</div></div> )}
                 </div>
-
                 <div className="flex items-end gap-2 bg-white p-1.5 rounded-xl border focus-within:border-orange-400">
-                  <textarea 
-                    ref={textareaRef} rows={1} value={followUpInput} 
-                    onChange={(e) => { setFollowUpInput(e.target.value); e.target.style.height = 'auto'; e.target.style.height = `${e.target.scrollHeight}px`; }}
-                    onKeyDown={(e) => { if (e.nativeEvent.isComposing) return; if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); askAi(followUpInput); } }}
-                    placeholder={current.aiFollowUpP}
-                    className="flex-grow p-2 outline-none bg-transparent text-sm font-bold text-gray-700 resize-none max-h-[100px] custom-scrollbar"
-                  />
+                  <textarea ref={textareaRef} rows={1} value={followUpInput} onChange={(e) => { setFollowUpInput(e.target.value); e.target.style.height = 'auto'; e.target.style.height = `${e.target.scrollHeight}px`; }} onKeyDown={(e) => { if (e.nativeEvent.isComposing) return; if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); askAi(followUpInput); } }} placeholder={current.aiFollowUpP} className="flex-grow p-2 outline-none bg-transparent text-sm font-bold text-gray-700 resize-none max-h-[100px] custom-scrollbar" />
                   <button type="button" onClick={() => askAi(followUpInput)} disabled={isGenerating || !followUpInput.trim()} className="bg-orange-500 hover:bg-orange-600 disabled:bg-gray-400 text-white p-2 rounded-lg h-9 w-9 shadow-sm flex items-center justify-center">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" /></svg>
                   </button>
@@ -319,7 +312,6 @@ function LostPage({ lang }) {
               </div>
             )}
           </div>
-
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-5 w-full">
             <input placeholder={current.phTitle} value={form.title} onChange={e=>setForm({...form, title: e.target.value})} className="md:col-span-1 border-2 border-gray-100 p-3 rounded-2xl outline-none focus:border-orange-400 font-bold dark:bg-gray-700"/>
             <div className="flex gap-2 md:col-span-1">
@@ -333,13 +325,11 @@ function LostPage({ lang }) {
             <input placeholder={current.phLoc} value={form.location} onChange={e=>setForm({...form, location: e.target.value})} className="md:col-span-3 border-2 border-gray-100 p-3 rounded-2xl outline-none focus:border-orange-400 dark:bg-gray-700"/>
             <textarea placeholder={current.phDesc} value={form.description} onChange={e=>setForm({...form, description: e.target.value})} className="md:col-span-3 border-2 border-gray-100 p-3 rounded-2xl min-h-[120px] outline-none focus:border-orange-400 font-medium dark:bg-gray-700"></textarea>
           </div>
-
           <button className="w-full bg-orange-600 text-white p-4 rounded-2xl font-black text-lg hover:bg-orange-700 shadow-xl h-16 flex justify-center items-center mt-2">
             {SUBMIT_MENTIONS[lang][submitMentionIndex]}
           </button>
         </form>
 
-        {/* 검색 및 정렬 */}
         <div className="mb-4 w-full relative z-10">
           <input type="text" placeholder={current.searchP} value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full p-3 border-2 border-orange-100 rounded-xl shadow-sm focus:outline-none focus:border-orange-400 font-bold dark:bg-gray-800"/>
         </div>
@@ -354,27 +344,64 @@ function LostPage({ lang }) {
           </div>
         </div>
 
-        {/* 👇 ✅ 카드 뷰 - 오렌지 톤으로 맞춘 중고 마켓 스타일의 '자세히 보기' 세팅 */}
         {viewType === 'card' ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8 w-full relative z-10">
             {currentItems.map(item => ( 
               <div key={item._id} className={`p-6 md:p-8 rounded-[3rem] border-4 hover:-translate-y-1 hover:shadow-2xl flex flex-col relative overflow-hidden ${item.completed ? 'border-gray-400 bg-gray-50' : 'border-orange-50 bg-white dark:bg-gray-800'}`}> 
                 {item.completed && <div className="absolute -right-10 top-10 bg-gray-500 text-white font-black text-xs py-1 px-12 rotate-45 shadow-lg z-10">{current.soldOut}</div>}
                 
+                {/* 👇 ✅ 실시간 미리보기 + 모든 정보 수정 폼 (레전드 UX) */}
                 {editingId === item._id ? (
-                  <div className="flex flex-col gap-2 z-10">
-                    <input className="border-2 border-orange-100 p-2 rounded-xl text-xs font-bold" value={editForm.title} onChange={e=>setEditForm({...editForm, title: e.target.value})} />
-                    <input className="border-2 border-orange-100 p-2 rounded-xl text-xs font-bold" type="number" value={editForm.price} onChange={e=>setEditForm({...editForm, price: e.target.value})} />
-                    <input className="border-2 border-orange-100 p-2 rounded-xl text-xs font-bold" type="date" value={editForm.deadline} onChange={e=>setEditForm({...editForm, deadline: e.target.value})} />
-                    <input className="border-2 border-orange-100 p-2 rounded-xl text-xs font-bold" value={editForm.location} onChange={e=>setEditForm({...editForm, location: e.target.value})} />
-                    <div className="flex gap-2"><button onClick={()=>saveEdit(item._id)} className="bg-green-500 text-white rounded-xl py-2 flex-grow font-black text-xs">저장</button></div>
+                  <div className="flex flex-col gap-4 z-10 w-full animate-[slide-up_0.2s_ease-out]">
+                    
+                    {/* 실시간 미리보기 카드 */}
+                    <div className="border-2 border-orange-300 border-dashed p-4 rounded-2xl bg-orange-50/50 dark:bg-gray-800/50 relative pointer-events-none opacity-90 shadow-sm mt-2">
+                      <div className="absolute -top-3 left-4 bg-orange-500 text-white text-[10px] font-black px-3 py-1 rounded-full shadow-sm">👀 실시간 수정 미리보기</div>
+                      <div className="flex justify-between items-start mb-3 mt-1"><h3 className="text-lg font-black text-gray-800 dark:text-gray-100">{editForm.title || '제목을 입력하세요'}</h3></div> 
+                      <div className="flex justify-between items-center mb-4">
+                        <p className="text-xl font-black text-orange-600 dark:text-orange-400">{editForm.price === 0 || editForm.price === 'free' ? current.freeBadge : `사례금 ${Number(editForm.price).toLocaleString()}${current.currency}`}</p>
+                      </div> 
+                      <div className="text-[11px] text-gray-500 dark:text-gray-400 font-bold space-y-1.5">
+                        <p className="border-b dark:border-gray-700 pb-1.5">{current.sellerPrefix} {editForm.sellerName || '작성자'} <span className="text-gray-400 ml-1">{editForm.studentId}</span></p>
+                        <p className="border-b dark:border-gray-700 pb-1.5">📞 {editForm.phone || '연락처'}</p>
+                        <p className="border-b dark:border-gray-700 pb-1.5">{current.deadlinePrefix} {editForm.deadline || current.deadlineNone}</p>
+                        <p className="text-orange-500 pb-1.5">{current.locPrefix} {editForm.location || '장소'}</p>
+                      </div>
+                      <div className="mt-2 p-2 bg-white dark:bg-gray-700/50 rounded-lg text-[10px] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-600 line-clamp-2">
+                        {editForm.description || '상세 설명이 여기에 표시됩니다.'}
+                      </div>
+                    </div>
+
+                    {/* 모든 필드 수정 폼 */}
+                    <div className="bg-gray-50 dark:bg-gray-700 p-3 md:p-4 rounded-2xl border border-gray-200 dark:border-gray-600 flex flex-col gap-2.5 shadow-inner pointer-events-auto">
+                      <input className="border border-gray-200 dark:border-gray-600 dark:bg-gray-800 p-2 rounded-xl text-xs font-bold w-full outline-none focus:border-orange-400 transition-colors" placeholder={current.phTitle} value={editForm.title} onChange={e=>setEditForm({...editForm, title: e.target.value})} />
+                      <div className="flex gap-2">
+                        <input className="border border-gray-200 dark:border-gray-600 dark:bg-gray-800 p-2 rounded-xl text-xs font-bold flex-grow outline-none focus:border-orange-400 transition-colors disabled:bg-gray-100 disabled:text-gray-400" placeholder={current.phPrice} type={editForm.price === 'free' ? 'text' : 'number'} value={editForm.price === 'free' ? '' : editForm.price} onChange={e=>setEditForm({...editForm, price: e.target.value})} disabled={editForm.price === 'free'} />
+                        <button type="button" onClick={() => setEditForm({...editForm, price: editForm.price === 'free' ? '' : 'free'})} className={`${editForm.price === 'free' ? 'bg-orange-500 text-white' : 'bg-gray-200 dark:bg-gray-600 text-gray-600 dark:text-gray-300'} px-3 rounded-xl text-[10px] font-black whitespace-nowrap shadow-sm transition-colors`}>{current.btnFree}</button>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <input className="border border-gray-200 dark:border-gray-600 dark:bg-gray-800 p-2 rounded-xl text-xs font-bold outline-none focus:border-orange-400 text-gray-500 transition-colors" type="date" value={editForm.deadline} onChange={e=>setEditForm({...editForm, deadline: e.target.value})} />
+                        <input className="border border-gray-200 dark:border-gray-600 dark:bg-gray-800 p-2 rounded-xl text-xs font-bold outline-none focus:border-orange-400 transition-colors" placeholder={current.phId} value={editForm.studentId} onChange={e=>setEditForm({...editForm, studentId: e.target.value})} />
+                      </div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <input className="border border-gray-200 dark:border-gray-600 dark:bg-gray-800 p-2 rounded-xl text-xs font-bold outline-none focus:border-orange-400 transition-colors" placeholder={current.phSeller} value={editForm.sellerName} onChange={e=>setEditForm({...editForm, sellerName: e.target.value})} />
+                        <input className="border border-gray-200 dark:border-gray-600 dark:bg-gray-800 p-2 rounded-xl text-xs font-bold outline-none focus:border-orange-400 transition-colors" placeholder={current.phPhone} value={editForm.phone} onChange={e=>setEditForm({...editForm, phone: handlePhoneChange(e.target.value)})} />
+                      </div>
+                      <input className="border border-gray-200 dark:border-gray-600 dark:bg-gray-800 p-2 rounded-xl text-xs font-bold w-full outline-none focus:border-orange-400 transition-colors" placeholder={current.phLoc} value={editForm.location} onChange={e=>setEditForm({...editForm, location: e.target.value})} />
+                      <textarea className="border border-gray-200 dark:border-gray-600 dark:bg-gray-800 p-2 rounded-xl text-xs font-medium w-full outline-none focus:border-orange-400 min-h-[80px] resize-none transition-colors" placeholder={current.phDesc} value={editForm.description} onChange={e=>setEditForm({...editForm, description: e.target.value})} />
+                    </div>
+
+                    <div className="flex gap-2 mt-1">
+                      <button type="button" onClick={()=>saveEdit(item._id)} className="bg-green-500 hover:bg-green-600 text-white rounded-xl py-3 flex-grow font-black text-xs shadow-md transition-transform hover:-translate-y-0.5">{current.btnSave}</button>
+                      <button type="button" onClick={()=>setEditingId(null)} className="bg-gray-400 hover:bg-gray-500 text-white rounded-xl py-3 flex-grow font-black text-xs shadow-md transition-transform hover:-translate-y-0.5">{current.btnEditCancel}</button>
+                    </div>
                   </div>
                 ) : (
                   <>
                     <div className="flex justify-between items-start mb-4 z-10"><h3 className={`text-xl font-black ${item.completed ? 'text-gray-500 line-through' : 'text-gray-800 dark:text-gray-100'}`}>{item.title}</h3></div> 
                     <div className="flex justify-between items-center mb-6 z-10 relative">
                       <p className={`text-2xl font-black ${item.completed ? 'text-gray-400' : 'text-orange-600'}`}>{item.price === 0 ? current.freeBadge : `사례금 ${Number(item.price).toLocaleString()}${current.currency}`}</p>
-                      <button onClick={() => handleLike(item._id)} className={`flex flex-col items-center hover:scale-110 ${likedItems.has(item._id) ? 'text-red-500' : 'text-gray-200'}`}><span className="text-2xl drop-shadow-md">👀</span><span className="text-[10px] font-black">{item.likes}</span></button>
+                      <button type="button" onClick={() => handleLike(item._id)} className={`flex flex-col items-center hover:scale-110 ${likedItems.has(item._id) ? 'text-red-500' : 'text-gray-200'}`}><span className="text-2xl drop-shadow-md">👀</span><span className="text-[10px] font-black">{item.likes}</span></button>
                     </div> 
                     <div className="text-xs text-gray-500 font-bold mb-4 space-y-2 flex-grow z-10">
                       <p className="border-b pb-2">{current.sellerPrefix} {item.sellerName} <span className="text-gray-400 ml-2">{item.studentId}</span></p>
@@ -382,27 +409,30 @@ function LostPage({ lang }) {
                       <p className="border-b pb-2">{current.deadlinePrefix} {item.deadline || current.deadlineNone}</p>
                       <p className="text-orange-500 pb-2">{current.locPrefix} {item.location}</p>
                     </div>
-
                     <div className="flex flex-col w-full z-10 mb-4 mt-2">
-                      <button 
-                        onClick={() => setExpandedId(expandedId === item._id ? null : item._id)} 
-                        className="bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 py-1.5 px-3 rounded-lg text-[10px] font-black w-full flex justify-between items-center hover:bg-orange-100 dark:hover:bg-orange-800 transition shadow-sm border border-orange-100 dark:border-orange-800"
-                      >
+                      <button onClick={() => setExpandedId(expandedId === item._id ? null : item._id)} className="bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 py-1.5 px-3 rounded-lg text-[10px] font-black w-full flex justify-between items-center hover:bg-orange-100 dark:hover:bg-orange-800 transition shadow-sm border border-orange-100 dark:border-orange-800">
                         <span>{expandedId === item._id ? current.btnDescHide : current.btnDescShow}</span>
                         <span>{expandedId === item._id ? '▲' : '▼'}</span>
                       </button>
-                      
                       {expandedId === item._id && (
                         <div className="mt-2 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg text-xs text-gray-700 dark:text-gray-300 whitespace-pre-wrap border-2 border-dashed border-gray-200 dark:border-gray-600 shadow-inner font-semibold leading-relaxed">
                           {item.description || <span className="text-gray-400 italic">{current.descEmpty}</span>}
                         </div>
                       )}
                     </div>
-
                     <div className="flex gap-2 z-10 mt-2">
-                      <button onClick={async() => {await axios.put(`${COMMON_URL}/${item._id}`,{completed: !item.completed}); fetchItems()}} className={`flex-grow py-2 rounded-xl font-black text-[10px] uppercase shadow-sm ${item.completed?'bg-gray-500 text-white':'bg-gray-100 text-gray-500 hover:bg-orange-500 hover:text-white'}`}>{item.completed ? current.btnUndo : current.btnDone}</button>
-                      <button onClick={() => {setEditingId(item._id); setEditForm(item)}} className="px-4 bg-white border-2 rounded-xl text-gray-400 hover:text-orange-500 text-[10px] font-black uppercase">{current.btnEdit}</button>
-                      <button onClick={async() => {await axios.delete(`${COMMON_URL}/${item._id}`); fetchItems()}} className="px-4 bg-white border-2 rounded-xl text-gray-400 hover:text-red-500 text-[10px] font-black uppercase">{current.btnDel}</button>
+                      <button type="button" onClick={async() => {await axios.put(`${COMMON_URL}/${item._id}`,{completed: !item.completed}); fetchItems()}} className={`flex-grow py-2 rounded-xl font-black text-[10px] uppercase shadow-sm ${item.completed?'bg-gray-500 text-white':'bg-gray-100 text-gray-500 hover:bg-orange-500 hover:text-white'}`}>{item.completed ? current.btnUndo : current.btnDone}</button>
+                      <button type="button" onClick={() => {
+                        setEditingId(item._id); 
+                        setEditForm({
+                          ...item, 
+                          studentId: item.studentId || '', 
+                          sellerName: item.sellerName || '', 
+                          phone: item.phone || '', 
+                          description: item.description || ''
+                        });
+                      }} className="px-4 bg-white border-2 rounded-xl text-gray-400 hover:text-orange-500 text-[10px] font-black uppercase">{current.btnEdit}</button>
+                      <button type="button" onClick={async() => {await axios.delete(`${COMMON_URL}/${item._id}`); fetchItems()}} className="px-4 bg-white border-2 rounded-xl text-gray-400 hover:text-red-500 text-[10px] font-black uppercase">{current.btnDel}</button>
                     </div> 
                   </>
                 )}
@@ -418,24 +448,23 @@ function LostPage({ lang }) {
                   <tr key={item._id} className="border-b dark:border-gray-700 hover:bg-orange-50 dark:hover:bg-orange-900/10 transition-colors">
                     <td className="p-4 text-left font-black text-sm relative">
                       <span className={item.completed ? 'line-through text-gray-400' : 'text-gray-800 dark:text-gray-200'}>{item.title}</span>
-                      <button onClick={() => handleLike(item._id)} className={`ml-2 text-[10px] font-black ${likedItems.has(item._id) ? 'text-red-500' : 'text-gray-300'}`}>👀{item.likes}</button>
+                      <button type="button" onClick={() => handleLike(item._id)} className={`ml-2 text-[10px] font-black ${likedItems.has(item._id) ? 'text-red-500' : 'text-gray-300'}`}>👀{item.likes}</button>
                       <div className="mt-2">
-                        <button onClick={() => setExpandedId(expandedId === item._id ? null : item._id)} className="text-[10px] text-orange-500 hover:text-orange-700 dark:hover:text-orange-300 font-bold flex items-center gap-1">
-                          {expandedId === item._id ? current.btnDescHide : current.btnDescShow}
-                        </button>
-                        {expandedId === item._id && (
-                          <div className="mt-1 p-2 bg-gray-50 dark:bg-gray-700 rounded-lg text-xs font-medium text-gray-600 dark:text-gray-300 whitespace-pre-wrap shadow-inner border border-gray-100 dark:border-gray-600 leading-relaxed">
-                            {item.description || <span className="text-gray-400 italic">{current.descEmpty}</span>}
-                          </div>
-                        )}
+                        <button type="button" onClick={() => setExpandedId(expandedId === item._id ? null : item._id)} className="text-[10px] text-orange-500 hover:text-orange-700 dark:hover:text-orange-300 font-bold flex items-center gap-1">{expandedId === item._id ? current.btnDescHide : current.btnDescShow}</button>
+                        {expandedId === item._id && ( <div className="mt-1 p-2 bg-gray-50 dark:bg-gray-700 rounded-lg text-xs font-medium text-gray-600 dark:text-gray-300 whitespace-pre-wrap shadow-inner border border-gray-100 dark:border-gray-600 leading-relaxed">{item.description || <span className="text-gray-400 italic">{current.descEmpty}</span>}</div> )}
                       </div>
                     </td>
                     <td className="p-4 font-black text-sm text-orange-600 dark:text-orange-400">{item.price === 0 ? current.freeBadge : `${Number(item.price).toLocaleString()}${current.currency}`}</td>
                     <td className="p-4 font-bold text-gray-500 dark:text-gray-400 text-xs">{item.sellerName}</td>
                     <td className="p-4"><span className={`px-4 py-1 rounded-full text-[10px] font-black shadow-sm ${item.completed ? 'bg-gray-500 text-white' : 'bg-orange-500 text-white'}`}>{item.completed ? current.stDone : current.stSale}</span></td>
                     <td className="p-4 flex gap-1 justify-center">
-                      <button onClick={async() => {await axios.put(`${COMMON_URL}/${item._id}`,{completed: !item.completed}); fetchItems()}} className="text-[9px] font-black uppercase text-orange-500 hover:text-orange-700 bg-orange-50 dark:bg-orange-900/30 px-3 py-1 rounded-full w-20">{current.btnDone}/{current.btnUndo}</button>
-                      <button onClick={async() => {await axios.delete(`${COMMON_URL}/${item._id}`); fetchItems()}} className="text-red-400 hover:text-red-500 bg-red-50 dark:bg-red-900/30 px-3 py-1 rounded-full font-black text-[9px] uppercase w-20">{current.btnDel}</button>
+                      <button type="button" onClick={() => {
+                        setViewType('card'); // 테이블 뷰에서 수정 누르면 카드뷰로 자동 전환! (개꿀 UX)
+                        setEditingId(item._id); 
+                        setEditForm({...item});
+                      }} className="text-orange-400 hover:text-orange-500 bg-orange-50 px-3 py-1 rounded-full font-black text-[9px]">수정</button>
+                      <button type="button" onClick={async() => {await axios.put(`${COMMON_URL}/${item._id}`,{completed: !item.completed}); fetchItems()}} className="text-[9px] font-black uppercase text-orange-500 hover:text-orange-700 bg-orange-50 dark:bg-orange-900/30 px-3 py-1 rounded-full w-20">{current.btnDone}/{current.btnUndo}</button>
+                      <button type="button" onClick={async() => {await axios.delete(`${COMMON_URL}/${item._id}`); fetchItems()}} className="text-red-400 hover:text-red-500 bg-red-50 dark:bg-red-900/30 px-3 py-1 rounded-full font-black text-[9px] uppercase w-20">{current.btnDel}</button>
                     </td>
                   </tr> 
                 ))}
@@ -445,15 +474,39 @@ function LostPage({ lang }) {
         )}
         
         {totalPages > 1 && (
-          <div className="flex justify-center items-center gap-2 mb-10">
+          <div className="flex justify-center items-center gap-2 mb-10 relative z-10">
+            <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="px-3 py-2 bg-white dark:bg-gray-800 border-2 border-gray-100 dark:border-gray-700 rounded-lg font-black text-xs text-gray-400 hover:text-orange-500 disabled:opacity-30 transition shadow-sm">PREV</button>
             <div className="flex gap-1">
               {pageNumbers.map(num => (
-                <button key={num} onClick={() => setCurrentPage(num)} className={`w-9 h-9 rounded-lg font-black text-xs ${currentPage === num ? 'bg-orange-600 text-white' : 'bg-white text-gray-400 border-2'}`}>{num}</button>
+                <button key={num} onClick={() => setCurrentPage(num)} className={`w-9 h-9 rounded-lg font-black text-xs transition-all ${currentPage === num ? 'bg-orange-600 text-white shadow-md' : 'bg-white dark:bg-gray-800 text-gray-400 border-2 border-gray-100 dark:border-gray-700 hover:border-orange-300'}`}>{num}</button>
               ))}
             </div>
+            <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="px-3 py-2 bg-white dark:bg-gray-800 border-2 border-gray-100 dark:border-gray-700 rounded-lg font-black text-xs text-gray-400 hover:text-orange-500 disabled:opacity-30 transition shadow-sm">NEXT</button>
           </div>
         )}
       </div>
+
+      <footer className="py-8 md:py-12 text-center border-t border-gray-200 dark:border-gray-800 mt-16 md:mt-24 relative z-10 transition-colors">
+        <p className="text-gray-600 dark:text-gray-400 font-black text-[10px] md:text-sm uppercase tracking-widest mb-1.5 md:mb-2 break-keep leading-relaxed">
+          {current.footerDept}
+        </p>
+        <div className="flex items-center justify-center gap-4 mt-2 md:mt-3">
+          <p className="text-gray-400 dark:text-gray-500 text-[10px] md:text-sm font-bold">
+            {current.footerCopy}
+          </p>
+          <div className="relative group flex flex-col items-center">
+            <a href="https://github.com/eryang11188/todo-app-mini-project-20222017.git" target="_blank" rel="noopener noreferrer" className="text-gray-400 dark:text-gray-500 hover:text-gray-900 dark:hover:text-gray-100 transition-all hover:scale-110">
+              <svg height="35" width="35" viewBox="0 0 16 16" fill="currentColor" className="opacity-80 hover:opacity-100">
+                <path d="M8 0c4.42 0 8 3.58 8 8a8.01 8.01 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z" />
+              </svg>
+            </a>
+            <div className="absolute bottom-full mb-2 hidden group-hover:flex flex-col items-center animate-bounce">
+              <span className="relative z-10 p-2 text-xs leading-none text-white whitespace-no-wrap bg-gray-800 dark:bg-gray-700 shadow-lg rounded-md font-bold">Github</span>
+              <div className="w-3 h-3 -mt-2 rotate-45 bg-gray-800 dark:bg-gray-700"></div>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   )
 }
