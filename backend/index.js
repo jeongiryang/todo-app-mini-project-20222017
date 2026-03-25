@@ -24,7 +24,7 @@ const itemSchema = new mongoose.Schema({
   deadline: { type: String, default: "" },      
   todoDeadline: { type: String, default: "" },  
   importance: { type: String, default: "보통" },
-  type: { type: String, required: true, enum: ['todo', 'market'] },
+  type: { type: String, required: true, enum: ['todo', 'market', 'lost'] },
   studentId: { type: String, default: "" },
   sellerName: { type: String, default: "" },
   phone: { type: String, default: "" },
@@ -47,6 +47,13 @@ app.post('/api/market', async (req, res) => {
 
 app.post('/api/todo', async (req, res) => { 
   const newItem = new Item({ ...req.body, type: 'todo' }); 
+  await newItem.save(); 
+  res.json(newItem); 
+});
+// 👇 새로 추가할 코드
+app.get('/api/lost', async (req, res) => { res.json(await Item.find({ type: 'lost' })); });
+app.post('/api/lost', async (req, res) => { 
+  const newItem = new Item({ ...req.body, type: 'lost' }); 
   await newItem.save(); 
   res.json(newItem); 
 });
