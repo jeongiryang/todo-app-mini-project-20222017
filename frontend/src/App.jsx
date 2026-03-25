@@ -6,9 +6,18 @@ import TodoPage from './pages/TodoPage';
 import GpaPage from './pages/GpaPage';
 
 function App() {
+  // [스위치 유동적으로] 내 컴퓨터(localhost)가 아닐 때만 true(차단)로 작동
+  // 나중에 완전히 공개하고 싶을 땐 맨 뒤의 true를 false로만 바꾸면 된다.
+  // why? AND 연산으로 인해 isOff는 무조건 false가 되고, 그러면 사이트는 항상 열리게(아래 코드가 작동이 안됨) 되므로
+  // 로컬에서 내가 편하게 작업하고, 실제 작동중인 서버는 작동 중지를 하기 위해서 이 기능을 도입
+  
+  /* - 이전에 사이트를 원할때 작동중이게 하고, 원하지 않을때는 작동하지 않게 하기를 원했음.
+  그런데 이렇게 하니 로컬에서도 작동이 안 됨. 
 
-  // [스위치] true: 차단 / false: 정상 오픈
-  const isOff = true; 
+- 따라서 편리하게 작업하기 위해, 로컬에서는 항시로 사이트가 켜지고, vercel에서 배포될 때는 내가 true를 false로 하지 않으면 무조건 사이트는 작동 중지됨.
+   */
+
+  const isOff = window.location.hostname !== 'localhost' && true;
 
   if (isOff) {
     return (
