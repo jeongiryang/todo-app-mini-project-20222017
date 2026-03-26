@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
 
 const getWeatherInfo = (code, lang) => {
   if (code === 0) return { icon: '☀️', text: lang === 'ko' ? '맑음' : 'Clear' };
@@ -29,6 +28,8 @@ function MainPage({ lang }) {
   const [isBongrimOpen, setIsBongrimOpen] = useState(false);
   const [isSarimOpen, setIsSarimOpen] = useState(false);
   const [bongrimTab, setBongrimTab] = useState('1층');
+  
+  const [showAllergy, setShowAllergy] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -53,7 +54,6 @@ function MainPage({ lang }) {
     return () => clearInterval(interval);
   }, []);
 
-  // ✅ [수정완료] 영어 번역본(en) 생략 없이 꽉 채워 넣었습니다!
   const t = {
     ko: {
       subtitle: "창원대학교 학우들을 위한 올인원 캠퍼스 솔루션",
@@ -103,6 +103,32 @@ function MainPage({ lang }) {
   const weatherData = weather ? getWeatherInfo(weather.weather_code, lang) : null;
   const dustData = dust ? getDustStatus(dust.pm10, lang) : null;
 
+  const AllergyToggleBtn = () => (
+    <button
+      onClick={() => setShowAllergy(!showAllergy)}
+      className={`text-[10px] md:text-xs font-black px-3 py-1.5 rounded-xl transition-all border shadow-sm flex items-center gap-1
+        ${showAllergy 
+          ? 'bg-orange-50 border-orange-200 text-orange-600 dark:bg-orange-900/30 dark:border-orange-800 dark:text-orange-400' 
+          : 'bg-gray-50 border-gray-200 text-gray-500 hover:bg-gray-100 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-600'
+        }`}
+    >
+      {showAllergy ? '🚨 알레르기 켜짐' : '💡 알레르기 보기'}
+    </button>
+  );
+
+  // ⭐ 알레르기 번호 해독표 콤포넌트
+  const AllergyGuideBox = () => {
+    if (!showAllergy) return null;
+    return (
+      <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800/50 p-3 mb-3 rounded-xl shadow-sm animate-[slide-down_0.3s_ease-out]">
+        <h4 className="text-[11px] font-black text-orange-600 dark:text-orange-400 mb-1.5">🚨 알레르기 유발 물질 안내</h4>
+        <p className="text-[10px] font-bold text-orange-700/80 dark:text-orange-300/80 leading-relaxed break-keep">
+          1.난류 2.우유 3.메밀 4.땅콩 5.대두 6.밀 7.고등어 8.게 9.새우 10.돼지고기 11.복숭아 12.토마토 13.아황산류 14.호두 15.닭고기 16.쇠고기 17.오징어 18.잣 19.조개류
+        </p>
+      </div>
+    );
+  };
+
   const renderFoodCard = (campusFilter) => (
     <div className="flex flex-col gap-3 pb-6">
       {!meals ? (
@@ -129,11 +155,26 @@ function MainPage({ lang }) {
                 {meal.menu.includes("운영중지") ? (
                   <li className="text-red-500 text-[11px] font-bold py-1">⚠️ 운영중지</li>
                 ) : (
-                  lines.map((line, i) => (
-                    <li key={i} className={`text-[13px] font-bold text-gray-700 dark:text-gray-200 break-keep leading-relaxed ${line.startsWith('<') || line.startsWith('[') ? 'text-blue-600 dark:text-blue-400 text-[11px] mt-2.5 mb-1 tracking-wider uppercase' : ''}`}>
-                      {line}
-                    </li>
-                  ))
+                  lines.map((line, i) => {
+                    const trimmedLine = line.trim();
+                    const isAllergyLine = /^\([\d.,\s]+\)$/.test(trimmedLine);
+                    
+                    if (isAllergyLine && !showAllergy) return null;
+
+                    return (
+                      <li key={i} className={`
+                        break-keep leading-relaxed 
+                        ${isAllergyLine 
+                          ? 'text-[10px] text-orange-500 dark:text-orange-400 font-bold tracking-tight mt-0 mb-1' 
+                          : line.startsWith('<') || line.startsWith('[') 
+                            ? 'text-blue-600 dark:text-blue-400 text-[11px] mt-2.5 mb-1 tracking-wider uppercase font-black' 
+                            : 'text-[13px] font-bold text-gray-700 dark:text-gray-200' 
+                        }
+                      `}>
+                        {trimmedLine}
+                      </li>
+                    );
+                  })
                 )}
               </ul>
             </div>
@@ -149,6 +190,7 @@ function MainPage({ lang }) {
       <style>{`
         @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-5px); } 100% { transform: translateY(0px); } }
         .animate-float { animation: float 3s ease-in-out infinite; }
+        @keyframes slide-down { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
       `}</style>
 
       {/* 왼쪽 서랍 버튼 (봉림관 / 사림관) */}
@@ -168,30 +210,40 @@ function MainPage({ lang }) {
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[190] transition-opacity duration-300" onClick={() => { setIsBongrimOpen(false); setIsSarimOpen(false); }}></div>
       )}
       
-      {/* 봉림관 서랍 */}
+      {/* 💡 [봉림관 서랍] */}
       <div className={`fixed top-0 left-0 h-full w-[300px] md:w-[350px] bg-gray-50 dark:bg-gray-900 shadow-2xl z-[200] transform transition-transform duration-300 ease-out flex flex-col ${isBongrimOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-        <div className="p-5 bg-white dark:bg-gray-800 border-b border-gray-100 flex flex-col gap-4 shadow-sm z-10">
+        <div className="p-5 bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700 flex flex-col gap-4 shadow-sm z-10">
           <div className="flex justify-between items-center">
             <h2 className="text-lg font-black text-blue-600 flex items-center gap-2">🍚 봉림관 식단</h2>
-            <button onClick={() => setIsBongrimOpen(false)} className="p-2 bg-gray-100 rounded-full hover:bg-gray-200">✕</button>
+            <div className="flex items-center gap-2">
+              <AllergyToggleBtn />
+              <button onClick={() => setIsBongrimOpen(false)} className="w-8 h-8 flex justify-center items-center bg-gray-100 dark:bg-gray-700 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-500 dark:text-gray-300 font-bold transition">✕</button>
+            </div>
           </div>
           <div className="flex bg-gray-100 dark:bg-gray-700 p-1 rounded-xl">
-            <button onClick={() => setBongrimTab('1층')} className={`flex-1 py-1.5 rounded-lg text-xs font-black transition-all ${bongrimTab === '1층' ? 'bg-white dark:bg-gray-600 text-blue-600 shadow-sm' : 'text-gray-500'}`}>1층 (MOSS1)</button>
-            <button onClick={() => setBongrimTab('2층')} className={`flex-1 py-1.5 rounded-lg text-xs font-black transition-all ${bongrimTab === '2층' ? 'bg-white dark:bg-gray-600 text-blue-600 shadow-sm' : 'text-gray-500'}`}>2층 (MOSS2)</button>
+            <button onClick={() => setBongrimTab('1층')} className={`flex-1 py-1.5 rounded-lg text-xs font-black transition-all ${bongrimTab === '1층' ? 'bg-white dark:bg-gray-600 text-blue-600 shadow-sm' : 'text-gray-500 dark:text-gray-400'}`}>1층 (MOSS1)</button>
+            <button onClick={() => setBongrimTab('2층')} className={`flex-1 py-1.5 rounded-lg text-xs font-black transition-all ${bongrimTab === '2층' ? 'bg-white dark:bg-gray-600 text-blue-600 shadow-sm' : 'text-gray-500 dark:text-gray-400'}`}>2층 (MOSS2)</button>
           </div>
         </div>
-        <div className="p-5 overflow-y-auto flex-grow bg-gray-50/50">
+        <div className="p-4 overflow-y-auto flex-grow bg-gray-50/50 dark:bg-gray-900">
+          {/* ⭐ 토글 켰을 때 나오는 알레르기 안내표 추가 */}
+          <AllergyGuideBox />
           {renderFoodCard(`봉림관 ${bongrimTab}`)}
         </div>
       </div>
 
-      {/* 사림관 서랍 */}
+      {/* 💡 [사림관 서랍] */}
       <div className={`fixed top-0 left-0 h-full w-[300px] md:w-[350px] bg-gray-50 dark:bg-gray-900 shadow-2xl z-[200] transform transition-transform duration-300 ease-out flex flex-col ${isSarimOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-        <div className="p-5 bg-white dark:bg-gray-800 border-b border-gray-100 flex justify-between items-center shadow-sm z-10">
+        <div className="p-5 bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center shadow-sm z-10 flex-wrap gap-2">
           <h2 className="text-lg font-black text-indigo-600 flex items-center gap-2">🍱 사림관 식단</h2>
-          <button onClick={() => setIsSarimOpen(false)} className="p-2 bg-gray-100 rounded-full hover:bg-gray-200">✕</button>
+          <div className="flex items-center gap-2">
+            <AllergyToggleBtn />
+            <button onClick={() => setIsSarimOpen(false)} className="w-8 h-8 flex justify-center items-center bg-gray-100 dark:bg-gray-700 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-500 dark:text-gray-300 font-bold transition">✕</button>
+          </div>
         </div>
-        <div className="p-5 overflow-y-auto flex-grow bg-gray-50/50">
+        <div className="p-4 overflow-y-auto flex-grow bg-gray-50/50 dark:bg-gray-900">
+          {/* ⭐ 토글 켰을 때 나오는 알레르기 안내표 추가 */}
+          <AllergyGuideBox />
           {renderFoodCard('사림관')}
         </div>
       </div>
@@ -286,7 +338,7 @@ function MainPage({ lang }) {
         </div>
       </div>
 
-      {/* ✅ [수정완료] 분실물/마켓 페이지와 100% 동일한 깃허브 로고 푸터 복구! */}
+      {/* 푸터 영역 */}
       <footer className="py-8 md:py-12 text-center border-t border-gray-200 dark:border-gray-800 mt-16 md:mt-24 relative z-10 transition-colors">
         <p className="text-gray-600 dark:text-gray-400 font-black text-[10px] md:text-sm uppercase tracking-widest mb-1.5 md:mb-2 break-keep leading-relaxed">
           {current.footerDept}
@@ -301,10 +353,6 @@ function MainPage({ lang }) {
                 <path d="M8 0c4.42 0 8 3.58 8 8a8.01 8.01 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z" />
               </svg>
             </a>
-            <div className="absolute bottom-full mb-2 hidden group-hover:flex flex-col items-center animate-bounce">
-              <span className="relative z-10 p-2 text-xs leading-none text-white whitespace-no-wrap bg-gray-800 dark:bg-gray-700 shadow-lg rounded-md font-bold">Github</span>
-              <div className="w-3 h-3 -mt-2 rotate-45 bg-gray-800 dark:bg-gray-700"></div>
-            </div>
           </div>
         </div>
       </footer>

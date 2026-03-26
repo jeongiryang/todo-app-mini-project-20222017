@@ -29,13 +29,14 @@ const itemSchema = new mongoose.Schema({
 });
 const Item = mongoose.model('Item', itemSchema);
 
-// 학식 메뉴 크롤링
-// [3] 학식 크롤링 API 
+// [3] 학식 크롤링 API (🔥 알레르기 강제 분리 + 융통성 있는 요일 파싱 적용본)
 app.get('/api/food', async (req, res) => {
   try {
-    const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
-    const today = new Date().getDay();
-    const todayName = dayNames[today];
+    const now = new Date();
+    const utc = now.getTime() + (now.getTimezoneOffset() * 60 * 1000);
+    const kst = new Date(utc + (9 * 60 * 60 * 1000));
+    
+    const today = kst.getDay(); // 0(일) ~ 6(토)
 
     if (today === 0 || today === 6) {
       return res.json([{ place: "주말", menu: "오늘은 주말입니다. 편의점 털러 가시죠! 🍙" }]);
@@ -43,19 +44,35 @@ app.get('/api/food', async (req, res) => {
 
     const foodData = [];
 
-    // 💡 1. 봉림관 스크랩 (campus_001.do)
+    // 💡 1. 봉림관 스크랩
     try {
       const { data } = await axios.get('https://app.changwon.ac.kr/campus/campus_001.do', { headers: { 'User-Agent': 'Mozilla/5.0' } });
       const $ = cheerio.load(data);
       $('br').replaceWith('\n');
       $('p, div, li').each((_, el) => $(el).append('\n'));
 
+      const bongrimTables = [];
       $('table').each((_, table) => {
-        const tableText = $(table).text();
-        if (!tableText.includes('MOSS')) return; // 봉림관 표만 타격
+        if ($(table).text().includes('MOSS')) {
+          bongrimTables.push(table);
+        }
+      });
+
+      // ⭐ 수정 포인트: 표가 5개가 아니어도 융통성 있게 요일 가져오기
+      if (bongrimTables.length > 0) {
+        let targetTable = bongrimTables[0];
+        
+        if (today >= 1 && today <= 5) {
+          let targetIdx = today - 1;
+          // 만약 표 개수가 모자라서 에러가 날 상황이면 가장 마지막 표라도 가져오도록 방어
+          if (targetIdx >= bongrimTables.length) {
+            targetIdx = bongrimTables.length - 1;
+          }
+          targetTable = bongrimTables[targetIdx];
+        }
 
         const tableMap = [];
-        $(table).find('tr').each((rIdx, tr) => {
+        $(targetTable).find('tr').each((rIdx, tr) => {
           if (!tableMap[rIdx]) tableMap[rIdx] = [];
           let cIdx = 0;
           $(tr).find('th, td').each((_, cell) => {
@@ -73,37 +90,31 @@ app.get('/api/food', async (req, res) => {
           });
         });
 
-        let targetCol = -1;
-        for (let r = 0; r < Math.min(tableMap.length, 3); r++) {
-          for (let c = 0; c < tableMap[r].length; c++) {
-            if (tableMap[r][c] && tableMap[r][c].includes(todayName)) { targetCol = c; break; }
-          }
-          if (targetCol !== -1) break;
-        }
+        tableMap.forEach(row => {
+          if (row.length < 3) return;
+          const placeTitle = row[0] || '';
+          if (!placeTitle.includes('MOSS')) return;
 
-        if (targetCol !== -1) {
-          let lastFloor = '1층';
-          tableMap.forEach(row => {
-            const placeTitle = row[0] || '';
-            if (placeTitle.includes('MOSS1')) lastFloor = '1층';
-            else if (placeTitle.includes('MOSS2')) lastFloor = '2층';
+          const floor = placeTitle.includes('MOSS1') ? '1층' : '2층';
 
-            if (!placeTitle.includes('MOSS')) return;
+          let timeInfo = row[1] || '';
+          timeInfo = timeInfo.split('\n')[0].replace(/\([^)]*\)/g, '').trim(); 
+          if (!timeInfo.includes('식')) return; 
 
-            const timeInfo = row[1] ? row[1].replace(/\([^)]*\)/g, '').trim() : '';
-            if (!timeInfo.includes('식')) return;
+          let menuRaw = row[2] || '';
 
-            let menuRaw = row[targetCol];
-            if (menuRaw && menuRaw.length > 3 && !menuRaw.includes(todayName)) {
-              if (menuRaw.includes('운영중지')) foodData.push({ place: `봉림관 ${lastFloor} - ${timeInfo}`, menu: "운영중지" });
-              else foodData.push({ place: `봉림관 ${lastFloor} - ${timeInfo}`, menu: menuRaw });
+          if (menuRaw && menuRaw.length > 2) {
+            if (menuRaw.includes('운영중지')) {
+              foodData.push({ place: `봉림관 ${floor} - ${timeInfo}`, menu: "운영중지" });
+            } else {
+              foodData.push({ place: `봉림관 ${floor} - ${timeInfo}`, menu: menuRaw });
             }
-          });
-        }
-      });
+          }
+        });
+      }
     } catch (e) { console.error("봉림관 에러:", e.message); }
 
-    // 💡 2. 사림관 스크랩 (마법의 열쇠: ?gubun=S) - 형님이 찾은 단서!
+    // 💡 2. 사림관 스크랩
     try {
       const { data: sarimData } = await axios.get('https://app.changwon.ac.kr/campus/campus_001.do?gubun=S', { headers: { 'User-Agent': 'Mozilla/5.0' } });
       const $s = cheerio.load(sarimData);
@@ -119,9 +130,10 @@ app.get('/api/food', async (req, res) => {
       });
 
       if (sarimTables.length > 0) {
-        // 사림관은 요일별로 표가 5개 있으니, 오늘 요일(1~5)에 맞는 표를 픽업
         let targetTable = sarimTables[0];
-        if (sarimTables.length >= 5 && today >= 1 && today <= 5) targetTable = sarimTables[today - 1];
+        if (sarimTables.length >= 5 && today >= 1 && today <= 5) {
+          targetTable = sarimTables[today - 1]; 
+        }
 
         $s(targetTable).find('tr').each((_, tr) => {
           const cells = $s(tr).find('td, th');
@@ -138,14 +150,16 @@ app.get('/api/food', async (req, res) => {
       }
     } catch (e) { console.error("사림관 에러:", e.message); }
 
-    // 💡 3. 데이터 클리닝 (알레르기 제거 및 가독성 최적화)
+    // 💡 3. 데이터 클리닝
     const cleanedData = foodData.map(item => {
-      let cleanMenu = item.menu.split('\n')
-        .map(line => line.replace(/\([\d.,\s]+\)/g, '').trim())
+      let cleanMenu = item.menu
+        // ⭐ 핵심: 사림관처럼 "우동장국(5.6)" 붙어있는 걸 "우동장국\n(5.6)"으로 강제로 찢어버림!
+        .replace(/([^\n])(\([\d.,\s]+\))/g, '$1\n$2')
+        .split('\n')
+        .map(line => line.trim())
         .filter(line => line.length > 0 && !line.includes('알레르기') && !line.includes('원산지') && !line.includes('식단이 없습니다') && !line.includes('식자재수급'))
         .join('\n');
         
-      // 봉림관 줄바꿈 처리 보강
       if (!cleanMenu.includes('\n') && cleanMenu !== "운영중지") {
         cleanMenu = cleanMenu.replace(/([가-힣]{2,}(국|찌개|카레|볶음|구이|김치|전|까스|스프|핫도그|소떡|면|밥|닭|육|라|김))/g, '$1\n').trim();
       }
