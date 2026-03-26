@@ -297,8 +297,8 @@ function TodoPage({ lang, timerMode, setTimerMode, timerTime, setTimerTime, time
       setChatHistory(prev => [...prev, { sender: 'ai', text: aiResult }]);
     } catch (error) {
       console.error("AI Generation Error:", error);
-      // ⭐ AI 에러 메시지 구체화 (서버 한도 등)
-      setChatHistory(prev => [...prev, { sender: 'ai', text: (lang === 'ko' ? "❌ 통신 중 오류가 발생했습니다. (AI 한도 초과 등)" : "❌ Error connecting to server. (API Limit etc.)") }]);
+      // ⭐ 에러 메시지만 마켓/분실물과 똑같이 통일!
+      setChatHistory(prev => [...prev, { sender: 'ai', text: (lang === 'ko' ? "❌ 서버 통신 중 오류가 발생했습니다. (1분 뒤 다시 시도해주세요.)" : "❌ Error connecting to server. (Try again in 1 min)") }]);
     } finally {
       setIsGenerating(false);
     }

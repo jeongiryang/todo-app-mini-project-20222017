@@ -239,31 +239,59 @@ function LostPage({ lang }) {
     setFollowUpInput(''); 
     if (textareaRef.current) textareaRef.current.style.height = 'auto';
 
-   try {
-      let promptContext = lang === 'ko' 
-        ? `너는 대학 분실물 센터 게시글 폼을 자동으로 채워주는 AI 비서야.
-           사용자의 대화 내용을 분석해서 [습득/분실] 여부와 물품명, 사례금(없으면 free), 장소, 일시, 학번, 작성자명, 연락처, 상세 설명을 추출해.
-           [절대 규칙 1]: 답변은 반드시 아래 형태의 순수한 JSON 구조로만 반환해!
-           [절대 규칙 2]: 사용자가 인사만 하거나 물품 정보가 아예 없다면, extracted 안의 모든 값을 무조건 빈 문자열("")로 남겨둬!
-           {
-             "message": "요청하신 정보를 바탕으로 폼에 들어갈 내용을 준비했습니다! (인사말이면 자연스럽게 대답)",
-             "extracted": {
-               "title": "[분실] 검은색 에어팟",
-               "price": "50000",
-               "location": "도서관 2층 열람실",
-               "deadline": "2026-03-25",
-               "studentId": "20222017",
-               "sellerName": "정이량",
-               "phone": "010-1234-1234",
-               "description": "케이스에 스누피 스티커가 붙어있습니다."
-             }
-           }\n[대화 내역]\n`
-        : `You are an AI assistant for a Lost & Found board. Output ONLY pure JSON. If no item details, leave all extracted fields as "".\n[Chat History]\n`;
-      
-      newHistory.forEach(msg => { promptContext += `${msg.sender === 'user' ? 'User' : 'AI'}: ${msg.text}\n`; });
-      promptContext += "AI: ";
+ try {
+      // ⭐ 한국어 전용 JSON 포맷
+      const jsonFormatKo = `
+      {
+        "message": "한국어로 자연스럽게 대답해주세요. (예: 요청하신 정보를 바탕으로 폼을 준비했습니다!)",
+        "extracted": {
+          "title": "물품명 (예: [습득] 검은색 에어팟)",
+          "price": "사례금 (반드시 숫자만 작성. 없거나 원치 않으면 'free', 언급이 아예 없으면 빈칸)",
+          "location": "장소",
+          "deadline": "마감일 (YYYY-MM-DD)",
+          "studentId": "학번",
+          "sellerName": "이름",
+          "phone": "전화번호",
+          "description": "상세 설명"
+        }
+      }`;
 
-      const res = await axios.post('/api/ai/generate', { prompt: promptContext });
+      // ⭐ 영어 전용 JSON 포맷 (AI가 헷갈리지 않게 100% 영어 지시)
+      const jsonFormatEn = `
+      {
+        "message": "Respond in English naturally. (e.g., I have prepared the form details based on your input!)",
+        "extracted": {
+          "title": "Item name (e.g., [Found] Black Galaxy Buds Pro)",
+          "price": "Reward amount (MUST extract NUMBERS ONLY. If free/no reward, write 'free'. If not mentioned, leave empty)",
+          "location": "Location",
+          "deadline": "Deadline (YYYY-MM-DD)",
+          "studentId": "Student ID",
+          "sellerName": "Name",
+          "phone": "Phone number digits only",
+          "description": "Detailed description"
+        }
+      }`;
+
+      // 언어에 맞게 프롬프트 완벽 분리
+      const promptContext = lang === 'ko' 
+        ? `너는 대학 분실물 센터 게시글 폼을 자동으로 채워주는 AI 비서야.
+           사용자의 대화를 분석해 [습득/분실] 여부, 물품명, 사례금, 장소, 일시, 학번, 이름, 연락처, 상세 설명을 추출해.
+           [절대 규칙 1]: 반드시 아래 JSON 형식으로만 반환해! (마크다운 백틱 제외)
+           [절대 규칙 2]: 인사만 있거나 정보가 없으면 extracted 값을 모두 ""(빈칸)로 둬.
+           ${jsonFormatKo}\n\n[대화 내역]\n`
+        : `You are an AI assistant for a university Lost & Found board.
+           Analyze the user's input and extract details: [Lost/Found] status, item name, reward amount, location, date/time, student ID, name, phone, and description.
+           [Rule 1]: You MUST return ONLY valid JSON in the exact format below! (No markdown backticks)
+           [Rule 2]: The reward amount MUST go into the "price" field as NUMBERS ONLY.
+           [Rule 3]: If the user just says hello or info is missing, leave all 'extracted' values as "".
+           [Rule 4]: You MUST reply in English for the "message" field.
+           ${jsonFormatEn}\n\n[Chat History]\n`;
+      
+      let finalPrompt = promptContext;
+      newHistory.forEach(msg => { finalPrompt += `${msg.sender === 'user' ? 'User' : 'AI'}: ${msg.text}\n`; });
+      finalPrompt += "AI: ";
+
+      const res = await axios.post('/api/ai/generate', { prompt: finalPrompt });
       let aiText = res.data.text.trim(); 
       let jsonString = aiText.replace(/```json/gi, '').replace(/```/g, '').trim();
       const jsonStart = jsonString.indexOf('{');
@@ -274,7 +302,6 @@ function LostPage({ lang }) {
         const parsed = JSON.parse(jsonString);
         const ext = parsed.extracted;
         
-        // ⭐ 핵심 패치: 데이터가 빈칸(" ")이 아니고 진짜 글자가 들어있을 때만 true로 인정!
         const hasActualData = ext && (
           (ext.title && ext.title.trim() !== "") || 
           (ext.price && String(ext.price).trim() !== "") || 
@@ -286,12 +313,15 @@ function LostPage({ lang }) {
           (ext.description && ext.description.trim() !== "")
         );
 
-        setChatHistory(prev => [...prev, { sender: 'ai', text: parsed.message, pendingData: hasActualData ? ext : null }]);
+        const fallbackMsg = lang === 'ko' ? "정보를 분석했습니다." : "Information analyzed.";
+        const finalMessage = parsed.message ? parsed.message : fallbackMsg;
+
+        setChatHistory(prev => [...prev, { sender: 'ai', text: finalMessage, pendingData: hasActualData ? ext : null }]);
       } catch (parseError) {
         setChatHistory(prev => [...prev, { sender: 'ai', text: res.data.text }]);
       }
     } catch (error) {
-      setChatHistory(prev => [...prev, { sender: 'ai', text: (lang === 'ko' ? "❌ 서버 통신 중 오류가 발생했습니다. (AI 한도 초과 등)" : "❌ Error connecting to server.") }]);
+      setChatHistory(prev => [...prev, { sender: 'ai', text: (lang === 'ko' ? "❌ 서버 통신 중 오류가 발생했습니다. (1분 뒤 다시 시도해주세요.)" : "❌ Error connecting to server. (Try again in 1 min)") }]);
     } finally {
       setIsGenerating(false);
     }
@@ -428,7 +458,7 @@ function LostPage({ lang }) {
                 <div ref={chatContainerRef} className="flex flex-col gap-3 max-h-[300px] overflow-y-auto custom-scrollbar p-3 bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 mb-3">
                   {chatHistory.length === 0 && !isGenerating && (
                     <div className="text-xs font-bold text-gray-400 p-2 text-center bg-gray-50 dark:bg-gray-700 rounded-lg">
-                      무엇을 잃어버리셨나요? 혹은 주우셨나요?<br/>(예: "중도 2층에서 에어팟 주웠습니다")
+                      무엇을 잃어버리셨나요? 혹은 주우셨나요?<br/>(예: "도서관 2층에서 에어팟 주웠습니다.갈색 케이스고요 사례금은 필요없습니다. 제 이름은 정이량이고요. 이 번호 010 1234 1234로 연락주세요")
                     </div>
                   )}
                   {chatHistory.map((chat, idx) => (

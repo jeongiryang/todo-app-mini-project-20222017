@@ -267,49 +267,58 @@ function MarketPage({ lang }) {
     if (textareaRef.current) textareaRef.current.style.height = 'auto'; 
 
     try {
-      let promptContext = lang === 'ko' 
-        ? `너는 중고마켓 판매글 폼을 자동으로 채워주는 AI 비서야.
-           사용자의 대화 내용을 분석해서 판매 물품, 가격, 장소, 마감일, 학번, 판매자명, 연락처, 상세 설명을 추출해내야 해.
-           [절대 규칙 1]: 답변은 반드시 아래 형태의 순수한 JSON 구조로만 반환하고, 중간에 끊기지 않게 닫는 괄호(})까지 완벽하게 작성해!
-           [절대 규칙 2]: 텍스트에 이모지(😎, ✨ 등)는 절대 사용하지 마. 단, JSON 문법에 필요한 따옴표나 기호는 정상적으로 작성해. 매우 건조하고 진중한 텍스트로만 작성할 것.
-           마크다운(\`\`\`) 기호, 서론, 결론 등 다른 텍스트는 1글자도 포함하면 안 돼.
-           {
-             "message": "사용자에게 할 대답 (물품 등록이나 폼 입력과 관련된 내용이면 '요청하신 정보를 바탕으로 폼에 들어갈 내용을 준비했습니다! 아래 버튼을 눌러 자동 입력을 완료해 보세요.'라고 안내하고, 단순한 인사나 일상 대화라면 상황에 맞게 자연스럽고 친절하게 대답할 것. 단, 이모지는 쓰지 마.)",
-             "extracted": {
-               "title": "추출된 물품명 (없으면 빈 문자열)",
-               "price": "추출된 가격 (숫자만 작성. '무료/나눔'이면 'free', 없으면 빈 문자열)",
-               "location": "추출된 거래 희망 장소 (없으면 빈 문자열)",
-               "deadline": "추출된 마감일 (YYYY-MM-DD 형식, 없으면 빈 문자열)",
-               "studentId": "추출된 학번 (없으면 빈 문자열)",
-               "sellerName": "추출된 판매자 이름 (없으면 빈 문자열)",
-               "phone": "추출된 전화번호 (숫자만, 없으면 빈 문자열)",
-               "description": "물품에 대한 설명 본문. 단, 학번, 전화번호, 마감일 등 이미 전용 칸이 있는 정보는 본문에 중복으로 적지 말 것. (이모지 절대 금지)"
-             }
-           }
-           \n[대화 내역]\n`
-        : `You are an AI assistant that auto-fills used item marketplace forms.
-           Extract info from the chat and return it ONLY in this exact JSON format. 
-           [RULE 1]: NO markdown (\`\`\`), NO extra text. MUST output complete JSON until the closing bracket (}).
-           [RULE 2]: ABSOLUTELY NO emojis. Use a dry, clean, and formal tone.
-           {
-             "message": "Friendly response to user. (If the user provides item details, use EXACTLY: 'I have prepared the form details based on your input! Click the button below to apply them.' If it is just a casual chat or greeting, respond naturally and kindly without emojis.)",
-             "extracted": {
-               "title": "Item name or empty string",
-               "price": "Numbers only, 'free' if freebie, or empty string",
-               "location": "Trade location or empty string",
-               "deadline": "Deadline in YYYY-MM-DD format or empty string",
-               "studentId": "Student ID or empty string",
-               "sellerName": "Seller name or empty string",
-               "phone": "Phone number digits only or empty string",
-               "description": "A clean, formal sales description. DO NOT repeat the student ID, phone number, or deadline here as they have their own dedicated fields. (NO EMOJIS)"
-             }
-           }
-           \n[Chat History]\n`;
-      
-      newHistory.forEach(msg => { promptContext += `${msg.sender === 'user' ? 'User' : 'AI'}: ${msg.text}\n`; });
-      promptContext += "AI: ";
+      // ⭐ 한국어 전용 JSON 포맷 (설명까지 100% 한국어)
+      const jsonFormatKo = `
+      {
+        "message": "사용자에게 할 대답 (물품 등록 내용이면 '요청하신 정보를 바탕으로 폼에 들어갈 내용을 준비했습니다! 아래 버튼을 눌러 자동 입력을 완료해 보세요.' 안내. 일상 대화면 자연스럽게 대답. 단, 이모지 절대 금지)",
+        "extracted": {
+          "title": "물품명 (없으면 빈칸)",
+          "price": "가격 (반드시 숫자만 작성. '무료/나눔'이면 'free', 없으면 빈칸)",
+          "location": "거래 희망 장소 (없으면 빈칸)",
+          "deadline": "마감일 (YYYY-MM-DD 형식, 없으면 빈칸)",
+          "studentId": "학번 (없으면 빈칸)",
+          "sellerName": "판매자 이름 (없으면 빈칸)",
+          "phone": "전화번호 (숫자만, 없으면 빈칸)",
+          "description": "상세 설명 (학번, 번호 등 중복 기재 금지, 이모지 금지)"
+        }
+      }`;
 
-      const res = await axios.post('/api/ai/generate', { prompt: promptContext });
+      // ⭐ 영어 전용 JSON 포맷 (설명까지 100% 영어, AI가 절대 안 헷갈림)
+      const jsonFormatEn = `
+      {
+        "message": "Friendly response in English. (If item details are given, use EXACTLY: 'I have prepared the form details based on your input! Click the button below to apply them.' For casual chat, reply naturally. NO emojis.)",
+        "extracted": {
+          "title": "Item name (or empty string)",
+          "price": "Price (MUST extract NUMBERS ONLY. 'free' if freebie. Or empty string)",
+          "location": "Trade location (or empty string)",
+          "deadline": "Deadline (YYYY-MM-DD or empty string)",
+          "studentId": "Student ID (or empty string)",
+          "sellerName": "Seller name (or empty string)",
+          "phone": "Phone number digits only (or empty string)",
+          "description": "Detailed description. DO NOT repeat ID, phone, etc. NO emojis."
+        }
+      }`;
+
+      // 언어에 맞게 프롬프트 완벽 분리
+      const promptContext = lang === 'ko' 
+        ? `너는 중고마켓 판매글 폼을 자동으로 채워주는 AI 비서야.
+           [절대 규칙 1]: 반드시 아래 JSON 형식으로만 반환해! (마크다운 백틱 제외)
+           [절대 규칙 2]: 텍스트에 이모지는 절대 사용 금지. 건조하고 진중하게 작성해.
+           [절대 규칙 3]: 인사만 있거나 정보가 없으면 extracted 값을 모두 ""(빈칸)로 둬.
+           ${jsonFormatKo}\n\n[대화 내역]\n`
+        : `You are an AI assistant that auto-fills used item marketplace forms.
+           [Rule 1]: You MUST return ONLY valid JSON in the exact format below! (No markdown backticks)
+           [Rule 2]: ABSOLUTELY NO emojis. Use a dry, clean, and formal tone.
+           [Rule 3]: The price MUST be NUMBERS ONLY.
+           [Rule 4]: If the user just says hello or info is missing, leave all 'extracted' values as "".
+           [Rule 5]: You MUST reply in English for the "message" field.
+           ${jsonFormatEn}\n\n[Chat History]\n`;
+      
+      let finalPrompt = promptContext;
+      newHistory.forEach(msg => { finalPrompt += `${msg.sender === 'user' ? 'User' : 'AI'}: ${msg.text}\n`; });
+      finalPrompt += "AI: ";
+
+      const res = await axios.post('/api/ai/generate', { prompt: finalPrompt });
       let aiText = res.data.text.trim(); 
       
       let jsonString = aiText.replace(/```json/gi, '').replace(/```/g, '').trim();
@@ -322,20 +331,34 @@ function MarketPage({ lang }) {
       try {
         const parsed = JSON.parse(jsonString);
         const ext = parsed.extracted;
-        const hasActualData = ext && (ext.title || ext.price || ext.location || ext.deadline || ext.studentId || ext.sellerName || ext.phone || ext.description);
+        
+        const hasActualData = ext && (
+          (ext.title && ext.title.trim() !== "") || 
+          (ext.price && String(ext.price).trim() !== "") || 
+          (ext.location && ext.location.trim() !== "") || 
+          (ext.deadline && ext.deadline.trim() !== "") || 
+          (ext.studentId && ext.studentId.trim() !== "") || 
+          (ext.sellerName && ext.sellerName.trim() !== "") || 
+          (ext.phone && ext.phone.trim() !== "") || 
+          (ext.description && ext.description.trim() !== "")
+        );
+
+        const fallbackMsg = lang === 'ko' ? "정보를 분석했습니다." : "Information analyzed.";
+        const finalMessage = parsed.message ? parsed.message : fallbackMsg;
 
         setChatHistory(prev => [...prev, { 
           sender: 'ai', 
-          text: parsed.message, 
+          text: finalMessage, 
           pendingData: hasActualData ? ext : null 
         }]);
       } catch (parseError) {
+        console.error("JSON 파싱 에러:", parseError, aiText);
         setChatHistory(prev => [...prev, { sender: 'ai', text: res.data.text }]);
       }
 
     } catch (error) {
       console.error("AI Generation Error:", error);
-      setChatHistory(prev => [...prev, { sender: 'ai', text: (lang === 'ko' ? "❌ 서버 통신 중 오류가 발생했습니다. (AI 한도 초과 등)" : "❌ Error connecting to server.") }]);
+      setChatHistory(prev => [...prev, { sender: 'ai', text: (lang === 'ko' ? "❌ 서버 통신 중 오류가 발생했습니다. (1분 뒤 다시 시도해주세요.)" : "❌ Error connecting to server. (Try again in 1 min)") }]);
     } finally {
       setIsGenerating(false);
     }
