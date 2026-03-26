@@ -1,4 +1,2 @@
 @import "tailwindcss";
-
-/*  Tailwind v4 전용: 수동 다크모드(class) 활성화 규칙 */
 @variant dark (&:where(.dark, .dark *));

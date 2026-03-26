@@ -1,18 +1,14 @@
 import { useState, useEffect, useRef } from 'react'
 import axios from 'axios'
-
 const TITLE_MENTIONS = {
   ko: ["오늘의 미션은 무엇인가요?", "성장을 위한 한 걸음, 무엇을 할까요?", "지루함을 깨뜨릴 오늘의 스케줄을 적어주세요.", "미래의 나에게 부끄럽지 않을 계획을 세웁시다.", "작은 목표가 모여 전설을 만듭니다.", "오늘 하루, 어떤 멋진 일들을 계획하고 있나요?", "기록하는 순간, 목표는 이미 현실에 한 걸음 다가섭니다.", "어제보다 더 나은 오늘을 위한 당신만의 계획!", "성공적인 하루의 시작, 명확한 목표 설정부터!", "작은 성취들이 모여 눈부신 미래를 완성합니다."],
   en: ["What is your mission today?", "One step for growth, what to do?", "Write down today's schedule to break the boredom.", "Plan something you won't regret to your future self.", "Small goals make legends.", "What wonderful things are you planning today?", "The moment you record, the goal is one step closer.", "Your own plan for a better today than yesterday!", "A successful day starts with clear goals!", "Small achievements gather to complete a dazzling future."]
 };
-
 const PLACEHOLDERS = {
   ko: ["어떤 위대한 미션을 수행할까요?", "성장을 위한 작은 습관 추가", "목표를 적는 순간 이미 반은 성공입니다.", "여기에 오늘의 핵심 목표를 입력하세요.", "가장 먼저 끝내고 싶은 일은 무엇인가요?", "오늘 하루를 알차게 만들 작은 미션 하나!", "세상을 바꿀 당신의 오늘 첫 번째 할 일은?", "미루고 미뤘던 그 과제, 오늘 한 번 끝내봅시다!", "작은 것부터 하나씩, 천천히 적어보세요.", "목표를 구체적으로 적을수록 실행력은 배가 됩니다."],
   en: ["What great mission will you undertake?", "Add a small habit for growth", "The moment you write down a goal, it's half success.", "Enter your core goal for today here.", "What do you want to finish first?", "One small mission to make today fruitful!", "What is your first task today to change the world?", "That assignment you've been putting off, let's finish it today!", "Write them down slowly, starting with small things.", "The more specific the goal, the doubled the execution."]
 };
-
-
-const QUOTES = [// 🎬 영화 명언
+const QUOTES = [
   { ko: "어제는 역사, 내일은 미스터리, 오늘은 선물. 그래서 우리는 현재(Present)라고 부른다. - 우그웨이 (쿵푸팬더 中)", en: "Yesterday is history, tomorrow is a mystery, today is a gift. That's why we call it the present. - Oogway (from Kung Fu Panda)" },
   { ko: "하거나, 하지 않거나 둘 중 하나다. '해본다'는 건 없다. - 요다 (스타워즈 中)", en: "Do or do not. There is no try. - Yoda (from Star Wars)" },
   { ko: "인생은 초콜릿 상자와 같다. 네가 무엇을 고를지 아무도 모르니까. - 포레스트 검프 (포레스트 검프 中)", en: "Life was like a box of chocolates. You never know what you're gonna get. - Forrest Gump (from Forrest Gump)" },
@@ -33,8 +29,6 @@ const QUOTES = [// 🎬 영화 명언
   { ko: "계속 헤엄쳐, 그냥 계속 헤엄쳐. - 도리 (니모를 찾아서 中)", en: "Just keep swimming. - Dory (from Finding Nemo)" },
   { ko: "지금 이 순간 당신이 무엇을 하느냐가 차이를 만든다. - 사라 코너 (터미네이터 中)", en: "It's what you do right now that makes a difference. - Sarah Connor (from Terminator)" },
   { ko: "내가 누구인지는 내가 하는 행동이 말해준다. - 브루스 웨인 (다크 나이트 中)", en: "It is not who I am underneath, but what I do that defines me. - Bruce Wayne (from The Dark Knight)" },
-
-  // 📖 속담 및 격언
   { ko: "천 리 길도 한 걸음부터. - 한국 속담", en: "A journey of a thousand miles begins with a single step. - Proverb" },
   { ko: "고생 끝에 낙이 온다. - 한국 속담", en: "No pain, no gain. - Proverb" },
   { ko: "시작이 반이다. - 한국 속담", en: "Well begun is half done. - Proverb" },
@@ -50,8 +44,6 @@ const QUOTES = [// 🎬 영화 명언
   { ko: "자신의 운명을 사랑하라. (Amor fati) - 라틴어 격언", en: "Love your fate. (Amor fati) - Latin Proverb" },
   { ko: "죽음을 기억하라. (Memento mori) - 라틴어 격언", en: "Remember that you must die. (Memento mori) - Latin Proverb" },
   { ko: "이 또한 지나가리라. - 페르시아 격언", en: "This too shall pass. - Persian Proverb" },
-
-  // 🔥 동기부여 및 철학
   { ko: "천재는 1%의 영감과 99%의 노력으로 이루어진다. - 토머스 에디슨", en: "Genius is one percent inspiration and ninety-nine percent perspiration. - Thomas Edison" },
   { ko: "내일의 할 일을 오늘 하라. - 벤저민 프랭클린", en: "Do not put off until tomorrow what you can do today. - Benjamin Franklin" },
   { ko: "끝날 때까지는 끝난 게 아니다. - 요기 베라", en: "It ain't over till it's over. - Yogi Berra" },
@@ -97,7 +89,6 @@ const QUOTES = [// 🎬 영화 명언
   { ko: "나는 실패한 적이 없다. 단지 작동하지 않는 10,000가지 방법을 발견했을 뿐이다. - 토머스 에디슨", en: "I have not failed. I've just found 10,000 ways that won't work. - Thomas Edison" },
   { ko: "성공은 최종적인 것이 아니며, 실패는 치명적인 것이 아니다. 중요한 것은 계속하려는 용기이다. - 윈스턴 처칠", en: "Success is not final, failure is not fatal: it is the courage to continue that counts. - Winston Churchill" },
   { ko: "위대한 일을 할 수 없다면 작은 일을 위대하게 하라. - 나폴레옹 힐", en: "If you cannot do great things, do small things in a great way. - Napoleon Hill" }
-  
 ];
 function TodoPage({ lang, timerMode, setTimerMode, timerTime, setTimerTime, timerIsRunning, setTimerIsRunning }) {
   const [todos, setTodos] = useState([]);
@@ -110,19 +101,14 @@ function TodoPage({ lang, timerMode, setTimerMode, timerTime, setTimerTime, time
   const [searchTerm, setSearchTerm] = useState(''); 
   const [dragItemIndex, setDragItemIndex] = useState(null);
   const [dragOverItemIndex, setDragOverItemIndex] = useState(null);
-
   const [expandedTodos, setExpandedTodos] = useState({});
-  
   const [sortBy, setSortBy] = useState('default');
-
   const [isGenerating, setIsGenerating] = useState(false);
   const [showAiBox, setShowAiBox] = useState(false);
   const [chatHistory, setChatHistory] = useState([]); 
   const [followUpInput, setFollowUpInput] = useState('');
   const chatContainerRef = useRef(null);
-
   const API_URL = '/api/todo'; const COMMON_URL = '/api/items';
-
   const t = {
     ko: {
       tourSteps: [
@@ -174,7 +160,6 @@ function TodoPage({ lang, timerMode, setTimerMode, timerTime, setTimerTime, time
     }
   };
   const current = t[lang];
-
   const formatTimeAgo = (dateString) => {
     if (!dateString) return '';
     const date = new Date(dateString);
@@ -186,18 +171,15 @@ function TodoPage({ lang, timerMode, setTimerMode, timerTime, setTimerTime, time
     if (diff < 2592000) return lang === 'ko' ? `${Math.floor(diff / 86400)}일 전` : `${Math.floor(diff / 86400)}d ago`;
     return `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')}`;
   };
-
   useEffect(() => { fetchTodos(); handleRandomize(); }, [])
   useEffect(() => { const intervalId = setInterval(() => setNow(new Date()), 50); return () => clearInterval(intervalId); }, []);
   useEffect(() => { const intervalId = setInterval(() => { setTitleMentionIndex(p => (p + 1) % TITLE_MENTIONS[lang].length); setPlaceholderIndex(p => (p + 1) % PLACEHOLDERS[lang].length); }, 6000); return () => clearInterval(intervalId); }, [lang]);
   useEffect(() => { if (showVersionInfo) { setShowModalConfetti(true); setTimeout(() => setShowModalConfetti(false), 2500); } }, [showVersionInfo]);
-  
   useEffect(() => { 
     if (chatContainerRef.current) {
       chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
     }
   }, [chatHistory, isGenerating]);
-
   useEffect(() => {
     if (tourIndex >= 0 && tourIndex < current.tourSteps.length) {
       if (tourIndex === 2 && timerMode !== 'timer') setTimerMode('timer'); 
@@ -209,13 +191,10 @@ function TodoPage({ lang, timerMode, setTimerMode, timerTime, setTimerTime, time
       }
     }
   }, [tourIndex, timerMode, lang, current.tourSteps]);
-
   const fetchTodos = async () => { try { const res = await axios.get(API_URL); setTodos(res.data) } catch(e){} }
   const handleRandomize = () => { if(QUOTES.length > 0) setQuoteIndex(Math.floor(Math.random() * QUOTES.length)); setPlaceholderIndex(Math.floor(Math.random() * PLACEHOLDERS[lang].length)); }
   const formatTime = (ms) => { const h = Math.floor(ms / 3600000); const m = Math.floor((ms % 3600000) / 60000); const s = Math.floor((ms % 60000) / 1000); const mi = Math.floor((ms % 1000) / 10); return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}.${String(mi).padStart(2,'0')}`; }
-  
   const getRemainingTime = (deadline) => { if (!deadline) return null; const diff = new Date(deadline) - now; if (diff <= 0) return "EXPIRED"; return { days: Math.floor(diff/86400000), hours: Math.floor((diff/3600000)%24), mins: Math.floor((diff/60000)%60), secs: Math.floor((diff/1000)%60), ms: Math.floor((diff%1000)/10) }; }
-  
   const addTodo = async (e) => { 
     e.preventDefault(); 
     if(!title) return; 
@@ -225,7 +204,6 @@ function TodoPage({ lang, timerMode, setTimerMode, timerTime, setTimerTime, time
     setCurrentPage(1); handleRandomize(); 
   }
   const saveEditTodo = async (id) => { await axios.put(`${COMMON_URL}/${id}`, editForm); fetchTodos(); setEditingId(null); }
-
   const handleTimeInput = (field, value) => {
     const rawValue = value.replace(/[^0-9]/g, ''); 
     if (rawValue.length > 2) return; 
@@ -249,7 +227,6 @@ function TodoPage({ lang, timerMode, setTimerMode, timerTime, setTimerTime, time
       setTimerIsRunning(true);
     } else { setTimerIsRunning(false); }
   };
-
   const handleDragStart = (e, index) => { setDragItemIndex(index); setTimeout(() => { e.target.classList.add('opacity-40', 'scale-[0.98]'); }, 0); };
   const handleDragEnter = (e, index) => { setDragOverItemIndex(index); };
   const handleDragEnd = (e) => {
@@ -259,52 +236,41 @@ function TodoPage({ lang, timerMode, setTimerMode, timerTime, setTimerTime, time
       const draggedItemContent = newFilteredTodos[dragItemIndex];
       newFilteredTodos.splice(dragItemIndex, 1);
       newFilteredTodos.splice(dragOverItemIndex, 0, draggedItemContent);
-      
       if (searchTerm === '' && sortBy === 'default') {
         setTodos(newFilteredTodos);
       }
     }
     setDragItemIndex(null); setDragOverItemIndex(null);
   };
-
   const askAi = async (inputText, isInitial = false) => {
     if (!inputText.trim()) {
       if (isInitial) alert(current.aiEmpty);
       return;
     }
-    
     setShowAiBox(true);
     setIsGenerating(true);
-
     const currentMsg = { sender: 'user', text: inputText };
     let newHistory = isInitial ? [currentMsg] : [...chatHistory, currentMsg];
     setChatHistory(newHistory);
     if (!isInitial) setFollowUpInput(''); 
-
     try {
       let promptContext = lang === 'ko' 
         ? "당신은 사용자에게 유용하고 친절한 AI 어시스턴트입니다. 불필요한 농담이나 과장된 롤플레이 없이, 사용자의 질문에 명확하고 자연스럽게 대답해주세요.\n\n[대화 내역]\n"
         : "You are a helpful and friendly AI assistant. Answer the user clearly and naturally without forced jokes or roleplay.\n\n[Chat History]\n";
-      
       newHistory.forEach(msg => {
         promptContext += `${msg.sender === 'user' ? 'User' : 'AI'}: ${msg.text}\n`;
       });
       promptContext += "AI: ";
-
       const res = await axios.post('/api/ai/generate', { prompt: promptContext });
       const aiResult = res.data.text.trim(); 
-      
       setChatHistory(prev => [...prev, { sender: 'ai', text: aiResult }]);
     } catch (error) {
       console.error("AI Generation Error:", error);
-      // ⭐ 에러 메시지만 마켓/분실물과 똑같이 통일!
       setChatHistory(prev => [...prev, { sender: 'ai', text: (lang === 'ko' ? "❌ 서버 통신 중 오류가 발생했습니다. (1분 뒤 다시 시도해주세요.)" : "❌ Error connecting to server. (Try again in 1 min)") }]);
     } finally {
       setIsGenerating(false);
     }
   };
-
-  // ⭐ 검색 시 1페이지로 리셋 처리
   let filteredTodos = todos.filter(t => t.title.toLowerCase().includes(searchTerm.toLowerCase()));
   if (sortBy === 'importance') {
     const impWeight = { '긴급': 3, '보통': 2, '낮음': 1 };
@@ -317,12 +283,10 @@ function TodoPage({ lang, timerMode, setTimerMode, timerTime, setTimerTime, time
       return new Date(a.todoDeadline) - new Date(b.todoDeadline); 
     });
   }
-  
   const totalPages = Math.ceil(filteredTodos.length / itemsPerPage) || 1;
   const currentTodos = filteredTodos.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
   const isTimerUrgent = timerMode === 'timer' && timerTime > 0 && timerTime <= 1800000 && isAlertEnabled;
   const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1);
-
   return (
     <div className="max-w-4xl mx-auto p-4 md:p-6 flex flex-col min-h-screen relative text-gray-900 dark:text-gray-100 transition-colors">
       <style>{`
@@ -347,7 +311,6 @@ function TodoPage({ lang, timerMode, setTimerMode, timerTime, setTimerTime, time
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #93c5fd; border-radius: 10px; }
         .dark .custom-scrollbar::-webkit-scrollbar-thumb { background: #3b82f6; }
       `}</style>
-
       {tourIndex >= 0 && (
         <div className="fixed z-[100] bg-white dark:bg-gray-800 p-5 md:p-6 rounded-3xl shadow-2xl border-[3px] border-blue-400 dark:border-blue-500 w-[92%] max-w-[350px] bottom-6 md:bottom-10 left-1/2 -translate-x-1/2 tour-popup flex flex-col pointer-events-auto">
           <h3 className="text-blue-600 dark:text-blue-400 font-black mb-1 text-[10px] uppercase tracking-widest">Guide ({tourIndex + 1}/{current.tourSteps.length})</h3>
@@ -356,15 +319,12 @@ function TodoPage({ lang, timerMode, setTimerMode, timerTime, setTimerTime, time
           <div className="flex justify-between gap-2"><button onClick={() => setTourIndex(-1)} className="px-3 py-1 text-gray-400 dark:text-gray-500 font-bold text-xs hover:text-gray-600 dark:hover:text-gray-300">{current.tourSkip}</button><button onClick={() => setTourIndex(p => p+1 >= current.tourSteps.length ? -1 : p+1)} className="bg-blue-600 dark:bg-blue-500 text-white px-4 md:px-5 py-2 rounded-xl font-black text-xs shadow-md hover:bg-blue-700 transition">{tourIndex === current.tourSteps.length - 1 ? current.tourEnd : current.tourNext}</button></div>
         </div>
       )}
-
       {showVersionInfo && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[150] p-4 backdrop-blur-sm" onClick={() => setShowVersionInfo(false)}>
           <div className="bg-white dark:bg-gray-800 p-6 md:p-8 rounded-[2rem] max-w-3xl w-full shadow-2xl transform transition-all border-4 border-blue-50 dark:border-gray-700 max-h-[90vh] overflow-y-auto" onClick={e=>e.stopPropagation()}>
             {showModalConfetti && <div className="fixed inset-0 pointer-events-none z-[9999] flex items-center justify-center"><span className="emoji-burst text-6xl">🎉</span></div>}
-            
             <h3 className="text-2xl md:text-3xl font-black mb-1 text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400 text-center">{current.modalTitle}</h3>
             <p className="text-center text-gray-400 dark:text-gray-500 font-bold mb-6 text-[10px] md:text-xs tracking-tighter">{current.modalSub}</p>
-            
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 mt-2">
               <div className="bg-gray-50 dark:bg-gray-700 p-5 rounded-2xl border-2 border-dashed border-gray-200 dark:border-gray-600">
                 <h4 className="text-gray-500 dark:text-gray-300 font-black text-sm mb-3 text-center">{current.modalPrevTitle}</h4>
@@ -384,7 +344,6 @@ function TodoPage({ lang, timerMode, setTimerMode, timerTime, setTimerTime, time
                 </ul>
               </div>
             </div>
-
             <div className="bg-slate-50 dark:bg-gray-700/50 rounded-2xl p-6 mb-6 border border-gray-100 dark:border-gray-600">
               <h4 className="text-center font-black text-slate-700 dark:text-slate-300 mb-4 text-sm flex justify-center items-center gap-2">{current.modalHistTitle}</h4>
               <div className="space-y-3 text-[11px] md:text-xs px-2">
@@ -396,7 +355,6 @@ function TodoPage({ lang, timerMode, setTimerMode, timerTime, setTimerTime, time
               <p className="flex items-center gap-3 font-bold bg-white dark:bg-gray-800 p-2 rounded-lg shadow-sm"><span className="text-blue-600 font-black min-w-[45px]">V6.5:</span><span className="text-slate-800 dark:text-gray-200 italic">{current.modalHistV6}</span></p>
               </div>
             </div>
-
             <div className="bg-blue-50 dark:bg-blue-900/30 p-5 rounded-2xl border-2 border-blue-200 dark:border-blue-800 text-center mb-6 shadow-inner relative overflow-hidden">
                 <h4 className="text-xl font-black text-blue-800 dark:text-blue-400 mb-1">{current.modalFreeTitle}</h4>
                 <p className="text-blue-700 dark:text-blue-300 font-bold text-xs"><span className="font-black text-sm">{current.modalFreeDesc1}</span><br/>{current.modalFreeDesc2}</p>
@@ -405,7 +363,6 @@ function TodoPage({ lang, timerMode, setTimerMode, timerTime, setTimerTime, time
           </div>
         </div>
       )}
-
       <div className="flex-grow">
         <div id="tour-header" className="text-center mb-6 relative mt-4 md:mt-0">
           <div className="flex items-center justify-center gap-4 mb-2">
@@ -418,7 +375,6 @@ function TodoPage({ lang, timerMode, setTimerMode, timerTime, setTimerTime, time
           </div>
           <p onClick={() => setShowVersionInfo(true)} className="text-[10px] md:text-xs text-blue-400 dark:text-blue-500 font-black cursor-pointer hover:text-blue-600 transition tracking-widest">{current.verCheck}</p>
         </div>
-
         <div id="tour-timer" className="bg-[#111] dark:bg-gray-950 text-white p-6 md:p-10 rounded-3xl md:rounded-[4rem] mb-8 md:mb-12 shadow-2xl border-b-[8px] md:border-b-[12px] border-blue-900 dark:border-blue-800 text-center relative mt-6 md:mt-8">
           {timerMode === 'timer' && (
             <div id="tour-timer-alert" className="absolute top-4 right-4 md:top-8 md:right-10 flex items-center gap-1 md:gap-2 bg-gray-900 p-1.5 md:p-2 rounded-lg md:rounded-xl border border-gray-700 z-10">
@@ -430,7 +386,6 @@ function TodoPage({ lang, timerMode, setTimerMode, timerTime, setTimerTime, time
             <button onClick={()=>{setTimerMode('timer'); setTimerTime(0); setTimerIsRunning(false)}} className={`px-4 py-1.5 md:px-5 md:py-1.5 rounded-full text-[9px] md:text-[10px] font-black transition-all ${timerMode==='timer'?'bg-blue-600 shadow-lg shadow-blue-500/50':'bg-gray-800 text-gray-500'}`}>{current.focus}</button>
             <button onClick={()=>{setTimerMode('stopwatch'); setTimerTime(0); setTimerIsRunning(false)}} className={`px-4 py-1.5 md:px-5 md:py-1.5 rounded-full text-[9px] md:text-[10px] font-black transition-all ${timerMode==='stopwatch'?'bg-blue-600 shadow-lg shadow-blue-500/50':'bg-gray-800 text-gray-500'}`}>{current.stop}</button>
           </div>
-          
           {!timerIsRunning && timerMode === 'timer' && timerTime === 0 ? (
             <div className="flex justify-center items-center gap-2 text-5xl md:text-7xl font-black mb-6 md:mb-10 font-mono tracking-tighter">
               <input value={inputs.h} onBlur={()=>handleTimeBlur('h')} onChange={e=>handleTimeInput('h', e.target.value)} className="w-20 md:w-28 bg-transparent text-center border-b-4 border-blue-700 focus:border-blue-400 outline-none placeholder-gray-700" placeholder="00" maxLength="2"/>:
@@ -442,7 +397,6 @@ function TodoPage({ lang, timerMode, setTimerMode, timerTime, setTimerTime, time
               {formatTime(timerTime)}
             </div>
           )}
-          
           <div className="flex justify-center gap-3 md:gap-4">
             <button onClick={handleStartPause} className={`px-8 py-3 md:px-12 md:py-4 rounded-full font-black text-sm md:text-lg transition-all ${timerIsRunning?'bg-red-600 text-white shadow-lg':'bg-white text-black hover:scale-105'}`}>
               {timerIsRunning ? 'PAUSE' : (timerTime > 0 ? 'RESUME' : 'START')}
@@ -450,24 +404,20 @@ function TodoPage({ lang, timerMode, setTimerMode, timerTime, setTimerTime, time
             <button onClick={()=>{setTimerIsRunning(false); setTimerTime(0); setInputs({h:'',m:'',s:''})}} className="border-2 border-gray-800 px-8 py-3 md:px-12 md:py-4 rounded-full font-black text-sm md:text-lg text-gray-600 hover:border-gray-600">{current.reset}</button>
           </div>
         </div>
-
         <div className="text-center mb-8 md:mb-10">
           <h2 className="text-xl md:text-[2.5rem] py-2 font-black text-transparent bg-clip-text bg-gradient-to-br from-gray-900 via-blue-800 to-black dark:from-white dark:via-blue-300 dark:to-gray-300 mb-6 md:mb-8 tracking-tighter flex justify-center items-center">
              <span key={TITLE_MENTIONS[lang][titleMentionIndex]} className="inline-block animate-submit-text-fade">{TITLE_MENTIONS[lang][titleMentionIndex]}</span>
           </h2>
-          
           <div className="flex flex-col items-center p-6 md:p-10 rounded-3xl md:rounded-[3rem] border-2 border-blue-100 dark:border-blue-900/50 bg-gradient-to-b from-white to-blue-50/50 dark:from-gray-800 dark:to-gray-900 shadow-sm relative overflow-hidden">
             {QUOTES.length > 0 && (() => {
                 const rawQuoteEn = QUOTES[quoteIndex]?.en || "";
                 const enParts = rawQuoteEn.split(' - ');
                 const enBody = enParts[0];
                 const enSource = enParts.length > 1 ? enParts.slice(1).join(' - ') : '';
-
                 const rawQuoteKo = QUOTES[quoteIndex]?.ko || "";
                 const koParts = rawQuoteKo.split(' - ');
                 const koBody = koParts[0];
                 const koSource = koParts.length > 1 ? koParts.slice(1).join(' - ') : '';
-
                 return (
                     <>
                         <div className="flex flex-col items-center mb-6 md:mb-8 px-2 md:px-4 w-full relative group">
@@ -480,7 +430,6 @@ function TodoPage({ lang, timerMode, setTimerMode, timerTime, setTimerTime, time
                                 </p>
                             )}
                         </div>
-
                         <div className="bg-white/80 dark:bg-gray-800/80 px-6 py-3 md:px-8 md:py-4 rounded-3xl md:rounded-full shadow-sm border border-gray-100 flex flex-col items-center mb-2 w-[95%] md:w-auto md:max-w-[95%]">
                             <p className="text-xl md:text-3xl font-korean-cursive text-gray-700 dark:text-gray-200 font-bold leading-tight text-center break-keep w-full">
                                 {koBody}
@@ -497,12 +446,9 @@ function TodoPage({ lang, timerMode, setTimerMode, timerTime, setTimerTime, time
             <button onClick={handleRandomize} className="mt-6 md:mt-8 text-[10px] md:text-[11px] bg-white dark:bg-gray-700 border-2 border-gray-200 text-gray-500 px-5 py-2 rounded-full font-black hover:text-blue-600 transition-all hover:scale-105 z-10 uppercase tracking-widest">{current.newQuote}</button>
           </div>
         </div>
-
         <form id="tour-add" onSubmit={addTodo} className="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-3xl shadow-lg border border-blue-50 dark:border-gray-700 flex flex-col mb-6 relative">
-          
           <div className="flex flex-col md:flex-row flex-wrap gap-3 w-full items-center">
             <select value={importance} onChange={e=>setImportance(e.target.value)} className="w-full md:w-auto bg-gray-50 dark:bg-gray-700 dark:text-white p-3 md:px-5 rounded-2xl font-black text-sm outline-none border border-gray-100 z-10"><option value="긴급">{current.impObj['긴급']}</option><option value="보통">{current.impObj['보통']}</option><option value="낮음">{current.impObj['낮음']}</option></select>
-            
             <div className="w-full md:w-auto flex-grow flex items-center bg-transparent border border-gray-100 md:border-none rounded-2xl md:rounded-none z-10 relative">
               <textarea 
                 placeholder={PLACEHOLDERS[lang][placeholderIndex]} 
@@ -522,7 +468,6 @@ function TodoPage({ lang, timerMode, setTimerMode, timerTime, setTimerTime, time
                 rows="1"
                 style={{ minHeight: '52px' }}
               />
-
               <button 
                 type="button" 
                 onClick={() => askAi(title, true)}
@@ -532,11 +477,9 @@ function TodoPage({ lang, timerMode, setTimerMode, timerTime, setTimerTime, time
                 {isGenerating && chatHistory.length === 0 ? current.aiLoading : current.aiBtn}
               </button>
             </div>
-
             <input type="datetime-local" value={todoDeadline} onChange={e=>setTodoDeadline(e.target.value)} className="w-full md:w-56 p-3 bg-gray-50 dark:bg-gray-700 rounded-2xl text-xs font-black cursor-pointer text-gray-600 dark:text-gray-300 z-10 border-gray-100 md:border-none focus:border-blue-400"/>
             <button className="w-full md:w-auto bg-[#002f6c] dark:bg-blue-800 text-white px-6 py-3 md:px-10 md:py-4 rounded-2xl font-black text-base md:text-lg hover:bg-blue-800 transition shadow-lg z-10">{current.addBtn}</button>
           </div>
-
          {showAiBox && (
   <div className="w-full mt-4 p-4 md:p-5 bg-blue-50/50 dark:bg-gray-900/50 rounded-2xl border border-blue-200 dark:border-gray-700 shadow-inner flex flex-col todo-ai-anim">
     <div className="flex justify-between items-center mb-3">
@@ -548,7 +491,6 @@ function TodoPage({ lang, timerMode, setTimerMode, timerTime, setTimerTime, time
                   <button type="button" onClick={() => setShowAiBox(false)} className="text-xs font-bold text-gray-500 hover:text-red-500 transition bg-white dark:bg-gray-800 px-2 py-1 rounded-md border">{current.aiClose}</button>
                 </div>
               </div>
-              
               <div ref={chatContainerRef} className="flex flex-col gap-3 max-h-[300px] overflow-y-auto custom-scrollbar p-2 bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 mb-3">
                 {chatHistory.length === 0 && isGenerating && (
                    <div className="text-xs font-bold text-gray-400 p-2">{current.aiLoading}</div>
@@ -568,7 +510,6 @@ function TodoPage({ lang, timerMode, setTimerMode, timerTime, setTimerTime, time
                    <div className="flex w-full justify-start"><div className="bg-gray-100 dark:bg-gray-700 p-3 rounded-2xl rounded-tl-none text-sm font-bold text-gray-500 animate-pulse">...</div></div>
                 )}
               </div>
-
               <div className="flex items-center gap-2 bg-white dark:bg-gray-800 p-1.5 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm focus-within:border-blue-400 transition-colors">
                 <input 
                   type="text" 
@@ -596,20 +537,17 @@ function TodoPage({ lang, timerMode, setTimerMode, timerTime, setTimerTime, time
             </div>
           )}
         </form>
-
         <div className="mb-6 w-full relative z-10">
           <input 
             type="text" placeholder={current.searchP} value={searchTerm} onChange={(e) => {setSearchTerm(e.target.value); setCurrentPage(1);}} 
             className="w-full p-3 md:p-4 border-2 text-sm md:text-base border-blue-100 rounded-xl md:rounded-2xl shadow-sm focus:outline-none focus:border-blue-400 dark:bg-gray-800 dark:text-white transition-all font-bold"
           />
         </div>
-
         <div className="flex justify-between items-center mb-6">
           <select value={sortBy} onChange={(e) => {setSortBy(e.target.value); setCurrentPage(1);}} className="p-2 rounded-xl text-xs font-black outline-none border border-gray-200 dark:border-gray-700 shadow-sm bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:border-blue-300 transition-colors cursor-pointer">
              <option value="default">{current.sortDefault}</option>
              <option value="importance">{current.sortImp}</option>
             <option value="time">{current.sortTime}</option>
-         
           </select>
           <div id="tour-list-buttons" className="flex gap-2 bg-white/50 dark:bg-gray-800/50 p-1.5 rounded-full border border-gray-200 shadow-sm">
             <button onClick={() => setViewType('list')} className={`px-4 py-1.5 md:px-5 md:py-2 rounded-full text-[10px] md:text-xs font-black transition-all shadow-sm ${viewType==='list'?'bg-[#002f6c] text-white':'bg-white dark:bg-gray-800 text-gray-400'}`}>LIST</button>
@@ -617,7 +555,6 @@ function TodoPage({ lang, timerMode, setTimerMode, timerTime, setTimerTime, time
             <button onClick={() => setViewType('table')} className={`px-4 py-1.5 md:px-5 md:py-2 rounded-full text-[10px] md:text-xs font-black transition-all shadow-sm ${viewType==='table'?'bg-[#002f6c] text-white':'bg-white dark:bg-gray-800 text-gray-400'}`}>TABLE</button>
           </div>
         </div>
-
         <div className="transition-all">
           {viewType === 'table' ? (
             <div className="bg-white dark:bg-gray-800 rounded-3xl md:rounded-[2rem] shadow-xl overflow-x-auto border-2 border-gray-100 dark:border-gray-700 mb-8 w-full">
@@ -632,8 +569,6 @@ function TodoPage({ lang, timerMode, setTimerMode, timerTime, setTimerTime, time
                       <td colSpan="4" className="p-3 md:p-4 bg-blue-50/50 dark:bg-blue-900/20 transition-all duration-300">
                         <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-center">
                           <select value={editForm.importance} onChange={e=>setEditForm({...editForm, importance: e.target.value})} className="w-full sm:w-auto p-2 border dark:border-gray-600 dark:bg-gray-700 rounded-xl font-bold text-xs"><option value="긴급">{current.impObj['긴급']}</option><option value="보통">{current.impObj['보통']}</option><option value="낮음">{current.impObj['낮음']}</option></select>
-                          
-                          
 <textarea 
   value={editForm.title} 
   onChange={e => {
@@ -644,9 +579,6 @@ function TodoPage({ lang, timerMode, setTimerMode, timerTime, setTimerTime, time
   className="w-full sm:flex-grow p-2 border dark:border-gray-600 dark:bg-gray-700 rounded-xl font-bold text-sm outline-none resize-none overflow-y-auto min-h-[44px] max-h-[120px] custom-scrollbar"
   rows="1"
 />
-                         
-                         
-                         
                           <input type="datetime-local" value={editForm.todoDeadline} onChange={e=>setEditForm({...editForm, todoDeadline: e.target.value})} className="w-full sm:w-auto p-2 border dark:border-gray-600 dark:bg-gray-700 rounded-xl text-xs font-bold outline-none"/>
                           <div className="flex gap-2 w-full sm:w-auto">
                             <button onClick={() => saveEditTodo(todo._id)} className="flex-1 sm:flex-none bg-green-500 text-white px-4 py-2 rounded-xl font-black text-xs">{current.btnSave}</button>
@@ -657,8 +589,6 @@ function TodoPage({ lang, timerMode, setTimerMode, timerTime, setTimerTime, time
                     ) : (
                       <>
                         <td className="p-3 md:p-5 flex items-center justify-center gap-2"><span className="text-gray-300 dark:text-gray-600 mr-1 hidden sm:inline" title="드래그하여 순서 변경">☰</span><span className={`px-2 py-1 md:px-3 md:py-1.5 rounded-full text-[9px] md:text-[10px] font-black text-white ${todo.importance==='긴급'?'bg-red-500':todo.importance==='보통'?'bg-yellow-400 text-gray-900':'bg-green-500'}`}>{current.impObj[todo.importance] || todo.importance}</span></td> 
-                       
-                       
                       <td className="p-3 md:p-5 text-left w-full max-w-[200px]">
   <div className={`font-black text-gray-800 dark:text-gray-100 text-sm md:text-lg break-words whitespace-pre-wrap ${expandedTodos[todo._id] ? '' : 'line-clamp-2'}`}>
     {todo.title}
@@ -673,11 +603,6 @@ function TodoPage({ lang, timerMode, setTimerMode, timerTime, setTimerTime, time
     </button>
   )}
 </td>
-                        
-                        
-                        
-                       
-                        
                        <td className="p-3 md:p-5 text-sm md:text-base font-black whitespace-nowrap">
   {remain === "EXPIRED" ? (
     <span className="text-red-500 animate-pulse">{current.expiredIcon}</span>
@@ -689,7 +614,6 @@ function TodoPage({ lang, timerMode, setTimerMode, timerTime, setTimerTime, time
     <span className="text-blue-600 dark:text-blue-300">-</span>
   )}
 </td>
-                        
                         <td className="p-3 md:p-5 flex justify-center gap-1.5 relative z-20 pointer-events-auto">
                           <button onClick={() => {setEditingId(todo._id); setEditForm(todo)}} className="text-[10px] font-black uppercase text-blue-500 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 bg-blue-50 dark:bg-blue-900/30 px-3 py-1.5 rounded-full transition cursor-pointer">{current.btnEdit}</button>
                           <button onClick={async ()=>{await axios.delete(`${COMMON_URL}/${todo._id}`); fetchTodos()}} className="text-[10px] font-black uppercase text-red-500 dark:text-red-400 hover:bg-red-500 hover:text-white dark:hover:bg-red-600 bg-red-50 dark:bg-red-900/30 px-3 py-1.5 rounded-full transition cursor-pointer">{current.btnDel}</button>
@@ -708,8 +632,6 @@ function TodoPage({ lang, timerMode, setTimerMode, timerTime, setTimerTime, time
                   {editingId === todo._id ? (
                     <div className="flex flex-col gap-2 md:gap-3 transition-all duration-300">
                       <select value={editForm.importance} onChange={e=>setEditForm({...editForm, importance: e.target.value})} className="p-2 border-2 border-blue-100 dark:border-gray-600 dark:bg-gray-700 rounded-xl font-bold text-xs"><option value="긴급">{current.impObj['긴급']}</option><option value="보통">{current.impObj['보통']}</option><option value="낮음">{current.impObj['낮음']}</option></select>
-                     
-                     
                     <textarea 
   value={editForm.title} 
   onChange={e => {
@@ -720,11 +642,6 @@ function TodoPage({ lang, timerMode, setTimerMode, timerTime, setTimerTime, time
   className="p-2 border-2 border-blue-100 dark:border-gray-600 dark:bg-gray-700 rounded-xl font-black outline-none text-sm resize-none overflow-y-auto min-h-[44px] max-h-[120px] custom-scrollbar w-full"
   rows="1"
 />
-
-
-
-
-
                       <input type="datetime-local" value={editForm.todoDeadline} onChange={e=>setEditForm({...editForm, todoDeadline: e.target.value})} className="p-2 border-2 border-blue-100 dark:border-gray-600 dark:bg-gray-700 rounded-xl text-xs font-bold"/>
                       <div className="flex gap-2"><button onClick={() => saveEditTodo(todo._id)} className="bg-green-500 text-white flex-grow py-2 rounded-xl font-black text-xs">{current.btnSave}</button><button onClick={() => setEditingId(null)} className="bg-gray-400 text-white flex-grow py-2 rounded-xl font-black text-xs">{current.btnCancel}</button></div>
                     </div>
@@ -733,13 +650,11 @@ function TodoPage({ lang, timerMode, setTimerMode, timerTime, setTimerTime, time
                       <div className="flex items-center gap-3 w-full">
                         <span className="text-gray-300 dark:text-gray-600" title="드래그하여 순서 변경">☰</span>
                         <span className={`min-w-[12px] h-3 rounded-full shadow-inner ${todo.importance==='긴급'?'bg-red-500':todo.importance==='보통'?'bg-yellow-400':'bg-green-500'}`}></span>
-                       
                       <div className="flex flex-col w-full min-w-0 overflow-hidden">
   <span className={`font-black text-gray-800 dark:text-gray-100 text-lg md:text-xl break-words whitespace-pre-wrap ${expandedTodos[todo._id] ? '' : 'line-clamp-2'}`}>
     {todo.title}
   </span>
   {todo.createdAt && <span className="text-[10px] text-gray-400 font-bold mt-1">{formatTimeAgo(todo.createdAt)}</span>}
-  
   {todo.title.length > 20 && (
     <button 
       onClick={(e) => { e.preventDefault(); setExpandedTodos(prev => ({...prev, [todo._id]: !prev[todo._id]})) }} 
@@ -749,9 +664,6 @@ function TodoPage({ lang, timerMode, setTimerMode, timerTime, setTimerTime, time
     </button>
   )}
 </div>
-                      
-                      
-                      
                       </div> 
                      {remain && (
   <div className={`text-sm md:text-base font-black ml-9 mt-2 inline-block self-start px-3 py-1.5 rounded-lg border transition-all ${remain === "EXPIRED" ? "bg-red-50/50 dark:bg-red-950/30 text-red-600 dark:text-red-400 border-red-200 dark:border-red-800" : "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-300 border-blue-100 dark:border-blue-500/30"}`}>
@@ -761,8 +673,6 @@ function TodoPage({ lang, timerMode, setTimerMode, timerTime, setTimerTime, time
     }
   </div>
 )}
-                      
-                      
                       <div className="flex gap-2 mt-4 ml-9"><button onClick={() => {setEditingId(todo._id); setEditForm(todo)}} className="px-4 py-2 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-xl font-black text-[10px] uppercase hover:bg-blue-600 dark:hover:bg-blue-500 hover:text-white dark:hover:text-white transition">{current.btnEdit}</button><button onClick={async ()=>{await axios.delete(`${COMMON_URL}/${todo._id}`); fetchTodos()}} className="px-4 py-2 bg-red-50 dark:bg-red-900/30 text-red-500 dark:text-red-400 rounded-xl font-black text-[10px] uppercase hover:bg-red-500 dark:hover:bg-red-600 hover:text-white dark:hover:text-white transition">{current.btnDel}</button></div> 
                     </>
                   )}
@@ -771,7 +681,6 @@ function TodoPage({ lang, timerMode, setTimerMode, timerTime, setTimerTime, time
             </div>
           )}
         </div>
-        
         {totalPages > 1 && (
           <div className="flex justify-center items-center gap-2 mb-10">
             <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="px-3 py-2 bg-white dark:bg-gray-800 border-2 border-gray-100 dark:border-gray-700 rounded-lg font-black text-xs text-gray-400 hover:text-blue-600 disabled:opacity-30 transition">PREV</button>
@@ -786,17 +695,14 @@ function TodoPage({ lang, timerMode, setTimerMode, timerTime, setTimerTime, time
           </div>
         )}
       </div>
-
 <footer className="py-8 md:py-12 text-center border-t border-gray-200 dark:border-gray-800 mt-16 md:mt-24 relative z-10 transition-colors">
   <p className="text-gray-600 dark:text-gray-400 font-black text-[10px] md:text-sm uppercase tracking-widest mb-1.5 md:mb-2 break-keep leading-relaxed">
     {current.footerDept}
   </p>
-
   <div className="flex items-center justify-center gap-4 mt-2 md:mt-3">
     <p className="text-gray-400 dark:text-gray-500 text-[10px] md:text-sm font-bold">
       {current.footerCopy}
     </p>
-    
     <div className="relative group flex flex-col items-center">
       <a 
         href="https://github.com/eryang11188/todo-app-mini-project-20222017.git" 
@@ -814,7 +720,6 @@ function TodoPage({ lang, timerMode, setTimerMode, timerTime, setTimerTime, time
           <path d="M8 0c4.42 0 8 3.58 8 8a8.01 8.01 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z" />
         </svg>
       </a>
-
       <div className="absolute bottom-full mb-2 hidden group-hover:flex flex-col items-center animate-bounce">
         <span className="relative z-10 p-2 text-xs leading-none text-white whitespace-no-wrap bg-gray-800 dark:bg-gray-700 shadow-lg rounded-md font-bold">
           Github 

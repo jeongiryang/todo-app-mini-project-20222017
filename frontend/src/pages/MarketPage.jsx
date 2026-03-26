@@ -1,7 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
 import axios from 'axios'
-
-// ⭐ 1. 마켓 명언 대량 추가 (총 50개)
 const MARKET_QUOTES = {
   ko: [
     "안 쓰는 물건, 누군가에겐 보물입니다.", "빠른 쿨거래가 창대인의 매너를 만듭니다.", "네고는 둥글게, 거래는 확실하게!", 
@@ -58,12 +56,10 @@ const MARKET_QUOTES = {
     "Don't miss the sweet deals on the market and regret it later!"
   ]
 };
-
 const SUBMIT_MENTIONS = {
   ko: ["내 물건 마켓에 올리기", "신상 등록하고 용돈 벌기", "박스 속 물건 새 주인 찾기", "치킨값 벌러 물건 올리기"],
   en: ["Upload my item to Market", "Register new item & earn money", "Find a new owner for boxed items", "Upload item to earn chicken money"]
 };
-
 function MarketPage({ lang }) {
   const [items, setItems] = useState([])
   const [form, setForm] = useState({ title: '', price: '', deadline: '', studentId: '', sellerName: '', phone: '', location: '', description: '' })
@@ -74,7 +70,6 @@ function MarketPage({ lang }) {
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 6;
   const [likedItems, setLikedItems] = useState(() => new Set(JSON.parse(localStorage.getItem('likedItems') || '[]')))
-  
   const [quoteIndex, setQuoteIndex] = useState(0)
   const [showVersionInfo, setShowVersionInfo] = useState(false)
   const [submitMentionIndex, setSubmitMentionIndex] = useState(0);
@@ -83,7 +78,6 @@ function MarketPage({ lang }) {
   const [showModalConfetti, setShowModalConfetti] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
   const [expandedId, setExpandedId] = useState(null)
-
   const [isGenerating, setIsGenerating] = useState(false);
   const [showAiBox, setShowAiBox] = useState(false);
   const [chatHistory, setChatHistory] = useState([]);
@@ -91,7 +85,6 @@ function MarketPage({ lang }) {
   const chatContainerRef = useRef(null);
   const textareaRef = useRef(null); 
   useEffect(() => {
-    // 채팅이 아예 없거나(0), 처음 인사말만 덩그러니 있을 때(1) 언어에 맞게 세팅!
     if (chatHistory.length === 0 || chatHistory.length === 1) {
       setChatHistory([
         { 
@@ -103,9 +96,7 @@ function MarketPage({ lang }) {
       ]);
     }
   }, [lang]);
-
   const API_URL = '/api/market'; const COMMON_URL = '/api/items'
-
   const t = {
     ko: {
       tourSteps: [
@@ -165,7 +156,6 @@ function MarketPage({ lang }) {
     }
   };
   const current = t[lang];
-
   const formatTimeAgo = (dateString) => {
     if (!dateString) return '';
     const date = new Date(dateString);
@@ -177,24 +167,20 @@ function MarketPage({ lang }) {
     if (diff < 2592000) return lang === 'ko' ? `${Math.floor(diff / 86400)}일 전` : `${Math.floor(diff / 86400)}d ago`;
     return `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')}`;
   };
-
   useEffect(() => { 
     fetchItems(); 
     if (MARKET_QUOTES[lang]?.length > 0) {
       setQuoteIndex(Math.floor(Math.random() * MARKET_QUOTES[lang].length)); 
     }
   }, [lang])
-  
   const fetchItems = async () => { try { const res = await axios.get(API_URL); setItems(res.data) } catch(e){} }
   useEffect(() => { const intervalId = setInterval(() => setSubmitMentionIndex(prev => (prev + 1) % SUBMIT_MENTIONS[lang].length), 6000); return () => clearInterval(intervalId); }, [lang]);
   useEffect(() => { if (showVersionInfo) { setShowModalConfetti(true); setTimeout(() => setShowModalConfetti(false), 2500); } }, [showVersionInfo]);
-  
   useEffect(() => { 
     if (chatContainerRef.current) {
       chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
     }
   }, [chatHistory, isGenerating]);
-
   useEffect(() => {
     if (tourIndex >= 0 && tourIndex < current.tourSteps.length) {
       const el = document.getElementById(current.tourSteps[tourIndex].targetId);
@@ -205,13 +191,11 @@ function MarketPage({ lang }) {
       }
     }
   }, [tourIndex, lang, current.tourSteps]);
-
   const handleQuoteRefresh = () => { 
     if (MARKET_QUOTES[lang]?.length > 0) {
       setQuoteIndex(Math.floor(Math.random() * MARKET_QUOTES[lang].length)); 
     }
   };
-  
   const handlePhoneChange = (value) => {
     const numeric = value.replace(/[^0-9]/g, '');
     let formatted = numeric;
@@ -219,12 +203,10 @@ function MarketPage({ lang }) {
     else if (numeric.length > 7) formatted = `${numeric.slice(0, 3)}-${numeric.slice(3, 7)}-${numeric.slice(7, 11)}`;
     return formatted;
   }
-  
   const handleFreebie = () => { 
     if (form.price === 'free') { setForm({...form, price: ''}); } 
     else { setForm({...form, price: 'free'}); setShowConfetti(true); setTimeout(() => setShowConfetti(false), 2000); }
   }
-
   const addItem = async (e) => {
     e.preventDefault(); if (!form.title) return;
     const submitData = { ...form, price: form.price === 'free' ? 0 : form.price };
@@ -234,7 +216,6 @@ function MarketPage({ lang }) {
     setShowAiBox(false); setChatHistory([]);
     setCurrentPage(1);
   }
-
   const handleLike = async (id) => {
     const isLiked = likedItems.has(id); const val = isLiked ? -1 : 1;
     const res = await axios.patch(`${COMMON_URL}/${id}/like`, { value: val });
@@ -242,12 +223,10 @@ function MarketPage({ lang }) {
     const newLiked = new Set(likedItems); if (isLiked) newLiked.delete(id); else newLiked.add(id);
     setLikedItems(newLiked); localStorage.setItem('likedItems', JSON.stringify([...newLiked]));
   }
-  
   const saveEdit = async (id) => {
     const res = await axios.put(`${COMMON_URL}/${id}`, { ...editForm, price: editForm.price === 'free' ? 0 : editForm.price })
     setItems(items.map(item => item._id === id ? res.data : item)); setEditingId(null)
   }
-
   const handleApplyAiData = (data, idx) => {
     setForm(prev => {
       const updated = { ...prev };
@@ -264,23 +243,18 @@ function MarketPage({ lang }) {
     });
     setChatHistory(prev => prev.map((msg, i) => i === idx ? { ...msg, pendingData: null, text: msg.text + (lang === 'ko' ? "\n\n✅ 폼에 성공적으로 추가되었습니다!" : "\n\n✅ Successfully applied to the form!") } : msg));
   };
-
   const handleRejectAiData = (idx) => {
     setChatHistory(prev => prev.map((msg, i) => i === idx ? { ...msg, pendingData: null, text: msg.text + (lang === 'ko' ? "\n\n❌ 추가를 취소했습니다." : "\n\n❌ Canceled.") } : msg));
   };
-
   const askAi = async (inputText) => {
     if (!inputText.trim()) return;
     setIsGenerating(true);
-
     const currentMsg = { sender: 'user', text: inputText };
     let newHistory = [...chatHistory, currentMsg];
     setChatHistory(newHistory);
     setFollowUpInput(''); 
     if (textareaRef.current) textareaRef.current.style.height = 'auto'; 
-
     try {
-      // ⭐ 한국어 전용 JSON 포맷 (설명까지 100% 한국어)
       const jsonFormatKo = `
       {
         "message": "사용자에게 할 대답 (물품 등록 내용이면 '요청하신 정보를 바탕으로 폼에 들어갈 내용을 준비했습니다! 아래 버튼을 눌러 자동 입력을 완료해 보세요.' 안내. 일상 대화면 자연스럽게 대답. 단, 이모지 절대 금지)",
@@ -295,8 +269,6 @@ function MarketPage({ lang }) {
           "description": "상세 설명 (학번, 번호 등 중복 기재 금지, 이모지 금지)"
         }
       }`;
-
-      // ⭐ 영어 전용 JSON 포맷 (설명까지 100% 영어, AI가 절대 안 헷갈림)
       const jsonFormatEn = `
       {
         "message": "Friendly response in English. (If item details are given, use EXACTLY: 'I have prepared the form details based on your input! Click the button below to apply them.' For casual chat, reply naturally. NO emojis.)",
@@ -311,8 +283,6 @@ function MarketPage({ lang }) {
           "description": "Detailed description. DO NOT repeat ID, phone, etc. NO emojis."
         }
       }`;
-
-      // 언어에 맞게 프롬프트 완벽 분리
       const promptContext = lang === 'ko' 
         ? `너는 중고마켓 판매글 폼을 자동으로 채워주는 AI 비서야.
            [절대 규칙 1]: 반드시 아래 JSON 형식으로만 반환해! (마크다운 백틱 제외)
@@ -326,25 +296,20 @@ function MarketPage({ lang }) {
            [Rule 4]: If the user just says hello or info is missing, leave all 'extracted' values as "".
            [Rule 5]: You MUST reply in English for the "message" field.
            ${jsonFormatEn}\n\n[Chat History]\n`;
-      
       let finalPrompt = promptContext;
       newHistory.forEach(msg => { finalPrompt += `${msg.sender === 'user' ? 'User' : 'AI'}: ${msg.text}\n`; });
       finalPrompt += "AI: ";
-
       const res = await axios.post('/api/ai/generate', { prompt: finalPrompt });
       let aiText = res.data.text.trim(); 
-      
       let jsonString = aiText.replace(/```json/gi, '').replace(/```/g, '').trim();
       const jsonStart = jsonString.indexOf('{');
       const jsonEnd = jsonString.lastIndexOf('}');
       if (jsonStart !== -1 && jsonEnd !== -1) {
         jsonString = jsonString.substring(jsonStart, jsonEnd + 1);
       }
-
       try {
         const parsed = JSON.parse(jsonString);
         const ext = parsed.extracted;
-        
         const hasActualData = ext && (
           (ext.title && ext.title.trim() !== "") || 
           (ext.price && String(ext.price).trim() !== "") || 
@@ -355,10 +320,8 @@ function MarketPage({ lang }) {
           (ext.phone && ext.phone.trim() !== "") || 
           (ext.description && ext.description.trim() !== "")
         );
-
         const fallbackMsg = lang === 'ko' ? "정보를 분석했습니다." : "Information analyzed.";
         const finalMessage = parsed.message ? parsed.message : fallbackMsg;
-
         setChatHistory(prev => [...prev, { 
           sender: 'ai', 
           text: finalMessage, 
@@ -368,7 +331,6 @@ function MarketPage({ lang }) {
         console.error("JSON 파싱 에러:", parseError, aiText);
         setChatHistory(prev => [...prev, { sender: 'ai', text: res.data.text }]);
       }
-
     } catch (error) {
       console.error("AI Generation Error:", error);
       setChatHistory(prev => [...prev, { sender: 'ai', text: (lang === 'ko' ? "❌ 서버 통신 중 오류가 발생했습니다. (1분 뒤 다시 시도해주세요.)" : "❌ Error connecting to server. (Try again in 1 min)") }]);
@@ -376,15 +338,12 @@ function MarketPage({ lang }) {
       setIsGenerating(false);
     }
   };
-  
-  // ⭐ 2. 검색 시 전체 페이지에서 검색되도록 처리 (버그 해결)
   const filteredItems = items.filter((item) => {
     return (
       item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (item.description && item.description.toLowerCase().includes(searchTerm.toLowerCase()))
     );
   });
-
   const sortedItems = [...filteredItems].sort((a, b) => {
     if (sortType === 'latest') return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
     if (sortType === 'deadline') return new Date(a.deadline || '9999') - new Date(b.deadline || '9999');
@@ -393,11 +352,9 @@ function MarketPage({ lang }) {
     if (sortType === 'likes') return b.likes - a.likes;
     return 0;
   });
-  
   const currentItems = sortedItems.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
   const totalPages = Math.ceil(sortedItems.length / itemsPerPage) || 1;
   const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1);
-
   return (
     <div className="max-w-7xl mx-auto p-4 md:p-6 flex flex-col min-h-screen relative text-gray-900 dark:text-gray-100 transition-colors">
      <style>{`
@@ -411,9 +368,7 @@ function MarketPage({ lang }) {
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #93c5fd; border-radius: 10px; }
         .dark .custom-scrollbar::-webkit-scrollbar-thumb { background: #3b82f6; }
       `}</style>
-      
       {showConfetti && <div className="fixed inset-0 pointer-events-none z-[9999] flex items-center justify-center"><span className="emoji-burst text-6xl">🎉</span></div>}
-
       {tourIndex >= 0 && (
         <div className="fixed z-[100] bg-white dark:bg-gray-800 p-5 md:p-6 rounded-3xl shadow-2xl border-[3px] border-blue-400 dark:border-blue-500 w-[92%] max-w-[350px] bottom-6 md:bottom-10 left-1/2 -translate-x-1/2 tour-popup flex flex-col pointer-events-auto">
           <h3 className="text-blue-600 dark:text-blue-400 font-black mb-1 text-[10px] uppercase tracking-widest">Guide ({tourIndex + 1}/{current.tourSteps.length})</h3>
@@ -422,15 +377,12 @@ function MarketPage({ lang }) {
           <div className="flex justify-between gap-2"><button onClick={() => setTourIndex(-1)} className="px-3 py-1 text-gray-400 dark:text-gray-500 font-bold text-xs hover:text-gray-600 dark:hover:text-gray-300">{current.tourSkip}</button><button onClick={() => setTourIndex(p => p+1 >= current.tourSteps.length ? -1 : p+1)} className="bg-blue-600 dark:bg-blue-500 text-white px-4 md:px-5 py-2 rounded-xl font-black text-xs shadow-md hover:bg-blue-700 transition">{tourIndex === current.tourSteps.length - 1 ? current.tourEnd : current.tourNext}</button></div>
         </div>
       )}
-
       {showVersionInfo && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[150] p-4 backdrop-blur-sm" onClick={() => setShowVersionInfo(false)}>
           <div className="bg-white dark:bg-gray-800 p-6 md:p-8 rounded-3xl md:rounded-[2rem] max-w-3xl w-full shadow-2xl transform transition-all border-4 border-blue-50 dark:border-gray-700 max-h-[90vh] overflow-y-auto" onClick={e=>e.stopPropagation()}>
             {showModalConfetti && <div className="fixed inset-0 pointer-events-none z-[9999] flex items-center justify-center"><span className="emoji-burst text-6xl">🎉</span></div>}
-            
             <h3 className="text-2xl md:text-3xl font-black mb-1 text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400 text-center">{current.modalTitle}</h3>
             <p className="text-center text-gray-400 dark:text-gray-500 font-bold mb-6 text-[10px] md:text-xs tracking-tighter">{current.modalSub}</p>
-            
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 mt-2">
               <div className="bg-gray-50 dark:bg-gray-700 p-5 rounded-2xl border-2 border-dashed border-gray-200 dark:border-gray-600">
                 <h4 className="text-gray-500 dark:text-gray-300 font-black text-sm mb-3 text-center">{current.modalPrevTitle}</h4>
@@ -451,7 +403,6 @@ function MarketPage({ lang }) {
                 </ul>
               </div>
             </div>
-
             <div className="bg-slate-50 dark:bg-gray-700/50 rounded-2xl p-6 mb-6 border border-gray-100 dark:border-gray-600">
               <h4 className="text-center font-black text-slate-700 dark:text-slate-300 mb-4 text-sm flex justify-center items-center gap-2">{current.modalHistTitle}</h4>
               <div className="space-y-3 text-[11px] md:text-xs px-2">
@@ -463,7 +414,6 @@ function MarketPage({ lang }) {
                 <p className="flex items-center gap-3 font-bold bg-white dark:bg-gray-800 p-2 rounded-lg shadow-sm"><span className="text-blue-600 font-black min-w-[45px]">V6.5:</span><span className="text-slate-800 dark:text-gray-200 italic">{current.modalHistV6}</span></p>
               </div>
             </div>
-
             <div className="bg-blue-50 dark:bg-blue-900/30 p-5 rounded-2xl border-2 border-blue-200 dark:border-blue-800 text-center mb-6 shadow-inner relative overflow-hidden">
                 <h4 className="text-xl font-black text-blue-800 dark:text-blue-400 mb-1">{current.modalFreeTitle}</h4>
                 <p className="text-blue-700 dark:text-blue-300 font-bold text-xs"><span className="font-black text-sm">{current.modalFreeDesc1}</span><br/>{current.modalFreeDesc2}</p>
@@ -472,7 +422,6 @@ function MarketPage({ lang }) {
           </div>
         </div>
       )}
-
       <div className="flex-grow">
         <div id="tour-header" className="text-center mb-6 md:mb-8 relative mt-4 md:mt-0">
           <div className="flex items-center justify-center gap-4 mb-2">
@@ -484,7 +433,6 @@ function MarketPage({ lang }) {
             </button>
           </div>
           <p onClick={() => setShowVersionInfo(true)} className="text-[10px] md:text-xs text-blue-400 dark:text-blue-500 font-black cursor-pointer hover:text-blue-600 transition tracking-widest">{current.verCheck}</p>
-          
           {MARKET_QUOTES[lang]?.length > 0 && (
             <div className="flex justify-center items-center gap-3 mt-5 md:mt-7 mb-2 px-2">
               <div className="px-5 md:px-8 py-2 md:py-3 border border-blue-400 dark:border-blue-700 rounded-full text-blue-600 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/30 font-bold text-xs md:text-sm shadow-sm transition-colors text-center break-keep">
@@ -499,9 +447,7 @@ function MarketPage({ lang }) {
             </div>
           )}
         </div>
-
         <form onSubmit={addItem} className="bg-white dark:bg-gray-800 p-5 md:p-8 rounded-3xl md:rounded-[2.5rem] shadow-xl mb-6 md:mb-10 flex flex-col gap-3 md:gap-5 border border-blue-50 dark:border-gray-700 relative z-10 mt-4">
-          
           <div id="tour-ai-btn" className="w-full mb-2">
             {!showAiBox ? (
               <button 
@@ -522,7 +468,6 @@ function MarketPage({ lang }) {
                     <button type="button" onClick={() => setShowAiBox(false)} className="text-xs font-bold text-gray-500 hover:text-red-500 transition bg-white dark:bg-gray-800 px-2 py-1 rounded-md border">{current.aiClose}</button>
                   </div>
                 </div>
-                
                 <div ref={chatContainerRef} className="flex flex-col gap-3 max-h-[300px] overflow-y-auto custom-scrollbar p-3 bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 mb-3">
                   {chatHistory.length === 0 && !isGenerating && (
                     <div className="text-xs font-bold text-gray-400 p-2 text-center bg-gray-50 dark:bg-gray-700 rounded-lg">
@@ -551,7 +496,6 @@ function MarketPage({ lang }) {
                   ))}
                   {isGenerating && ( <div className="flex w-full justify-start"><div className="bg-gray-100 dark:bg-gray-700 p-3 rounded-2xl rounded-tl-none text-sm font-bold text-blue-500 animate-pulse">{current.aiLoading}</div></div> )}
                 </div>
-
                 <div className="flex items-end gap-2 bg-white dark:bg-gray-800 p-1.5 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm focus-within:border-blue-400 transition-colors">
                   <textarea 
                     ref={textareaRef}
@@ -585,7 +529,6 @@ function MarketPage({ lang }) {
               </div>
             )}
           </div>
-
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-5 w-full">
             <input 
               placeholder={current.phTitle} 
@@ -593,7 +536,6 @@ function MarketPage({ lang }) {
               onChange={e=>setForm({...form, title: e.target.value})} 
               className="md:col-span-1 border-2 border-gray-100 dark:border-gray-600 dark:bg-gray-700 p-3 md:p-4 text-sm md:text-base rounded-2xl outline-none focus:border-blue-400 transition font-bold"
             />
-            
             <div id="tour-freebie" className="flex gap-2 md:col-span-1">
               <input 
                 placeholder={form.price === 'free' ? current.phFree : current.phPrice} 
@@ -606,15 +548,11 @@ function MarketPage({ lang }) {
               />
               <button type="button" onClick={handleFreebie} className={`${form.price === 'free' ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600'} text-white font-black text-xs px-4 rounded-2xl transition shadow-lg`}>{form.price === 'free' ? current.btnCancel : current.btnFree}</button>
             </div>
-            
             <input id="tour-deadline" type="date" value={form.deadline} onChange={e=>setForm({...form, deadline: e.target.value})} className="md:col-span-1 border-2 border-gray-100 dark:border-gray-600 dark:bg-gray-700 p-3 md:p-4 text-sm md:text-base rounded-2xl outline-none focus:border-blue-400 cursor-pointer text-gray-500"/>
-            
             <input placeholder={current.phId} value={form.studentId} onChange={e=>setForm({...form, studentId: e.target.value})} className="border-2 border-gray-100 dark:border-gray-600 dark:bg-gray-700 p-3 md:p-4 text-sm md:text-base rounded-2xl outline-none focus:border-blue-400 transition"/>
             <input placeholder={current.phSeller} value={form.sellerName} onChange={e=>setForm({...form, sellerName: e.target.value})} className="border-2 border-gray-100 dark:border-gray-600 dark:bg-gray-700 p-3 md:p-4 text-sm md:text-base rounded-2xl outline-none focus:border-blue-400 transition"/>
             <input placeholder={current.phPhone} value={form.phone} onChange={e=>setForm({...form, phone: handlePhoneChange(e.target.value)})} className="border-2 border-gray-100 dark:border-gray-600 dark:bg-gray-700 p-3 md:p-4 text-sm md:text-base rounded-2xl outline-none focus:border-blue-400 transition"/>
-            
             <input placeholder={current.phLoc} value={form.location} onChange={e=>setForm({...form, location: e.target.value})} className="md:col-span-3 border-2 border-gray-100 dark:border-gray-600 dark:bg-gray-700 p-3 md:p-4 text-sm md:text-base rounded-2xl outline-none focus:border-blue-400 transition"/>
-            
             <textarea 
               placeholder={current.phDesc} 
               value={form.description} 
@@ -622,17 +560,13 @@ function MarketPage({ lang }) {
               className="md:col-span-3 border-2 border-gray-100 dark:border-gray-600 dark:bg-gray-700 p-3 md:p-4 text-sm md:text-base rounded-2xl min-h-[120px] focus:h-48 transition-all outline-none whitespace-pre-wrap font-medium"
             ></textarea>
           </div>
-
           <button className="w-full bg-[#002f6c] dark:bg-blue-800 text-white p-4 md:p-5 rounded-2xl font-black text-base md:text-lg hover:bg-blue-800 transition shadow-xl h-16 flex justify-center items-center mt-2">
             {SUBMIT_MENTIONS[lang][submitMentionIndex]}
           </button>
         </form>
-
         <div className="mb-4 md:mb-6 w-full relative z-10">
-          {/* ⭐ 3. 검색 이벤트 수정 (키력 시 1페이지 리셋) */}
           <input type="text" placeholder={current.searchP} value={searchTerm} onChange={(e) => {setSearchTerm(e.target.value); setCurrentPage(1);}} className="w-full p-3 md:p-4 border-2 text-sm md:text-base border-blue-100 rounded-xl md:rounded-2xl shadow-sm focus:outline-none focus:border-blue-400 dark:bg-gray-800 dark:text-white transition-all font-bold text-gray-700"/>
         </div>
-
         <div className="flex flex-col sm:flex-row justify-between items-center gap-3 mb-6 relative z-10">
           <select id="tour-sort" value={sortType} onChange={(e) => {setSortType(e.target.value); setCurrentPage(1);}} className="bg-white dark:bg-gray-800 border-2 border-blue-100 px-4 py-2 w-full sm:w-auto rounded-xl font-black text-xs text-gray-700 dark:text-gray-200 outline-none cursor-pointer shadow-sm">
             <option value="latest">{current.sortOpt.latest}</option><option value="deadline">{current.sortOpt.deadline}</option><option value="priceLow">{current.sortOpt.priceLow}</option><option value="priceHigh">{current.sortOpt.priceHigh}</option><option value="likes">{current.sortOpt.likes}</option>
@@ -642,17 +576,13 @@ function MarketPage({ lang }) {
             <button onClick={() => setViewType('table')} className={`flex-1 sm:flex-none px-5 py-2 rounded-xl font-black text-xs transition-all ${viewType==='table'?'bg-[#002f6c] text-white':'bg-white dark:bg-gray-800 text-gray-400 border-2 border-gray-100'}`}>📋 TABLE</button>
           </div>
         </div>
-
         {viewType === 'card' ? (
           <div id="tour-card" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 mb-8 w-full relative z-10">
             {currentItems.map(item => ( 
               <div key={item._id} className={`p-6 md:p-8 rounded-3xl md:rounded-[3rem] border-4 transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl flex flex-col relative overflow-hidden ${item.completed ? 'border-red-500 bg-red-50 dark:bg-red-900/10' : 'border-blue-50 bg-white dark:bg-gray-800'}`}> 
                 {item.completed && <div className="absolute -right-10 top-10 bg-red-500 text-white font-black text-xs py-1 px-12 rotate-45 shadow-lg z-10">{current.soldOut}</div>}
-                
-                {/* ⭐ 4. 다크모드 시 애니메이션 증발 방지를 위해 애니메이션 클래스 단순화 */}
                 {editingId === item._id ? (
                   <div className="flex flex-col gap-4 z-10 w-full transition-all duration-300">
-                    
                     <div className="border-2 border-blue-300 border-dashed p-4 rounded-2xl bg-blue-50/50 dark:bg-gray-800/50 relative pointer-events-none opacity-90 shadow-sm mt-2">
                       <div className="absolute -top-3 left-4 bg-blue-500 text-white text-[10px] font-black px-3 py-1 rounded-full shadow-sm">👀 실시간 수정 미리보기</div>
                       <div className="flex justify-between items-start mb-3 mt-1"><h3 className="text-lg font-black text-gray-800 dark:text-gray-100">{editForm.title || '제목을 입력하세요'}</h3></div> 
@@ -669,7 +599,6 @@ function MarketPage({ lang }) {
                         {editForm.description || '상세 설명이 여기에 표시됩니다.'}
                       </div>
                     </div>
-
                     <div className="bg-gray-50 dark:bg-gray-700 p-3 md:p-4 rounded-2xl border border-gray-200 dark:border-gray-600 flex flex-col gap-2.5 shadow-inner pointer-events-auto">
                       <input className="border border-gray-200 dark:border-gray-600 dark:bg-gray-800 p-2 rounded-xl text-xs font-bold w-full outline-none focus:border-blue-400 transition-colors" placeholder={current.phTitle} value={editForm.title} onChange={e=>setEditForm({...editForm, title: e.target.value})} />
                       <div className="flex gap-2">
@@ -687,7 +616,6 @@ function MarketPage({ lang }) {
                       <input className="border border-gray-200 dark:border-gray-600 dark:bg-gray-800 p-2 rounded-xl text-xs font-bold w-full outline-none focus:border-blue-400 transition-colors" placeholder={current.phLoc} value={editForm.location} onChange={e=>setEditForm({...editForm, location: e.target.value})} />
                       <textarea className="border border-gray-200 dark:border-gray-600 dark:bg-gray-800 p-2 rounded-xl text-xs font-medium w-full outline-none focus:border-blue-400 min-h-[80px] resize-none transition-colors" placeholder={current.phDesc} value={editForm.description} onChange={e=>setEditForm({...editForm, description: e.target.value})} />
                     </div>
-
                     <div className="flex gap-2 mt-1">
                       <button type="button" onClick={()=>saveEdit(item._id)} className="bg-green-500 hover:bg-green-600 text-white rounded-xl py-3 flex-grow font-black text-xs shadow-md transition-transform hover:-translate-y-0.5">{current.btnSave}</button>
                       <button type="button" onClick={()=>setEditingId(null)} className="bg-gray-400 hover:bg-gray-500 text-white rounded-xl py-3 flex-grow font-black text-xs shadow-md transition-transform hover:-translate-y-0.5">{current.btnEditCancel}</button>
@@ -709,7 +637,6 @@ function MarketPage({ lang }) {
                       <p className="border-b dark:border-gray-700 pb-2">{current.deadlinePrefix} <span className={new Date(item.deadline) < new Date() ? 'text-red-500' : ''}>{item.deadline || current.deadlineNone}</span></p>
                       <p className="text-blue-500 pb-2">{current.locPrefix} {item.location}</p>
                     </div>
-                    
                     <div className="flex flex-col w-full z-10 mb-4 mt-2">
                       <button 
                         onClick={() => setExpandedId(expandedId === item._id ? null : item._id)} 
@@ -718,14 +645,12 @@ function MarketPage({ lang }) {
                         <span>{expandedId === item._id ? current.btnDescHide : current.btnDescShow}</span>
                         <span>{expandedId === item._id ? '▲' : '▼'}</span>
                       </button>
-                      
                       {expandedId === item._id && (
                         <div className="mt-2 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg text-xs text-gray-700 dark:text-gray-300 whitespace-pre-wrap border-2 border-dashed border-gray-200 dark:border-gray-600 shadow-inner font-semibold leading-relaxed">
                           {item.description || <span className="text-gray-400 italic">{current.descEmpty}</span>}
                         </div>
                       )}
                     </div>
-
                     <div className="flex gap-2 z-10 mt-2">
                       <button type="button" onClick={async() => {await axios.put(`${COMMON_URL}/${item._id}`,{completed: !item.completed}); fetchItems()}} className={`flex-grow py-2 rounded-xl font-black text-[10px] uppercase shadow-sm ${item.completed?'bg-red-600 text-white':'bg-gray-100 dark:bg-gray-700 text-gray-500 hover:bg-blue-600 hover:text-white transition'}`}>{item.completed ? current.btnUndo : current.btnDone}</button>
                       <button type="button" onClick={() => {
@@ -755,8 +680,6 @@ function MarketPage({ lang }) {
                     <td className="p-4 text-left font-black text-sm relative">
                       {item.completed && <div className="absolute top-0 left-0 bg-red-500 text-white font-black text-[8px] px-2 py-0.5 rounded-br-lg shadow-sm">{current.soldOut}</div>}
                       <span className={item.completed ? 'line-through' : 'text-gray-800 dark:text-gray-200'}>{item.title}</span> 
-                      
-                      {/* ⭐ 5. 테이블 뷰 찜하기 버튼 클릭 버그 해결 (pointer-events-auto, relative z-20 추가) */}
                       <button 
                         type="button" 
                         onClick={(e) => { e.stopPropagation(); handleLike(item._id); }} 
@@ -764,7 +687,6 @@ function MarketPage({ lang }) {
                       >
                         ♥{item.likes}
                       </button>
-                      
                       <div className="mt-2 relative z-10 pointer-events-auto">
                         <button 
                           type="button"
@@ -807,7 +729,6 @@ function MarketPage({ lang }) {
             </table>
           </div>
         )}
-        
         {totalPages > 1 && (
           <div className="flex justify-center items-center gap-2 mb-10">
             <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="px-3 py-2 bg-white dark:bg-gray-800 border-2 border-gray-100 dark:border-gray-700 rounded-lg font-black text-xs text-gray-400 hover:text-blue-500 disabled:opacity-30 transition">PREV</button>
@@ -826,7 +747,6 @@ function MarketPage({ lang }) {
           </div>
         )}
       </div>
-
       <footer className="py-8 md:py-12 text-center border-t border-gray-200 dark:border-gray-800 mt-16 md:mt-24 relative z-10 transition-colors">
         <p className="text-gray-600 dark:text-gray-400 font-black text-[10px] md:text-sm uppercase tracking-widest mb-1.5 md:mb-2 break-keep leading-relaxed">
           {current.footerDept}

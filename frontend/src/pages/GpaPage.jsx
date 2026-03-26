@@ -1,20 +1,15 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, PointElement, LineElement, LineController, BarController } from 'chart.js';
 import { Chart } from 'react-chartjs-2';
-
 ChartJS.register( CategoryScale, LinearScale, BarElement, PointElement, LineElement, Title, Tooltip, Legend, LineController, BarController );
-
 const GRADE_POINTS = { 'A+': 4.5, 'A0': 4.0, 'B+': 3.5, 'B0': 3.0, 'C+': 2.5, 'C0': 2.0, 'D+': 1.5, 'D0': 1.0, 'F': 0, 'P': null, 'NP': null };
 const CREDIT_OPTIONS = [0, 1, 2, 3, 4];
 const SEMESTERS = ['1학년 1학기', '1학년 여름방학', '1학년 2학기', '1학년 겨울방학', '2학년 1학기', '2학년 여름방학', '2학년 2학기', '2학년 겨울방학', '3학년 1학기', '3학년 여름방학', '3학년 2학기', '3학년 겨울방학', '4학년 1학기', '4학년 여름방학', '4학년 2학기', '4학년 겨울방학', '5학년 1학기', '5학년 여름방학', '5학년 2학기', '5학년 겨울방학', '6학년 1학기', '6학년 여름방학', '6학년 2학기', '6학년 겨울방학', '기타학기'];
-
-// ✅ 학기 표시용 포매터 (실제 데이터는 한글 유지, 화면만 영어로 변환)
 const displaySem = (sem, lang) => {
   if (lang === 'ko') return sem;
   if (!sem) return '';
   return sem.replace('학년 ', ' Yr ').replace('학기', ' Sem').replace('여름방학', ' Summer').replace('겨울방학', ' Winter').replace('기타학기', 'Other');
 };
-
 function GpaPage({ lang }) {
   const STORAGE_KEY = 'cwnu_gpa_v3';
   const [courses, setCourses] = useState(() => JSON.parse(localStorage.getItem(STORAGE_KEY)) || []);
@@ -26,11 +21,8 @@ function GpaPage({ lang }) {
   const [showVersionInfo, setShowVersionInfo] = useState(false); 
   const [showSecurityInfo, setShowSecurityInfo] = useState(false);
   const [showModalConfetti, setShowModalConfetti] = useState(false);
-
   const [simTargetGpa, setSimTargetGpa] = useState(4.0);
   const [simNextCredits, setSimNextCredits] = useState(18);
-
-  // ✅ 다국어 사전 (워터마크, 모달, 보안창 UI 완벽 적용)
   const t = {
     ko: {
       tourSteps: [
@@ -41,8 +33,6 @@ function GpaPage({ lang }) {
         { title: "📑 학기 탭 & 성적표", desc: "학기를 클릭하여 해당 학기의 성적표를 관리하세요.", targetId: "tour-list" }
       ],
       tourSkip: "건너뛰기", tourNext: "다음 ▶", help: "💡 도움말", verCheck: "(버전 클릭 시 업데이트 내역 확인)",
-      
-      // 보안 안내 모달
       secTitle: "데이터 보안 안내", 
       secP1: "\"입력하신 성적 데이터가 어떻게 처리되는지 궁금하셨군요?\"",
       secP2: "본 포털의 GPA 계산 시스템은 철저하게 'Client-Side Only (클라이언트 단독 연산)' 아키텍처로 설계되었습니다. 쉽게 말씀드리면, 학우님이 입력하시는 모든 과목과 성적 정보는 창원대학교 서버는 물론, 제 외부 데이터베이스(DB)로도 단 1바이트조차 전송되지 않습니다.",
@@ -54,7 +44,6 @@ function GpaPage({ lang }) {
       secP4: "즉, 외부 데이터 유출 위험이 원천 차단되어 있으며, 시스템을 구축한 개발자인 저조차도 여러분의 성적표를 열람할 기술적 방법이 전혀 존재하지 않습니다.",
       secBtn: "안심하고 확인 완료!",
       secBannerText: "입력하신 성적 데이터는 본인의 기기에만 안전하게 저장되며, 외부로 공유되지 않습니다.",
-
       chartTitle: "성적 추이 분석", chartBtn: "📥 엑셀(CSV) 저장", chartEmpty: "성적을 등록하면 그래프가 생성됩니다.", chartCredits: "이수 학점", chartGpa: "학기 평점",
       dbAll: "전체평점 (CGPA)", dbMajor: "전공 평점", dbRecent: "최근학기 평점", dbEarned: "총 {c}학점 이수", dbEarnedMajor: "전공 {c}학점 이수", dbEarnedRecent: "최근 {c}학점 이수",
       simTitle: "목표 학점 시뮬레이터", simDesc: "다음 학기에 몇 점을 받아야 원하는 전체 평점(CGPA)을 만들 수 있을까요?", simTarget: "목표 평점", simExpected: "예정 학점", simResultTitle: "다음 학기 필요 평균",
@@ -64,12 +53,8 @@ function GpaPage({ lang }) {
       thType: "분류", thName: "과목명", thCredit: "학점", thGrade: "성적", thAction: "관리",
       btnSave: "저장", btnCancel: "취소", btnEdit: "수정", btnDel: "Del", emptyList: "해당 학기에 등록된 성적이 없습니다.", delConfirm: "삭제하시겠습니까?",
       csvHeader: "학기,과목명,학점,성적,전공여부", csvMajor: "전공", csvElective: "교양",
-      
-      // ✅ 워터마크 한국어 번역
       footerDept: "컴퓨터공학과 | 소프트웨어공학 프로젝트: CWNU 포털 시스템", 
       footerCopy: "@ 2026 정이량 | Gemini AI 협업 제작",
-      
-      // 버전 업데이트 모달
       modalTitle: "GPA V5 5.0 ver 업데이트 내역", modalSub: "25년 1학기 웹프로그래밍 기말대체 과제 `todos_v4`의 최종 진화형!",
       modalPrevTitle: "🤔 이전 버전", modalPrev1: "❌ 학점 계산기가 전무하여 와글에서 수동 확인", modalPrev2: "❌ 복잡하게 나열된 성적 입력 양식",
       modalCurTitle: "✨ 현재 버전 (V5 5.0)", modalCur1: "✅ 학기 탭 기반 인터페이스로 깔끔한 관리", modalCur2: "✅ 3단 대시보드 및 평점 시각화 분석", modalCur3: "✅ 성적 데이터 다운로드 및 목표 학점 시뮬레이터 탑재!", modalCur4: "✅ 글로벌 다국어(KOR/ENG) 완벽 지원!",
@@ -86,8 +71,6 @@ function GpaPage({ lang }) {
         { title: "📑 Tabs & Transcript", desc: "Click a semester to manage its transcript.", targetId: "tour-list" }
       ],
       tourSkip: "Skip", tourNext: "Next ▶", help: "💡 Guide", verCheck: "(Click version to check updates)",
-      
-      // 보안 안내 모달 영문
       secTitle: "Data Security Guide", 
       secP1: "\"Wondering how your entered grade data is processed?\"",
       secP2: "This portal's GPA calculation system is strictly designed with a 'Client-Side Only' architecture. Simply put, absolutely zero bytes of your course and grade information are transmitted to any university server or external database.",
@@ -99,7 +82,6 @@ function GpaPage({ lang }) {
       secP4: "Thus, the risk of external data leakage is fundamentally blocked, and not even the developer has the technical means to view your transcripts.",
       secBtn: "Confirmed & Safe!",
       secBannerText: "Your grade data is securely stored only on your device and is not shared externally.",
-
       chartTitle: "GPA Trend Analysis", chartBtn: "📥 Export CSV", chartEmpty: "Register grades to see the chart.", chartCredits: "Earned Credits", chartGpa: "Semester GPA",
       dbAll: "Cumulative (CGPA)", dbMajor: "Major GPA", dbRecent: "Recent GPA", dbEarned: "Total {c} credits", dbEarnedMajor: "Major {c} credits", dbEarnedRecent: "Recent {c} credits",
       simTitle: "Target GPA Simulator", simDesc: "What grades do you need next semester to achieve your target CGPA?", simTarget: "Target GPA", simExpected: "Exp. Credits", simResultTitle: "Required Avg Next Sem",
@@ -109,12 +91,8 @@ function GpaPage({ lang }) {
       thType: "Type", thName: "Course Name", thCredit: "Credits", thGrade: "Grade", thAction: "Action",
       btnSave: "Save", btnCancel: "Cancel", btnEdit: "Edit", btnDel: "Del", emptyList: "No grades registered for this semester.", delConfirm: "Are you sure you want to delete?",
       csvHeader: "Semester,Course Name,Credits,Grade,Major/Elective", csvMajor: "Major", csvElective: "Elective",
-      
-      // ✅ 워터마크 영어 (기존 유지)
       footerDept: "Department of Computer Science | Software Engineering Project: CWNU Portal System", 
       footerCopy: "@ 2026 Jung Yi Ryang | Designed with Gemini AI Collaborative Works",
-      
-      // 버전 업데이트 모달
       modalTitle: "GPA V5 5.0 ver Updates", modalSub: "The ultimate evolution of the Spring '25 Web Programming final project `todos_v4`!",
       modalPrevTitle: "🤔 Previous Version", modalPrev1: "❌ No GPA calculator, manual check required", modalPrev2: "❌ Clunky and complicated input forms",
       modalCurTitle: "✨ Current Version (V5 5.0)", modalCur1: "✅ Clean management with tab interface", modalCur2: "✅ 3-tier dashboard & GPA visualization", modalCur3: "✅ Data export & Target GPA Simulator added!", modalCur4: "✅ Global bilingual (KOR/ENG) support!",
@@ -124,10 +102,8 @@ function GpaPage({ lang }) {
     }
   };
   const current = t[lang];
-
   useEffect(() => { localStorage.setItem(STORAGE_KEY, JSON.stringify(courses)); }, [courses]);
   useEffect(() => { if (showVersionInfo) { setShowModalConfetti(true); setTimeout(() => setShowModalConfetti(false), 2500); } }, [showVersionInfo]);
-  
   useEffect(() => {
     if (tourIndex >= 0 && tourIndex < current.tourSteps.length) {
       const el = document.getElementById(current.tourSteps[tourIndex].targetId);
@@ -138,7 +114,6 @@ function GpaPage({ lang }) {
       }
     }
   }, [tourIndex, current.tourSteps]);
-
   const handleDownload = () => {
     if (courses.length === 0) return alert(current.emptyList);
     const headers = current.csvHeader + "\n";
@@ -154,7 +129,6 @@ function GpaPage({ lang }) {
     link.click();
     document.body.removeChild(link);
   };
-
   const calc = (list) => {
     if (!list || list.length === 0) return { credits: 0, gpa: '0.00' };
     const earned = list.reduce((acc, c) => (c.grade !== 'F' && c.grade !== 'NP') ? acc + c.credit : acc, 0);
@@ -162,10 +136,8 @@ function GpaPage({ lang }) {
     const pts = list.reduce((acc, c) => GRADE_POINTS[c.grade] !== null ? acc + (c.credit * GRADE_POINTS[c.grade]) : acc, 0);
     return { credits: earned, gpa: gpaCredits === 0 ? '0.00' : (pts / gpaCredits).toFixed(2) };
   };
-
   const entireGpa = calc(courses);
   const majorGpa = calc(courses.filter(c => c.isMajor));
-  
   const groupedCourses = useMemo(() => {
     return SEMESTERS.map(sem => ({
       semester: sem,
@@ -173,7 +145,6 @@ function GpaPage({ lang }) {
       summary: calc(courses.filter(c => c.semester === sem))
     })).filter(g => g.courses.length > 0);
   }, [courses]);
-
   const simulatorResult = useMemo(() => {
     const gpaCourses = courses.filter(c => GRADE_POINTS[c.grade] !== null);
     const currentGpaCredits = gpaCourses.reduce((acc, c) => acc + c.credit, 0);
@@ -186,13 +157,10 @@ function GpaPage({ lang }) {
     const requiredGpa = requiredPoints / nextCreditsSafe;
     return requiredGpa.toFixed(2);
   }, [courses, simTargetGpa, simNextCredits]);
-
   const recentGpa = groupedCourses.length > 0 ? groupedCourses[groupedCourses.length - 1].summary.gpa : '0.00';
   const recentCredits = groupedCourses.length > 0 ? groupedCourses[groupedCourses.length - 1].summary.credits : 0;
-
   const activeSemesterCourses = courses.filter(c => c.semester === activeTab);
   const activeSemesterSummary = calc(activeSemesterCourses);
-
   const chartData = {
     labels: groupedCourses.map(g => displaySem(g.semester, lang)),
     datasets: [
@@ -200,19 +168,16 @@ function GpaPage({ lang }) {
       { type: 'line', label: current.chartGpa, data: groupedCourses.map(g => g.summary.gpa), borderColor: '#ef4444', borderWidth: 3, pointBackgroundColor: 'white', pointBorderColor: '#ef4444', pointRadius: 5, tension: 0.3, yAxisID: 'y1', order: 1 }
     ]
   };
-
   const addCourse = (e) => {
     e.preventDefault();
     if (!form.name.trim()) return alert(current.alertName);
     setCourses([...courses, { ...form, id: Date.now(), credit: parseInt(form.credit) }]);
     setForm({ ...form, name: '', credit: 3, grade: 'A+', isMajor: false });
   };
-
   const saveEdit = () => {
     setCourses(courses.map(c => c.id === editingId ? { ...editForm, credit: parseInt(editForm.credit) } : c));
     setEditingId(null);
   };
-
   return (
     <div className="max-w-7xl mx-auto p-4 md:p-6 flex flex-col min-h-screen relative text-gray-900 dark:text-gray-100 transition-colors">
       <style>{`
@@ -221,7 +186,6 @@ function GpaPage({ lang }) {
         @keyframes shoot-up { 0% { transform: translateY(0) scale(0.5); opacity: 1; } 100% { transform: translateY(-150px) scale(1); opacity: 0; } }
         .emoji-burst { position: absolute; animation: shoot-up 1.5s ease-out forwards; z-index: 9999; }
       `}</style>
-
       {tourIndex >= 0 && (
         <div className="fixed z-[100] bg-white dark:bg-gray-800 p-5 md:p-6 rounded-3xl shadow-2xl border-[3px] border-emerald-400 w-[92%] max-w-[350px] bottom-6 md:bottom-10 left-1/2 -translate-x-1/2 tour-popup flex flex-col pointer-events-auto">
           <h3 className="text-emerald-600 dark:text-emerald-400 font-black mb-1 text-[10px] uppercase">Guide ({tourIndex + 1}/{current.tourSteps.length})</h3>
@@ -233,20 +197,15 @@ function GpaPage({ lang }) {
           </div>
         </div>
       )}
-
-      {/* ✅ 데이터 보안 안내 모달 (회색 요약 박스 UI 완벽 복구 & 다국어) */}
       {showSecurityInfo && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[150] p-4 backdrop-blur-sm" onClick={() => setShowSecurityInfo(false)}>
           <div className="bg-white dark:bg-gray-800 p-6 md:p-8 rounded-3xl md:rounded-[2rem] max-w-md w-full shadow-2xl transform transition-all border-4 border-emerald-50 dark:border-gray-700" onClick={e=>e.stopPropagation()}>
             <div className="text-center mb-4"><span className="text-4xl md:text-5xl">🛡️</span></div>
             <h3 className="text-xl md:text-2xl font-black mb-4 text-emerald-700 dark:text-emerald-400 text-center tracking-tight">{current.secTitle}</h3>
-            
             <div className="bg-emerald-50 dark:bg-gray-700/50 p-4 md:p-5 rounded-2xl mb-6 text-xs md:text-sm text-gray-700 dark:text-gray-300 leading-relaxed font-medium">
               <p className="mb-3"><strong>{current.secP1}</strong></p>
               <p className="mb-3">{current.secP2}</p>
               <p className="mb-4">{current.secP3}</p>
-
-              {/* 형이 칭찬했던 바로 그 회색 박스 영역 (UI 원상복구) */}
               <div className="bg-white dark:bg-gray-800 border border-emerald-200 dark:border-gray-600 rounded-xl p-3 mb-4 shadow-sm">
                 <p className="font-black text-emerald-800 dark:text-emerald-400 mb-2 text-center text-xs">{current.secBoxTitle}</p>
                 <ul className="space-y-1.5 text-[11px] md:text-xs">
@@ -255,24 +214,18 @@ function GpaPage({ lang }) {
                   <li><span className="text-gray-500">▪ {current.secBul3Key}:</span> <strong>{current.secBul3Val}</strong></li>
                 </ul>
               </div>
-
               <p className="mb-1 text-emerald-600 dark:text-emerald-400 font-bold">{current.secP4}</p>
             </div>
-            
             <button onClick={() => setShowSecurityInfo(false)} className="w-full bg-emerald-600 dark:bg-emerald-500 text-white py-3 md:py-4 rounded-xl font-black text-sm md:text-base hover:bg-emerald-700 transition shadow-lg">{current.secBtn}</button>
           </div>
         </div>
       )}
-
-      {/* ✅ 버전 업데이트 모달 (V5 5.0) */}
       {showVersionInfo && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[150] p-4 backdrop-blur-sm" onClick={() => setShowVersionInfo(false)}>
           <div className="bg-white dark:bg-gray-800 p-6 md:p-8 rounded-3xl md:rounded-[2rem] max-w-3xl w-full shadow-2xl transform transition-all border-4 border-emerald-50 dark:border-gray-700 max-h-[90vh] overflow-y-auto" onClick={e=>e.stopPropagation()}>
             {showModalConfetti && <div className="fixed inset-0 pointer-events-none z-[9999] flex items-center justify-center"><span className="emoji-burst text-6xl">🎉</span></div>}
-            
             <h3 className="text-2xl md:text-3xl font-black mb-1 text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-600 dark:from-emerald-400 dark:to-teal-400 text-center">{current.modalTitle}</h3>
             <p className="text-center text-gray-400 dark:text-gray-500 font-bold mb-6 text-[10px] md:text-xs tracking-tighter">{current.modalSub}</p>
-            
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 mt-2">
               <div className="bg-gray-50 dark:bg-gray-700 p-5 rounded-2xl border-2 border-dashed border-gray-200 dark:border-gray-600">
                 <h4 className="text-gray-500 dark:text-gray-300 font-black text-sm mb-3 text-center">{current.modalPrevTitle}</h4>
@@ -291,7 +244,6 @@ function GpaPage({ lang }) {
                 </ul>
               </div>
             </div>
-
             <div className="bg-slate-50 dark:bg-gray-700/50 rounded-2xl p-6 mb-6 border border-gray-100 dark:border-gray-600">
               <h4 className="text-center font-black text-slate-700 dark:text-slate-300 mb-4 text-sm flex justify-center items-center gap-2">{current.modalHistTitle}</h4>
               <div className="space-y-3 text-[11px] md:text-xs px-2">
@@ -302,7 +254,6 @@ function GpaPage({ lang }) {
                 <p className="flex items-center gap-3 font-bold bg-white dark:bg-gray-800 p-2 rounded-lg shadow-sm"><span className="text-emerald-600 font-black min-w-[45px]">V5.0:</span><span className="text-slate-800 dark:text-gray-200 italic">{current.modalHistV5}</span></p>
               </div>
             </div>
-
             <div className="bg-green-50 dark:bg-green-900/30 p-5 rounded-2xl border-2 border-green-200 dark:border-green-800 text-center mb-6 shadow-inner relative overflow-hidden">
                 <h4 className="text-xl font-black text-green-800 dark:text-green-400 mb-1">{current.modalFreeTitle}</h4>
                 <p className="text-green-700 dark:text-green-300 font-bold text-xs"><span className="font-black text-sm">{current.modalFreeDesc1}</span><br/>{current.modalFreeDesc2}</p>
@@ -311,7 +262,6 @@ function GpaPage({ lang }) {
           </div>
         </div>
       )}
-
       <div className="flex-grow">
         <div id="tour-header" className="text-center mb-4 md:mb-6 relative mt-4 md:mt-0">
           <div className="flex items-center justify-center gap-4 mb-2">
@@ -324,7 +274,6 @@ function GpaPage({ lang }) {
           </div>
           <p onClick={() => setShowVersionInfo(true)} className="text-[10px] md:text-xs text-emerald-400 dark:text-emerald-500 font-black cursor-pointer hover:text-emerald-600 transition tracking-widest">{current.verCheck}</p>
         </div>
-
         <div className="flex justify-center mb-6 md:mb-8 px-2">
            <div className="bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-400 px-4 md:px-5 py-2 md:py-3 rounded-2xl text-[10px] md:text-xs font-bold flex items-center justify-center gap-2 shadow-sm break-keep text-center">
              <span className="text-sm md:text-base">🔒</span> 
@@ -332,7 +281,6 @@ function GpaPage({ lang }) {
              <button onClick={() => setShowSecurityInfo(true)} className="ml-1 bg-emerald-200 dark:bg-emerald-700/50 text-emerald-800 dark:text-emerald-200 rounded-full w-5 h-5 flex items-center justify-center font-black text-[10px] hover:bg-emerald-300 dark:hover:bg-emerald-600 transition-colors shadow-sm cursor-pointer shrink-0">?</button>
            </div>
         </div>
-
         <div id="tour-chart" className="bg-white dark:bg-gray-800 p-5 md:p-10 rounded-3xl md:rounded-[3rem] shadow-lg border-2 border-emerald-50 dark:border-gray-700 mb-8 md:mb-10 h-72 md:h-96 relative z-10 w-full">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg md:text-xl font-black text-gray-800 dark:text-white flex items-center gap-2 md:gap-3"><span className="text-2xl md:text-3xl">📈</span> {current.chartTitle}</h3>
@@ -340,7 +288,6 @@ function GpaPage({ lang }) {
             </div>
           {groupedCourses.length < 1 ? <div className="flex items-center justify-center h-full text-gray-400 font-bold text-xs bg-gray-50 dark:bg-gray-700 rounded-2xl border border-dashed border-gray-200">{current.chartEmpty}</div> : <Chart type='bar' data={chartData} options={{ responsive: true, maintainAspectRatio: false, scales: { x: { ticks: { padding: 10, color: '#9ca3af', font: { size: 10 } } }, y1: { position: 'right', min: 0, max: 4.5, ticks: { color: '#9ca3af', font: { size: 10 } } }, y: { ticks: { color: '#9ca3af', font: { size: 10 } } } }, plugins: { legend: { labels: { color: '#9ca3af', font: { size: 10 } } } } }} />}
         </div>
-
         <div id="tour-dashboard" className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-8 md:mb-10 relative z-10">
           <div className="bg-[#111] dark:bg-gray-900 p-6 md:px-10 md:py-10 rounded-3xl md:rounded-[3rem] shadow-2xl border-b-[8px] md:border-b-[10px] border-emerald-900 flex flex-col justify-center items-center text-white">
             <h3 className="text-gray-400 font-black text-xs uppercase mb-2">{current.dbAll}</h3>
@@ -358,7 +305,6 @@ function GpaPage({ lang }) {
             <p className="text-xs font-bold text-gray-500 mt-2">{current.dbEarnedRecent.replace('{c}', recentCredits)}</p>
           </div>
         </div>
-
         <div className="bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 p-6 md:p-8 rounded-3xl md:rounded-[2.5rem] border-2 border-emerald-100 dark:border-emerald-800/50 mb-8 md:mb-10 shadow-lg relative z-10 w-full flex flex-col md:flex-row items-center gap-6 md:gap-8">
           <div className="flex-1 text-center md:text-left">
             <h3 className="text-xl md:text-2xl font-black text-emerald-800 dark:text-emerald-300 mb-2 flex items-center justify-center md:justify-start gap-2">
@@ -389,8 +335,6 @@ function GpaPage({ lang }) {
             )}
           </div>
         </div>
-
-        {/* ⭐ 1. 작성란(select, input) focus 색상 다크모드 대응 패치 완료 */}
         <form id="tour-form" onSubmit={addCourse} className="bg-white dark:bg-gray-800 p-5 md:p-6 rounded-3xl md:rounded-[2.5rem] shadow-lg border border-gray-100 dark:border-gray-700 grid grid-cols-1 md:grid-cols-12 gap-3 md:gap-4 mb-8 md:mb-10 items-center relative z-10 w-full">
           <select value={form.semester} onChange={e=>setForm({...form, semester: e.target.value})} className="md:col-span-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-xl font-black text-sm text-gray-700 dark:text-white outline-none border border-gray-100 dark:border-gray-600 focus:bg-emerald-50 dark:focus:bg-emerald-900/50 transition-colors w-full">
             {SEMESTERS.map(s => <option key={s} value={s}>{displaySem(s, lang)}</option>)}
@@ -405,10 +349,8 @@ function GpaPage({ lang }) {
             <button className="bg-emerald-600 text-white p-3 rounded-xl font-black text-sm hover:bg-emerald-700 transition shadow-lg tracking-widest h-full">{current.formBtn}</button>
           </div>
         </form>
-
         <div id="tour-list" className="mb-6 w-full">
           <div className="flex gap-2 overflow-x-auto pb-4 scrollbar-hide relative z-10 w-full">{SEMESTERS.map(sem => { const has = courses.some(c => c.semester === sem); return ( <button key={sem} onClick={() => setActiveTab(sem)} className={`px-4 py-1.5 rounded-full whitespace-nowrap font-black text-[10px] md:text-xs transition-all shadow-sm ${activeTab === sem ? 'bg-emerald-600 text-white shadow-md' : has ? 'bg-white dark:bg-gray-800 text-emerald-600 border-2 border-emerald-100' : 'bg-gray-100 dark:bg-gray-700 text-gray-400'}`}> {displaySem(sem, lang)} {has && '•'} </button> ); })}</div>
-          
           <div className="bg-white dark:bg-gray-800 rounded-3xl md:rounded-[2.5rem] shadow-xl border-2 border-emerald-100 dark:border-gray-700 mb-10 relative z-10 w-full overflow-hidden">
             <div className="bg-[#f8fafc] dark:bg-gray-900/50 p-4 border-b border-gray-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
               <div className="font-black text-gray-800 dark:text-white flex flex-wrap items-center gap-2 text-sm md:text-base">
@@ -419,7 +361,6 @@ function GpaPage({ lang }) {
               </div>
               {activeSemesterCourses.length > 0 && <button onClick={()=>{ if(window.confirm(current.listDelConfirm.replace('{s}', displaySem(activeTab, lang)))) setCourses(courses.filter(c => c.semester !== activeTab)); }} className="bg-white dark:bg-gray-800 text-red-500 border border-red-200 px-4 py-1.5 rounded-xl text-[10px] font-black hover:bg-red-50 transition-colors">{current.listDelBtn}</button>}
             </div>
-
             <div className="overflow-x-auto w-full">
               <table className="w-full text-center min-w-[500px] md:min-w-full">
                 <thead className="bg-gray-50 dark:bg-gray-900/50 text-gray-400 text-[10px] font-black tracking-widest uppercase border-b border-gray-100">
@@ -467,17 +408,14 @@ function GpaPage({ lang }) {
           </div>
         </div>
       </div>
-      
 <footer className="py-8 md:py-12 text-center border-t border-gray-200 dark:border-gray-800 mt-16 md:mt-24 relative z-10 transition-colors">
   <p className="text-gray-600 dark:text-gray-400 font-black text-[10px] md:text-sm uppercase tracking-widest mb-1.5 md:mb-2 break-keep leading-relaxed">
     {current.footerDept}
   </p>
-
   <div className="flex items-center justify-center gap-4 mt-2 md:mt-3">
     <p className="text-gray-400 dark:text-gray-500 text-[10px] md:text-sm font-bold">
       {current.footerCopy}
     </p>
-    
     <div className="relative group flex flex-col items-center">
       <a 
         href="https://github.com/eryang11188/todo-app-mini-project-20222017.git" 
@@ -495,7 +433,6 @@ function GpaPage({ lang }) {
           <path d="M8 0c4.42 0 8 3.58 8 8a8.01 8.01 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z" />
         </svg>
       </a>
-
       <div className="absolute bottom-full mb-2 hidden group-hover:flex flex-col items-center animate-bounce">
         <span className="relative z-10 p-2 text-xs leading-none text-white whitespace-no-wrap bg-gray-800 dark:bg-gray-700 shadow-lg rounded-md font-bold">
           Github
@@ -508,5 +445,4 @@ function GpaPage({ lang }) {
     </div>
   );
 }
-
 export default GpaPage;

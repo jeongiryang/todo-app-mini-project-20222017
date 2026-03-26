@@ -1,7 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
 import axios from 'axios'
-
-// ⭐ 1. 분실물 센터 명언 대량 추가 (총 30개)
 const LOST_QUOTES = {
   ko: [
     "작은 관심이 누군가에겐 큰 기적이 됩니다.", "잃어버린 물건, 창대인이 함께 찾아줍니다.", "소중한 추억이 담긴 물건일지도 모릅니다.", 
@@ -38,12 +36,10 @@ const LOST_QUOTES = {
     "Choose lifelong pride over a small immediate gain."
   ]
 };
-
 const SUBMIT_MENTIONS = {
   ko: ["분실물 / 습득물 등록하기", "애타게 찾는 주인에게 정보 알리기", "게시글 올리고 도움 요청하기"],
   en: ["Register Lost / Found Item", "Notify the anxious owner", "Upload post to ask for help"]
 };
-
 function LostPage({ lang }) {
   const [items, setItems] = useState([])
   const [form, setForm] = useState({ title: '', price: '', deadline: '', studentId: '', sellerName: '', phone: '', location: '', description: '' })
@@ -54,13 +50,11 @@ function LostPage({ lang }) {
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 6;
   const [likedItems, setLikedItems] = useState(() => new Set(JSON.parse(localStorage.getItem('likedLostItems') || '[]')))
-  
   const [quoteIndex, setQuoteIndex] = useState(0)
   const [submitMentionIndex, setSubmitMentionIndex] = useState(0);
   const [tourIndex, setTourIndex] = useState(-1) 
   const [searchTerm, setSearchTerm] = useState('')
   const [expandedId, setExpandedId] = useState(null)
-
   const [isGenerating, setIsGenerating] = useState(false);
   const [showAiBox, setShowAiBox] = useState(false);
   const [chatHistory, setChatHistory] = useState([]);
@@ -68,7 +62,6 @@ function LostPage({ lang }) {
   const chatContainerRef = useRef(null);
   const textareaRef = useRef(null); 
   useEffect(() => {
-    // 채팅이 아예 없거나(0), 처음 인사말만 덩그러니 있을 때(1) 언어에 맞게 세팅!
     if (chatHistory.length === 0 || chatHistory.length === 1) {
       setChatHistory([
         { 
@@ -80,12 +73,9 @@ function LostPage({ lang }) {
       ]);
     }
   }, [lang]);
-
   const [showVersionInfo, setShowVersionInfo] = useState(false)
   const [showModalConfetti, setShowModalConfetti] = useState(false)
-
   const API_URL = '/api/lost'; const COMMON_URL = '/api/items'
-
   const t = {
     ko: {
       tourSteps: [
@@ -104,13 +94,11 @@ function LostPage({ lang }) {
       btnDescShow: "💬 자세히 보기", btnDescHide: "자세히 보기 닫기", descEmpty: "등록된 상세 설명이 없습니다.",
       thItem: "Item", thPrice: "Reward", thSeller: "Author", thStatus: "Status", thAction: "Action", stDone: "해결됨", stSale: "찾는중",
       footerDept: "컴퓨터공학과 | 소프트웨어공학 프로젝트: CWNU 포털 시스템", footerCopy: "@ 2026 정이량 | Gemini AI 협업 제작",
-      
       modalTitle: "Lost & Found 신규 오픈!", modalSub: "마켓의 강력한 기능을 그대로 이식한 똑똑한 분실물 센터",
       modalPrevTitle: "🤔 이전 분실물 찾기 방식", modalPrev1: "❌ 에브리타임, 와글 등 이곳저곳 분산된 정보", modalPrev2: "❌ 직관적이지 않은 텍스트 위주 게시판", modalPrev3: "❌ AI 도움 없이 일일이 작성해야 하는 불편함",
       modalCurTitle: "✨ CWNU 전용 분실물 센터", modalCur1: "✅ 마켓과 통일된 예쁘고 직관적인 카드 UI!", modalCur2: "✅ 대충 말해도 AI가 찰떡같이 찾아주는 폼 자동완성!", modalCur3: "✅ 해결 완료 / 찾는 중 직관적인 상태 관리!", modalCur4: "✅ 실시간 미리보기로 완벽한 수정 기능 지원!", modalCur5: "🤖 캠퍼스 통합 데이터베이스 연동 완료!",
       modalHistTitle: "🛠️ LOST & FOUND 업데이트", modalHistV1: "CWNU 포털에 분실물 센터 신규 오픈 및 AI 비서 도입 완료",
       modalFreeTitle: "\"아니 이게..무료라고요!?\"", modalFreeDesc1: "당연하죠! 창대인을 위한 따뜻한 공간입니다!", modalFreeDesc2: "소중한 물건을 찾고 따뜻한 매너를 나눠보세요!", modalBtn: "확인 완료!",
-      
       aiOpenBtn: " AI 비서에게 분실/습득글 작성 맡기기", aiLoading: "⏳ 상황을 분석하고 폼을 채우는 중...", aiEmpty: "채팅창에 정보를 입력해주세요!", aiFollowUpP: "무엇을 언제 어디서 잃어버렸는지/주웠는지 말해주세요!", aiClear: "대화 초기화", aiClose: "AI 닫기", aiApply: "이 글로 설명 채우기",
       aiConfirm: "✨ 이 정보를 폼에 추가하시겠습니까?", btnYes: "예, 추가하기", btnNo: "아니오"
     },
@@ -131,19 +119,16 @@ function LostPage({ lang }) {
       btnDescShow: "💬 View Details", btnDescHide: "Close Details", descEmpty: "No description provided.",
       thItem: "Item", thPrice: "Reward", thSeller: "Author", thStatus: "Status", thAction: "Action", stDone: "Resolved", stSale: "Looking",
       footerDept: "Department of Computer Science | Software Engineering Project: CWNU Portal System", footerCopy: "@ 2026 Jung Yi Ryang | Designed with Gemini AI Collaborative Works",
-      
       modalTitle: "Lost & Found Newly Opened!", modalSub: "Smart Lost & Found using Market features!",
       modalPrevTitle: "🤔 Previous Ways", modalPrev1: "❌ Information scattered everywhere", modalPrev2: "❌ Unintuitive text-based boards", modalPrev3: "❌ Inconvenient manual writing",
       modalCurTitle: "✨ CWNU Lost & Found", modalCur1: "✅ Intuitive Card UI unified with Market!", modalCur2: "✅ AI Auto-fill understands your situation!", modalCur3: "✅ Intuitive Resolved / Looking status!", modalCur4: "✅ Perfect edit function with live preview!", modalCur5: "🤖 Integrated Campus Database!",
       modalHistTitle: "🛠️ LOST & FOUND Updates", modalHistV1: "Newly opened Lost & Found with AI Assistant",
       modalFreeTitle: "\"Is this free?\"", modalFreeDesc1: "Of course! A warm space for CWNU students!", modalFreeDesc2: "Find precious items and share warm manners!", modalBtn: "Confirmed!",
-      
       aiOpenBtn: " Let AI write the post", aiLoading: "⏳ Analyzing and filling form...", aiEmpty: "Please type something!", aiFollowUpP: "Tell me what, when, and where!", aiClear: "Clear", aiClose: "Close AI", aiApply: "Apply to Description",
       aiConfirm: "✨ Apply this info to the form?", btnYes: "Yes, apply", btnNo: "No"
     }
   };
   const current = t[lang];
-
   const formatTimeAgo = (dateString) => {
     if (!dateString) return '';
     const date = new Date(dateString);
@@ -155,23 +140,18 @@ function LostPage({ lang }) {
     if (diff < 2592000) return lang === 'ko' ? `${Math.floor(diff / 86400)}일 전` : `${Math.floor(diff / 86400)}d ago`;
     return `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')}`;
   };
-
   useEffect(() => { 
     fetchItems(); 
     if (LOST_QUOTES[lang]?.length > 0) {
       setQuoteIndex(Math.floor(Math.random() * LOST_QUOTES[lang].length)); 
     }
   }, [lang])
-  
   const fetchItems = async () => { try { const res = await axios.get(API_URL); setItems(res.data) } catch(e){} }
   useEffect(() => { const intervalId = setInterval(() => setSubmitMentionIndex(prev => (prev + 1) % SUBMIT_MENTIONS[lang].length), 6000); return () => clearInterval(intervalId); }, [lang]);
-  
   useEffect(() => { 
     if (chatContainerRef.current) { chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight; }
   }, [chatHistory, isGenerating]);
-
   useEffect(() => { if (showVersionInfo) { setShowModalConfetti(true); setTimeout(() => setShowModalConfetti(false), 2500); } }, [showVersionInfo]);
-
   useEffect(() => {
     if (tourIndex >= 0 && tourIndex < current.tourSteps.length) {
       const el = document.getElementById(current.tourSteps[tourIndex].targetId);
@@ -182,11 +162,9 @@ function LostPage({ lang }) {
       }
     }
   }, [tourIndex, lang, current.tourSteps]);
-
   const handleQuoteRefresh = () => { 
     if (LOST_QUOTES[lang]?.length > 0) setQuoteIndex(Math.floor(Math.random() * LOST_QUOTES[lang].length)); 
   };
-  
   const handlePhoneChange = (value) => {
     const numeric = value.replace(/[^0-9]/g, '');
     let formatted = numeric;
@@ -194,12 +172,10 @@ function LostPage({ lang }) {
     else if (numeric.length > 7) formatted = `${numeric.slice(0, 3)}-${numeric.slice(3, 7)}-${numeric.slice(7, 11)}`;
     return formatted;
   }
-  
   const handleFreebie = () => { 
     if (form.price === 'free') { setForm({...form, price: ''}); } 
     else { setForm({...form, price: 'free'}); }
   }
-
   const addItem = async (e) => {
     e.preventDefault(); if (!form.title) return;
     const submitData = { ...form, price: form.price === 'free' ? 0 : form.price };
@@ -208,7 +184,6 @@ function LostPage({ lang }) {
     setForm({ title: '', price: '', deadline: '', studentId: '', sellerName: '', phone: '', location: '', description: '' });
     setShowAiBox(false); setChatHistory([]); setCurrentPage(1);
   }
-
   const handleLike = async (id) => {
     const isLiked = likedItems.has(id); const val = isLiked ? -1 : 1;
     const res = await axios.patch(`${COMMON_URL}/${id}/like`, { value: val });
@@ -216,12 +191,10 @@ function LostPage({ lang }) {
     const newLiked = new Set(likedItems); if (isLiked) newLiked.delete(id); else newLiked.add(id);
     setLikedItems(newLiked); localStorage.setItem('likedLostItems', JSON.stringify([...newLiked]));
   }
-  
   const saveEdit = async (id) => {
     const res = await axios.put(`${COMMON_URL}/${id}`, { ...editForm, price: editForm.price === 'free' ? 0 : editForm.price })
     setItems(items.map(item => item._id === id ? res.data : item)); setEditingId(null)
   }
-
   const handleApplyAiData = (data, idx) => {
     setForm(prev => {
       const updated = { ...prev };
@@ -238,11 +211,9 @@ function LostPage({ lang }) {
     });
     setChatHistory(prev => prev.map((msg, i) => i === idx ? { ...msg, pendingData: null, text: msg.text + (lang === 'ko' ? "\n\n✅ 폼에 성공적으로 추가되었습니다!" : "\n\n✅ Successfully applied to the form!") } : msg));
   };
-
   const handleRejectAiData = (idx) => {
     setChatHistory(prev => prev.map((msg, i) => i === idx ? { ...msg, pendingData: null, text: msg.text + (lang === 'ko' ? "\n\n❌ 추가를 취소했습니다." : "\n\n❌ Canceled.") } : msg));
   };
-
   const askAi = async (inputText) => {
     if (!inputText.trim()) return;
     setIsGenerating(true);
@@ -251,9 +222,7 @@ function LostPage({ lang }) {
     setChatHistory(newHistory);
     setFollowUpInput(''); 
     if (textareaRef.current) textareaRef.current.style.height = 'auto';
-
  try {
-      // ⭐ 한국어 전용 JSON 포맷
       const jsonFormatKo = `
       {
         "message": "한국어로 자연스럽게 대답해주세요. (예: 요청하신 정보를 바탕으로 폼을 준비했습니다!)",
@@ -268,8 +237,6 @@ function LostPage({ lang }) {
           "description": "상세 설명"
         }
       }`;
-
-      // ⭐ 영어 전용 JSON 포맷 (AI가 헷갈리지 않게 100% 영어 지시)
       const jsonFormatEn = `
       {
         "message": "Respond in English naturally. (e.g., I have prepared the form details based on your input!)",
@@ -284,8 +251,6 @@ function LostPage({ lang }) {
           "description": "Detailed description"
         }
       }`;
-
-      // 언어에 맞게 프롬프트 완벽 분리
       const promptContext = lang === 'ko' 
         ? `너는 대학 분실물 센터 게시글 폼을 자동으로 채워주는 AI 비서야.
            사용자의 대화를 분석해 [습득/분실] 여부, 물품명, 사례금, 장소, 일시, 학번, 이름, 연락처, 상세 설명을 추출해.
@@ -299,22 +264,18 @@ function LostPage({ lang }) {
            [Rule 3]: If the user just says hello or info is missing, leave all 'extracted' values as "".
            [Rule 4]: You MUST reply in English for the "message" field.
            ${jsonFormatEn}\n\n[Chat History]\n`;
-      
       let finalPrompt = promptContext;
       newHistory.forEach(msg => { finalPrompt += `${msg.sender === 'user' ? 'User' : 'AI'}: ${msg.text}\n`; });
       finalPrompt += "AI: ";
-
       const res = await axios.post('/api/ai/generate', { prompt: finalPrompt });
       let aiText = res.data.text.trim(); 
       let jsonString = aiText.replace(/```json/gi, '').replace(/```/g, '').trim();
       const jsonStart = jsonString.indexOf('{');
       const jsonEnd = jsonString.lastIndexOf('}');
       if (jsonStart !== -1 && jsonEnd !== -1) { jsonString = jsonString.substring(jsonStart, jsonEnd + 1); }
-
       try {
         const parsed = JSON.parse(jsonString);
         const ext = parsed.extracted;
-        
         const hasActualData = ext && (
           (ext.title && ext.title.trim() !== "") || 
           (ext.price && String(ext.price).trim() !== "") || 
@@ -325,10 +286,8 @@ function LostPage({ lang }) {
           (ext.phone && ext.phone.trim() !== "") || 
           (ext.description && ext.description.trim() !== "")
         );
-
         const fallbackMsg = lang === 'ko' ? "정보를 분석했습니다." : "Information analyzed.";
         const finalMessage = parsed.message ? parsed.message : fallbackMsg;
-
         setChatHistory(prev => [...prev, { sender: 'ai', text: finalMessage, pendingData: hasActualData ? ext : null }]);
       } catch (parseError) {
         setChatHistory(prev => [...prev, { sender: 'ai', text: res.data.text }]);
@@ -339,11 +298,9 @@ function LostPage({ lang }) {
       setIsGenerating(false);
     }
   };
-  
   const filteredItems = items.filter((item) => {
     return (item.title.toLowerCase().includes(searchTerm.toLowerCase()) || (item.description && item.description.toLowerCase().includes(searchTerm.toLowerCase())));
   });
-
   const sortedItems = [...filteredItems].sort((a, b) => {
     if (sortType === 'latest') return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
     if (sortType === 'deadline') return new Date(a.deadline || '9999') - new Date(b.deadline || '9999');
@@ -351,11 +308,9 @@ function LostPage({ lang }) {
     if (sortType === 'likes') return b.likes - a.likes;
     return 0;
   });
-  
   const currentItems = sortedItems.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
   const totalPages = Math.ceil(sortedItems.length / itemsPerPage) || 1;
   const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1);
-
   return (
     <div className="max-w-7xl mx-auto p-4 md:p-6 flex flex-col min-h-screen relative text-gray-900 dark:text-gray-100 transition-colors">
       <style>{`
@@ -369,7 +324,6 @@ function LostPage({ lang }) {
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #fdba74; border-radius: 10px; }
         .dark .custom-scrollbar::-webkit-scrollbar-thumb { background: #f97316; }
       `}</style>
-      
       {tourIndex >= 0 && (
         <div className="fixed z-[100] bg-white dark:bg-gray-800 p-5 md:p-6 rounded-3xl shadow-2xl border-[3px] border-orange-400 dark:border-orange-500 w-[92%] max-w-[350px] bottom-6 md:bottom-10 left-1/2 -translate-x-1/2 tour-popup flex flex-col pointer-events-auto">
           <h3 className="text-orange-600 dark:text-orange-400 font-black mb-1 text-[10px] uppercase tracking-widest">Guide ({tourIndex + 1}/{current.tourSteps.length})</h3>
@@ -381,15 +335,12 @@ function LostPage({ lang }) {
           </div>
         </div>
       )}
-
       {showVersionInfo && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[150] p-4 backdrop-blur-sm" onClick={() => setShowVersionInfo(false)}>
           <div className="bg-white dark:bg-gray-800 p-6 md:p-8 rounded-3xl md:rounded-[2rem] max-w-3xl w-full shadow-2xl transform transition-all border-4 border-orange-50 dark:border-gray-700 max-h-[90vh] overflow-y-auto" onClick={e=>e.stopPropagation()}>
             {showModalConfetti && <div className="fixed inset-0 pointer-events-none z-[9999] flex items-center justify-center"><span className="emoji-burst text-6xl">🎉</span></div>}
-            
             <h3 className="text-2xl md:text-3xl font-black mb-1 text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-red-500 text-center">{current.modalTitle}</h3>
             <p className="text-center text-gray-400 dark:text-gray-500 font-bold mb-6 text-[10px] md:text-xs tracking-tighter">{current.modalSub}</p>
-            
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 mt-2">
               <div className="bg-gray-50 dark:bg-gray-700 p-5 rounded-2xl border-2 border-dashed border-gray-200 dark:border-gray-600">
                 <h4 className="text-gray-500 dark:text-gray-300 font-black text-sm mb-3 text-center">{current.modalPrevTitle}</h4>
@@ -410,14 +361,12 @@ function LostPage({ lang }) {
                 </ul>
               </div>
             </div>
-
             <div className="bg-slate-50 dark:bg-gray-700/50 rounded-2xl p-6 mb-6 border border-gray-100 dark:border-gray-600">
               <h4 className="text-center font-black text-slate-700 dark:text-slate-300 mb-4 text-sm flex justify-center items-center gap-2">{current.modalHistTitle}</h4>
               <div className="space-y-3 text-[11px] md:text-xs px-2">
                 <p className="flex items-center gap-3 font-bold bg-white dark:bg-gray-800 p-2 rounded-lg shadow-sm"><span className="text-orange-600 font-black min-w-[45px]">V1.0:</span><span className="text-slate-800 dark:text-gray-200 italic">{current.modalHistV1}</span></p>
               </div>
             </div>
-
             <div className="bg-orange-50 dark:bg-orange-900/30 p-5 rounded-2xl border-2 border-orange-200 dark:border-orange-800 text-center mb-6 shadow-inner relative overflow-hidden">
                 <h4 className="text-xl font-black text-orange-800 dark:text-orange-400 mb-1">{current.modalFreeTitle}</h4>
                 <p className="text-orange-700 dark:text-orange-300 font-bold text-xs"><span className="font-black text-sm">{current.modalFreeDesc1}</span><br/>{current.modalFreeDesc2}</p>
@@ -426,9 +375,7 @@ function LostPage({ lang }) {
           </div>
         </div>
       )}
-
       <div className="flex-grow">
-        
         <div id="tour-header" className="text-center mb-6 md:mb-8 relative mt-4 md:mt-0">
           <div className="flex items-center justify-center gap-4 mb-2">
             <h2 className="text-3xl md:text-5xl font-black text-orange-600 dark:text-orange-400 tracking-tighter flex justify-center items-center cursor-pointer mt-4 md:mt-0">
@@ -442,7 +389,6 @@ function LostPage({ lang }) {
             </button>
           </div>
           <p onClick={() => setShowVersionInfo(true)} className="text-[10px] md:text-xs text-orange-400 dark:text-orange-500 font-black cursor-pointer hover:text-orange-600 transition tracking-widest">{current.verCheck}</p>
-          
           {LOST_QUOTES[lang]?.length > 0 && (
             <div className="flex justify-center items-center gap-3 mt-5 md:mt-7 mb-2 px-2">
               <div className="px-5 md:px-8 py-2 md:py-3 border border-orange-300 dark:border-orange-700 rounded-full text-orange-600 dark:text-orange-300 bg-orange-50 dark:bg-orange-900/30 font-bold text-xs md:text-sm shadow-sm transition-colors text-center break-keep">
@@ -452,7 +398,6 @@ function LostPage({ lang }) {
             </div>
           )}
         </div>
-
         <form onSubmit={addItem} className="bg-white dark:bg-gray-800 p-5 md:p-8 rounded-3xl md:rounded-[2.5rem] shadow-xl mb-6 md:mb-10 flex flex-col gap-3 md:gap-5 border border-orange-100 dark:border-gray-700 relative z-10 mt-4">
           <div id="tour-ai-btn" className="w-full mb-2">
             {!showAiBox ? (
@@ -520,12 +465,9 @@ function LostPage({ lang }) {
             {SUBMIT_MENTIONS[lang][submitMentionIndex]}
           </button>
         </form>
-
         <div className="mb-4 w-full relative z-10">
-          {/* ⭐ 2. 검색 시 setCurrentPage(1) 추가하여 버그 해결 */}
           <input type="text" placeholder={current.searchP} value={searchTerm} onChange={(e) => {setSearchTerm(e.target.value); setCurrentPage(1);}} className="w-full p-3 border-2 border-orange-100 rounded-xl shadow-sm focus:outline-none focus:border-orange-400 font-bold dark:bg-gray-800"/>
         </div>
-
         <div className="flex flex-col sm:flex-row justify-between items-center gap-3 mb-6 relative z-10">
           <select id="tour-sort" value={sortType} onChange={(e) => {setSortType(e.target.value); setCurrentPage(1);}} className="bg-white border-2 border-orange-100 px-4 py-2 rounded-xl font-black text-xs outline-none shadow-sm dark:bg-gray-800">
             <option value="latest">{current.sortOpt.latest}</option><option value="deadline">{current.sortOpt.deadline}</option><option value="priceHigh">{current.sortOpt.priceHigh}</option><option value="likes">{current.sortOpt.likes}</option>
@@ -535,14 +477,11 @@ function LostPage({ lang }) {
             <button onClick={() => setViewType('table')} className={`px-5 py-2 rounded-xl font-black text-xs ${viewType==='table'?'bg-orange-600 text-white':'bg-white text-gray-400 border-2'}`}>📋 TABLE</button>
           </div>
         </div>
-
         {viewType === 'card' ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8 w-full relative z-10">
             {currentItems.map(item => ( 
               <div key={item._id} className={`p-6 md:p-8 rounded-[3rem] border-4 hover:-translate-y-1 hover:shadow-2xl flex flex-col relative overflow-hidden ${item.completed ? 'border-gray-400 bg-gray-50' : 'border-orange-50 bg-white dark:bg-gray-800'}`}> 
                 {item.completed && <div className="absolute -right-10 top-10 bg-gray-500 text-white font-black text-xs py-1 px-12 rotate-45 shadow-lg z-10">{current.soldOut}</div>}
-                
-                {/* ⭐ 3. 다크모드 시 애니메이션 증발 방지를 위해 단순화 */}
                 {editingId === item._id ? (
                   <div className="flex flex-col gap-4 z-10 w-full transition-all duration-300">
                     <div className="border-2 border-orange-300 border-dashed p-4 rounded-2xl bg-orange-50/50 dark:bg-gray-800/50 relative pointer-events-none opacity-90 shadow-sm mt-2">
@@ -561,7 +500,6 @@ function LostPage({ lang }) {
                         {editForm.description || '상세 설명이 여기에 표시됩니다.'}
                       </div>
                     </div>
-
                     <div className="bg-gray-50 dark:bg-gray-700 p-3 md:p-4 rounded-2xl border border-gray-200 dark:border-gray-600 flex flex-col gap-2.5 shadow-inner pointer-events-auto">
                       <input className="border border-gray-200 dark:border-gray-600 dark:bg-gray-800 p-2 rounded-xl text-xs font-bold w-full outline-none focus:border-orange-400 transition-colors" placeholder={current.phTitle} value={editForm.title} onChange={e=>setEditForm({...editForm, title: e.target.value})} />
                       <div className="flex gap-2">
@@ -579,7 +517,6 @@ function LostPage({ lang }) {
                       <input className="border border-gray-200 dark:border-gray-600 dark:bg-gray-800 p-2 rounded-xl text-xs font-bold w-full outline-none focus:border-orange-400 transition-colors" placeholder={current.phLoc} value={editForm.location} onChange={e=>setEditForm({...editForm, location: e.target.value})} />
                       <textarea className="border border-gray-200 dark:border-gray-600 dark:bg-gray-800 p-2 rounded-xl text-xs font-medium w-full outline-none focus:border-orange-400 min-h-[80px] resize-none transition-colors" placeholder={current.phDesc} value={editForm.description} onChange={e=>setEditForm({...editForm, description: e.target.value})} />
                     </div>
-
                     <div className="flex gap-2 mt-1">
                       <button type="button" onClick={()=>saveEdit(item._id)} className="bg-green-500 hover:bg-green-600 text-white rounded-xl py-3 flex-grow font-black text-xs shadow-md transition-transform hover:-translate-y-0.5">{current.btnSave}</button>
                       <button type="button" onClick={()=>setEditingId(null)} className="bg-gray-400 hover:bg-gray-500 text-white rounded-xl py-3 flex-grow font-black text-xs shadow-md transition-transform hover:-translate-y-0.5">{current.btnEditCancel}</button>
@@ -640,8 +577,6 @@ function LostPage({ lang }) {
                   <tr key={item._id} className="border-b dark:border-gray-700 hover:bg-orange-50 dark:hover:bg-orange-900/10 transition-colors">
                     <td className="p-4 text-left font-black text-sm relative">
                       <span className={item.completed ? 'line-through text-gray-400' : 'text-gray-800 dark:text-gray-200'}>{item.title}</span>
-                      
-                      {/* ⭐ 4. 테이블 뷰 눈알 버튼 클릭 버그 해결 */}
                       <button 
                         type="button" 
                         onClick={(e) => { e.stopPropagation(); handleLike(item._id); }} 
@@ -649,7 +584,6 @@ function LostPage({ lang }) {
                       >
                         👀{item.likes}
                       </button>
-                      
                       <div className="mt-2 relative z-10 pointer-events-auto">
                         <button 
                           type="button" 
@@ -683,7 +617,6 @@ function LostPage({ lang }) {
             </table>
           </div>
         )}
-        
         {totalPages > 1 && (
           <div className="flex justify-center items-center gap-2 mb-10 relative z-10">
             <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="px-3 py-2 bg-white dark:bg-gray-800 border-2 border-gray-100 dark:border-gray-700 rounded-lg font-black text-xs text-gray-400 hover:text-orange-500 disabled:opacity-30 transition shadow-sm">PREV</button>
@@ -696,7 +629,6 @@ function LostPage({ lang }) {
           </div>
         )}
       </div>
-
       <footer className="py-8 md:py-12 text-center border-t border-gray-200 dark:border-gray-800 mt-16 md:mt-24 relative z-10 transition-colors">
         <p className="text-gray-600 dark:text-gray-400 font-black text-[10px] md:text-sm uppercase tracking-widest mb-1.5 md:mb-2 break-keep leading-relaxed">
           {current.footerDept}
