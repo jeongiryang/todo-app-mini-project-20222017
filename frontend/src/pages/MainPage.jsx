@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import axios from 'axios';
 
 const getWeatherInfo = (code, lang) => {
   if (code === 0) return { icon: '☀️', text: lang === 'ko' ? '맑음' : 'Clear' };
@@ -52,18 +53,19 @@ function MainPage({ lang }) {
     return () => clearInterval(interval);
   }, []);
 
+  // ✅ [수정완료] 영어 번역본(en) 생략 없이 꽉 채워 넣었습니다!
   const t = {
     ko: {
       subtitle: "창원대학교 학우들을 위한 올인원 캠퍼스 솔루션",
-      help: "💡 도움말", tourEnd: "투어 종료 🎉", tourSkip: "건너뛰기", tourNext: "다음 보기 ▶", serviceGo: "GO →",
+      help: "💡 도움말", weatherPrefix: "📍 현재 창원대 캠퍼스", mealTitle: "🍱 오늘의 학식",
+      serviceGo: "바로가기 →",
       noticeTitle: "OFFICIAL ANNOUNCEMENTS & WAGLE", noticeBtn1: "창원대학교 공지사항", noticeBtn2: "와글 (포털)", shortcutTitle: "CAMPUS SHORTCUTS",
       footerDept: "컴퓨터공학과 | 소프트웨어공학 프로젝트: CWNU 포털 시스템", footerCopy: "@ 2026 정이량 | Gemini AI 협업 제작",
-      weatherPrefix: "📍 현재 창원대 캠퍼스",
       services: [
-        { title: "Flea Market", desc: "학우들과 즐겁게 물건을 나누세요.", icon: "🏪", path: "/market", color: "from-blue-600 to-indigo-700" },
-        { title: "Lost & Found", desc: "잃어버린 물건, 창대인이 함께 찾아요.", icon: "🔍", path: "/lost", color: "from-orange-500 to-red-600" },
+        { title: "중고 마켓", desc: "학우들과 즐겁게 물건을 나누세요.", icon: "🏪", path: "/market", color: "from-blue-600 to-indigo-700" },
+        { title: "분실물 센터", desc: "잃어버린 물건, 창대인이 함께 찾아요.", icon: "🔍", path: "/lost", color: "from-orange-500 to-red-600" },
         { title: "ToDo List", desc: "집중 타이머와 함께 일정을 관리하세요.", icon: "📝", path: "/todo", color: "from-indigo-600 to-purple-700" },
-        { title: "GPA Calculator", desc: "실시간 그래프로 성적을 분석하세요.", icon: "🎓", path: "/gpa", color: "from-emerald-600 to-teal-700" }
+        { title: "학점 계산기", desc: "실시간 그래프로 성적을 분석하세요.", icon: "🎓", path: "/gpa", color: "from-emerald-600 to-teal-700" }
       ],
       quickLinks: [
         { name: "e캠퍼스", url: "https://ecampus.changwon.ac.kr/login.php?mi=18314", icon: "💻" },
@@ -74,13 +76,33 @@ function MainPage({ lang }) {
         { name: "이뤄드림", url: "https://edream.changwon.ac.kr/?mi=18315", icon: "🌟" }
       ]
     },
-    en: { /* 동일 구조 생략 */ }
+    en: {
+      subtitle: "All-in-one Campus Solution for CWNU Students",
+      help: "💡 Guide", weatherPrefix: "📍 CWNU Campus Now", mealTitle: "🍱 Today's Menu",
+      serviceGo: "GO →",
+      noticeTitle: "OFFICIAL ANNOUNCEMENTS & WAGLE", noticeBtn1: "CWNU Notice Board", noticeBtn2: "Wagle (Portal)", shortcutTitle: "CAMPUS SHORTCUTS",
+      footerDept: "Department of Computer Science | Software Engineering Project: CWNU Portal System", footerCopy: "@ 2026 Jung Yi Ryang | Designed with Gemini AI Collaborative Works",
+      services: [
+        { title: "Flea Market", desc: "Share items happily with peers.", icon: "🏪", path: "/market", color: "from-blue-600 to-indigo-700" },
+        { title: "Lost & Found", desc: "Let's find lost items together.", icon: "🔍", path: "/lost", color: "from-orange-500 to-red-600" },
+        { title: "ToDo List", desc: "Manage tasks with a focus timer.", icon: "📝", path: "/todo", color: "from-indigo-600 to-purple-700" },
+        { title: "GPA Calculator", desc: "Analyze grades with real-time graphs.", icon: "🎓", path: "/gpa", color: "from-emerald-600 to-teal-700" }
+      ],
+      quickLinks: [
+        { name: "e-Campus", url: "https://ecampus.changwon.ac.kr/login.php?mi=18314", icon: "💻" },
+        { name: "Schedule", url: "https://www.changwon.ac.kr/haksa/sv/schdulView/schdulCalendarView.do?mi=10980", icon: "📅" },
+        { name: "Academic Info", url: "https://www.changwon.ac.kr/haksa/main.do", icon: "📜" }, 
+        { name: "Course Reg.", url: "https://chains.changwon.ac.kr/nonstop/suup/sugang/hakbu/index.php?mi=18302", icon: "📚" },
+        { name: "Dream Catch", url: "https://dreamcatch.changwon.ac.kr/main.do?mi=18316", icon: "🧭" },
+        { name: "E-Dream", url: "https://edream.changwon.ac.kr/?mi=18315", icon: "🌟" }
+      ]
+    }
   };
+  
   const current = t[lang] || t.ko;
   const weatherData = weather ? getWeatherInfo(weather.weather_code, lang) : null;
   const dustData = dust ? getDustStatus(dust.pm10, lang) : null;
 
-  // 🍱 서랍 안에서 보여줄 학식 카드 렌더링 함수
   const renderFoodCard = (campusFilter) => (
     <div className="flex flex-col gap-3 pb-6">
       {!meals ? (
@@ -124,7 +146,12 @@ function MainPage({ lang }) {
   return (
     <div className="min-h-screen flex flex-col transition-colors relative bg-gray-50/30 dark:bg-gray-900 overflow-x-hidden">
       
-      {/* 💡 [핵심] 좌측에 세로로 나란히 붙은 봉림관/사림관 버튼 */}
+      <style>{`
+        @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-5px); } 100% { transform: translateY(0px); } }
+        .animate-float { animation: float 3s ease-in-out infinite; }
+      `}</style>
+
+      {/* 왼쪽 서랍 버튼 (봉림관 / 사림관) */}
       <div className="fixed left-0 top-1/2 -translate-y-1/2 z-[100] flex flex-col gap-3">
         <button onClick={() => setIsBongrimOpen(true)} className="bg-blue-600 text-white pl-3 pr-4 py-4 rounded-r-2xl shadow-[4px_0_24px_rgba(37,99,235,0.3)] hover:bg-blue-700 transition-all flex flex-col items-center gap-2 group border border-l-0 border-blue-400">
           <span className="text-2xl group-hover:scale-110 transition-transform drop-shadow-md">🍚</span>
@@ -137,12 +164,11 @@ function MainPage({ lang }) {
         </button>
       </div>
 
-      {/* 서랍장 어두운 배경 */}
       {(isBongrimOpen || isSarimOpen) && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[190] transition-opacity duration-300" onClick={() => { setIsBongrimOpen(false); setIsSarimOpen(false); }}></div>
       )}
       
-      {/* 💡 [왼쪽 서랍] 봉림관 (1층/2층 분리 유지) */}
+      {/* 봉림관 서랍 */}
       <div className={`fixed top-0 left-0 h-full w-[300px] md:w-[350px] bg-gray-50 dark:bg-gray-900 shadow-2xl z-[200] transform transition-transform duration-300 ease-out flex flex-col ${isBongrimOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <div className="p-5 bg-white dark:bg-gray-800 border-b border-gray-100 flex flex-col gap-4 shadow-sm z-10">
           <div className="flex justify-between items-center">
@@ -159,7 +185,7 @@ function MainPage({ lang }) {
         </div>
       </div>
 
-      {/* 💡 [왼쪽 서랍] 사림관 (이제 사림관도 왼쪽에서 나옵니다!) */}
+      {/* 사림관 서랍 */}
       <div className={`fixed top-0 left-0 h-full w-[300px] md:w-[350px] bg-gray-50 dark:bg-gray-900 shadow-2xl z-[200] transform transition-transform duration-300 ease-out flex flex-col ${isSarimOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <div className="p-5 bg-white dark:bg-gray-800 border-b border-gray-100 flex justify-between items-center shadow-sm z-10">
           <h2 className="text-lg font-black text-indigo-600 flex items-center gap-2">🍱 사림관 식단</h2>
@@ -173,13 +199,14 @@ function MainPage({ lang }) {
       {/* ---------------- 메인 컨텐츠 영역 ---------------- */}
       <div className="relative max-w-7xl mx-auto w-full px-5 md:px-10 flex-grow flex flex-col justify-center mt-4 md:mt-0">
         
-        <div className="flex justify-center mb-6 md:mb-8 animate-[slide-up_0.5s_ease-out]">
+        {/* 🌤️ 날씨 위젯 */}
+        <div className="flex justify-center mb-6 md:mb-8 animate-[slide-up_0.5s_ease-out] pt-4">
           {weather && dust ? (
             <div className="inline-flex flex-wrap justify-center items-center gap-3 bg-white/60 dark:bg-gray-800/60 backdrop-blur-md border border-blue-100 dark:border-gray-700 px-5 md:px-7 py-2.5 md:py-3.5 rounded-full shadow-sm hover:shadow-md transition-all group">
               <span className="text-[10px] md:text-xs font-black text-gray-400 dark:text-gray-500 tracking-wider hidden sm:block">{current.weatherPrefix}</span>
               <div className="w-px h-3 bg-gray-300 dark:bg-gray-600 hidden sm:block"></div>
               <div className="flex items-center gap-2">
-                <span className="text-xl md:text-2xl">{weatherData.icon}</span>
+                <span className="text-xl md:text-2xl animate-float">{weatherData.icon}</span>
                 <span className="text-base md:text-lg font-black text-gray-800 dark:text-white">{weather.temperature_2m}°C</span>
                 <span className="text-[10px] md:text-xs font-bold text-gray-500">{weatherData.text}</span>
               </div>
@@ -187,7 +214,7 @@ function MainPage({ lang }) {
               <div className="flex items-center gap-2">
                 <span className="text-base md:text-lg">{dustData.icon}</span>
                 <span className={`text-[11px] md:text-xs font-black ${dustData.color}`}>{dustData.text}</span>
-                <span className="text-[10px] font-bold text-gray-400">({dust.pm10}㎍/㎥)</span>
+                <span className="text-[10px] font-bold text-gray-400 hidden xs:inline-block">({dust.pm10}㎍/㎥)</span>
               </div>
               <div className="w-px h-3 bg-gray-300 dark:bg-gray-600 hidden xs:block"></div>
               <div className="flex items-center gap-1 text-[10px] md:text-xs font-bold text-blue-500 dark:text-blue-400">
@@ -195,12 +222,13 @@ function MainPage({ lang }) {
               </div>
             </div>
           ) : (
-            <div className="inline-flex items-center gap-2 bg-gray-50 dark:bg-gray-800 px-5 py-3 rounded-full text-xs font-bold text-gray-400 animate-pulse">
+            <div className="inline-flex items-center gap-2 bg-gray-50 dark:bg-gray-800 px-5 py-3 rounded-full text-xs font-bold text-gray-400 animate-pulse mt-4">
               ⏳ 캠퍼스 실시간 정보 로딩 중...
             </div>
           )}
         </div>
 
+        {/* 메인 타이틀 */}
         <div id="tour-main-header" className="text-center mb-10 md:mb-14 relative">
           <div className="flex items-center justify-center gap-4 mb-4">
             <h2 className="text-4xl md:text-6xl font-black text-[#002f6c] dark:text-blue-400 tracking-tighter">
@@ -212,6 +240,7 @@ function MainPage({ lang }) {
           </p>
         </div>
 
+        {/* 🚀 서비스 카드 4개 */}
         <div id="tour-main-services" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8 mb-12 md:mb-20">
           {current.services.map((s, idx) => (
             <Link key={idx} to={s.path} className="group relative overflow-hidden bg-white dark:bg-gray-800 p-8 rounded-3xl md:rounded-[2.5rem] shadow-xl hover:shadow-2xl transition-all hover:-translate-y-2 border-2 border-gray-50 dark:border-gray-700 flex flex-col items-center text-center">
@@ -226,6 +255,7 @@ function MainPage({ lang }) {
           ))}
         </div>
 
+        {/* 📢 공지사항 & 퀵 링크 */}
         <div className="bg-blue-50/50 dark:bg-blue-900/20 p-8 md:p-12 rounded-[3.5rem] border-2 border-blue-100/50 dark:border-blue-800/50 transition-colors relative overflow-hidden">
           <div id="tour-main-notices" className="text-center mb-16 relative z-10">
             <h4 className="text-sm md:text-base font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest text-center mb-8 transition-colors">
@@ -256,11 +286,27 @@ function MainPage({ lang }) {
         </div>
       </div>
 
-      <footer className="py-12 text-center border-t border-gray-200 dark:border-gray-800 mt-24 relative z-10 transition-colors">
-        <p className="text-gray-600 dark:text-gray-400 font-black text-xs md:text-sm uppercase tracking-widest mb-2 break-keep">
+      {/* ✅ [수정완료] 분실물/마켓 페이지와 100% 동일한 깃허브 로고 푸터 복구! */}
+      <footer className="py-8 md:py-12 text-center border-t border-gray-200 dark:border-gray-800 mt-16 md:mt-24 relative z-10 transition-colors">
+        <p className="text-gray-600 dark:text-gray-400 font-black text-[10px] md:text-sm uppercase tracking-widest mb-1.5 md:mb-2 break-keep leading-relaxed">
           {current.footerDept}
         </p>
-        <p className="text-gray-400 dark:text-gray-500 text-xs md:text-sm font-bold">{current.footerCopy}</p>
+        <div className="flex items-center justify-center gap-4 mt-2 md:mt-3">
+          <p className="text-gray-400 dark:text-gray-500 text-[10px] md:text-sm font-bold">
+            {current.footerCopy}
+          </p>
+          <div className="relative group flex flex-col items-center">
+            <a href="https://github.com/eryang11188/todo-app-mini-project-20222017.git" target="_blank" rel="noopener noreferrer" className="text-gray-400 dark:text-gray-500 hover:text-gray-900 dark:hover:text-gray-100 transition-all hover:scale-110">
+              <svg height="35" width="35" viewBox="0 0 16 16" fill="currentColor" className="opacity-80 hover:opacity-100">
+                <path d="M8 0c4.42 0 8 3.58 8 8a8.01 8.01 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z" />
+              </svg>
+            </a>
+            <div className="absolute bottom-full mb-2 hidden group-hover:flex flex-col items-center animate-bounce">
+              <span className="relative z-10 p-2 text-xs leading-none text-white whitespace-no-wrap bg-gray-800 dark:bg-gray-700 shadow-lg rounded-md font-bold">Github</span>
+              <div className="w-3 h-3 -mt-2 rotate-45 bg-gray-800 dark:bg-gray-700"></div>
+            </div>
+          </div>
+        </div>
       </footer>
     </div>
   );
