@@ -209,6 +209,8 @@ app.delete('/api/items/:id', async (req, res) => { await Item.findByIdAndDelete(
 
 // [5] AI 생성 API (가장 똑똑한 모델부터 서열별 자동 탐색 도입)
 // ⭐ [5] AI 생성 API (무료 티어 생존 최적화 서열 적용 완료)
+// ⭐ [5] AI 생성 API (구글 서버 폭주 대비 자동 릴레이 Fallback 로직)
+// ⭐ [5] AI 생성 API (구글 서버 폭주 대비 자동 릴레이 Fallback 로직)
 app.post('/api/ai/generate', async (req, res) => {
   try {
     const { prompt } = req.body;
@@ -219,40 +221,49 @@ app.post('/api/ai/generate', async (req, res) => {
     
     if (!selectedApiKey) throw new Error("API 키가 설정되지 않았습니다.");
 
-    // 2. 동적 모델 선택 로직 (사용 가능한 모델 긁어오기)
-    const modelRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${selectedApiKey}`);
-    const modelData = await modelRes.json();
-    
-    if (!modelRes.ok) throw new Error(`API 인증 실패: ${modelData.error?.message}`);
+    // 2. 투입할 모델 서열 명단 (안정성 1티어 우선 배정)
+    // 1.5가 터지면 2.0으로, 2.0이 터지면 2.5로 자동 릴레이 투입!
+    // 2. 투입할 모델 서열 명단 (안정성 1티어 우선 배정 + 후순위 럭키 Pro 픽)
+    const fallbackModels = [
+      "gemini-1.5-flash", // 1순위: 가장 빠르고 튼튼한 무료 티어 국민 모델
+      "gemini-2.0-flash", // 2순위: 그 다음 튼튼한 놈
+      "gemini-2.5-flash", // 3순위: 성능은 좋으나 503 서버 폭주 잦은 놈
+      "gemini-1.5-pro",   // 4순위: 혹시 한도가 남아있을 때를 대비한 Pro (럭키 픽)
+      "gemini-2.0-pro",   // 5순위: 최신 Pro
+      "gemini-2.5-pro"    // 6순위: 현존 최고 성능 Pro (무료 티어 한도 0 확률 높음)
+    ];
 
-    const availableModels = modelData.models.filter(m => m.supportedGenerationMethods.includes("generateContent"));
-    
-    // ⭐ 무료 API 티어 생존 전략: 한도가 빵빵한(1분 15회) Flash를 무조건 1~3순위로!
-    // 한도가 0이거나 1분 2회인 Pro 모델은 최후의 보루(4~6순위)로 뺍니다.
-    const safeModel = 
-      availableModels.find(m => m.name.includes("gemini-2.5-flash")) || // 최신 Flash
-      availableModels.find(m => m.name.includes("gemini-2.0-flash")) || // 안정적 최신 Flash
-      availableModels.find(m => m.name.includes("gemini-1.5-flash")) || // 검증된 무료 깡패
-      availableModels.find(m => m.name.includes("gemini-2.5-pro")) ||   // (여기서부턴 한도 0일 확률 높음)
-      availableModels.find(m => m.name.includes("gemini-2.0-pro")) ||
-      availableModels.find(m => m.name.includes("gemini-1.5-pro")) ||
-      availableModels[0]; 
-
-    if (!safeModel) throw new Error("사용 가능한 AI 모델이 없습니다.");
-
-    const targetModelName = safeModel.name.replace('models/', '');
-    console.log(`🤖 [AI 연동] 무료 최적화 모델 채택 완료: ${targetModelName}`);
-
-    // 3. AI 답변 생성
     const genAI = new GoogleGenerativeAI(selectedApiKey);
-    const model = genAI.getGenerativeModel({ model: targetModelName });
-    
-    const result = await model.generateContent(prompt);
+    let result = null;
+    let lastError = null;
+
+    // 3. 서열대로 하나씩 찔러보고 성공하면 바로 탈출!
+    for (const modelName of fallbackModels) {
+      try {
+        console.log(`🤖 [AI 연동] ${modelName} 모델로 요청 시도 중...`);
+        const model = genAI.getGenerativeModel({ model: modelName });
+        
+        result = await model.generateContent(prompt);
+        console.log(`✅ [AI 연동] ${modelName} 모델 응답 성공!`);
+        break; // 성공했으니 반복문 멈추고 탈출!
+        
+      } catch (error) {
+        // 에러 나면 로그만 찍고 조용히 다음 모델로 넘어감
+        console.warn(`⚠️ [${modelName}] 서버 지연/폭주, 다음 모델로 넘어갑니다: ${error.message.split('\n')[0]}`);
+        lastError = error;
+      }
+    }
+
+    // 4. 준비된 모델이 구글 서버 문제로 싹 다 터졌을 경우
+    if (!result) {
+      throw lastError || new Error("모든 AI 모델 서버가 응답하지 않습니다.");
+    }
+
     res.json({ text: result.response.text() });
     
   } catch (error) {
-    console.error("🚨 [Gemini API 에러 상세]:", error.message || error);
-    res.status(500).json({ error: "AI 통신 에러", details: error.message });
+    console.error("🚨 [Gemini API 최종 에러]:", error.message || error);
+    res.status(500).json({ error: "AI 서버 트래픽 폭주", details: error.message });
   }
 });
 
