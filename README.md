@@ -82,7 +82,7 @@
   - > **중고거래 시스템과 분실물 시스템은 실험적 성격의 기능임. (추후 세션 기반 로그인 기능 도입 등 확장 예정)**
 
 - 또한 ToDo 목록에서는 직관적인 할 일 관리를 위해 **List/Grid/Table 다중 뷰 모드**를 지원하며, **집중 타이머 및 스톱워치 기능**을 새롭게 추가. 특히 할 일 카드 내에 실시간으로 밀리초 단위까지 줄어드는 시간 출력 렌더링을 구현하여 시각적인 생산성 향상을 적용.
-  - > 기존 25년 1학기 웹프로그래밍 기말 과제로 제출했던 로컬 기반의 `todos_v4` 앱이 가진 **데이터 휘발성**의 한계를 극복 [(_25-1학기 웹프로그래밍 과제: todos_v4_)](https://github.com/eryang11188/WebProgramming_team-project.git)
+  - > 기존 25년 1학기 웹프로그래밍 기말 과제로 제출했던 로컬 기반의 `todos_v4` 앱이 가진 **데이터 휘발성**의 한계를 극복 [(_25-1학기 웹프로그래밍 과제: todos_v4_)](https://github.com/jeongiryang/WebProgramming_team-project.git)
 
 - 새롭게 학점계산기를 추가하여, 추가한 과목들의 학점 데이터나 성적표가 DB에 반영되지 않고 사용자의 로컬 저장소에만 반영되게 적용함.
 
@@ -356,13 +356,13 @@ Vercel을 통한 CI/CD(지속적 통합/배포) 자동화 파이프라인을 구
 
 | 번호 | 제목 | 주요 내용 및 해결 사항 | 상태 |
 |:---:|:---|:---|:---:|
-| [`#2`](https://github.com/eryang11188/todo-app-mini-project-20222017/issues/2#issue-4109098108) | [Issue 1] Vercel 배포 시 '500 Internal Server' 에러 | Vercel Serverless 환경에서의 Node.js 모듈 인식 경로 충돌 문제 해결 | ~~Closed~~ / `bug` `critical` |
-| [`#3`](https://github.com/eryang11188/todo-app-mini-project-20222017/issues/3#issue-4109132912) | [Issue 2] Vercel 배포 시 404 Not Found 문제 | React SPA 라우팅(새로고침) 시 발생하는 경로 이탈 현상을 `vercel.json` 설정으로 방어 | ~~Closed~~ / `bug` `deployment` |
-| [`#4`](https://github.com/eryang11188/todo-app-mini-project-20222017/issues/4#issue-4109163314) | [Issue 3] MongoDB Atlas 연결 지연 및 CORS 해결 | 클라우드 DB 연동 최적화 및 프론트-백엔드 간 통신 보안 정책(CORS) 허용 | ~~Closed~~ / `database` `security` |
-| [`#9`](https://github.com/eryang11188/todo-app-mini-project-20222017/issues/9#issue-4125102374) | [Issue 4] AI 기능 도입 후, 한도초과 에러 | API 할당량 고갈(429 Error) 방어를 위한 다중 모델 릴레이(Multi-Model Relay) 아키텍처 구축 | ~~Closed~~ / `bug` `backend` |
-| [`#11`](https://github.com/eryang11188/todo-app-mini-project-20222017/issues/11#issue-4134735783) | Vercel 서버 On/Off 기능 추가 | 관리자 환경 변수(`isOff`)를 활용한 서버 접근 제어 및 클라이언트 차단 로직 테스트 | Open / `security` `enhancement` |
-| [`#13`](https://github.com/eryang11188/todo-app-mini-project-20222017/issues/13#issue-4141308925) | [Issue 5] 학식 크롤링 데이터 불일치 및 누락 해결 | 외부 데이터 비동기 연동 시 발생하는 파싱 누락 버그 수정 및 예외 처리 강화 | ~~Closed~~ / `bug` `frontend` |
-| [`#14`](https://github.com/eryang11188/todo-app-mini-project-20222017/issues/14#issue-4147003571) | Gemini AI API 우선순위 설정 | AI 우선순위 설정 로직 정상 작동 여부 확인 완료| ~~Closed~~ / `backend` `enhancement` |
+| [`#2`](https://github.com/jeongiryang/todo-app-mini-project-20222017/issues/2#issue-4109098108) | [Issue 1] Vercel 배포 시 '500 Internal Server' 에러 | Vercel Serverless 환경에서의 Node.js 모듈 인식 경로 충돌 문제 해결 | ~~Closed~~ / `bug` `critical` |
+| [`#3`](https://github.com/jeongiryang/todo-app-mini-project-20222017/issues/3#issue-4109132912) | [Issue 2] Vercel 배포 시 404 Not Found 문제 | React SPA 라우팅(새로고침) 시 발생하는 경로 이탈 현상을 `vercel.json` 설정으로 방어 | ~~Closed~~ / `bug` `deployment` |
+| [`#4`](https://github.com/jeongiryang/todo-app-mini-project-20222017/issues/4#issue-4109163314) | [Issue 3] MongoDB Atlas 연결 지연 및 CORS 해결 | 클라우드 DB 연동 최적화 및 프론트-백엔드 간 통신 보안 정책(CORS) 허용 | ~~Closed~~ / `database` `security` |
+| [`#9`](https://github.com/jeongiryang/todo-app-mini-project-20222017/issues/9#issue-4125102374) | [Issue 4] AI 기능 도입 후, 한도초과 에러 | API 할당량 고갈(429 Error) 방어를 위한 다중 모델 릴레이(Multi-Model Relay) 아키텍처 구축 | ~~Closed~~ / `bug` `backend` |
+| [`#11`](https://github.com/jeongiryang/todo-app-mini-project-20222017/issues/11#issue-4134735783) | Vercel 서버 On/Off 기능 추가 | 관리자 환경 변수(`isOff`)를 활용한 서버 접근 제어 및 클라이언트 차단 로직 테스트 | Open / `security` `enhancement` |
+| [`#13`](https://github.com/jeongiryang/todo-app-mini-project-20222017/issues/13#issue-4141308925) | [Issue 5] 학식 크롤링 데이터 불일치 및 누락 해결 | 외부 데이터 비동기 연동 시 발생하는 파싱 누락 버그 수정 및 예외 처리 강화 | ~~Closed~~ / `bug` `frontend` |
+| [`#14`](https://github.com/jeongiryang/todo-app-mini-project-20222017/issues/14#issue-4147003571) | Gemini AI API 우선순위 설정 | AI 우선순위 설정 로직 정상 작동 여부 확인 완료| ~~Closed~~ / `backend` `enhancement` |
 
 ---
 
@@ -370,12 +370,12 @@ Vercel을 통한 CI/CD(지속적 통합/배포) 자동화 파이프라인을 구
 
 | 번호 | 제목 | 주요 내용 및 해결 사항 | 상태 |
 |:---:|:---|:---|:---:|
-| [`#5`](https://github.com/eryang11188/todo-app-mini-project-20222017/pull/5#issue-4109393628) | todos_v4 -> v5_super로 MongoDB 연동 시도 | 2학년 웹프로그래밍 기말 대체 과제로 나온 todos_v4.js를 업그레이드 시도 | ~~Closed~~ |
-| [`#6`](https://github.com/eryang11188/todo-app-mini-project-20222017/pull/6#issue-4110829531) | feat: todos_v4 -> v5_super 대규모 업그레이드 | 기존 로컬 기반 구버전 앱을 클라우드 통합 포털 아키텍처로 전면 마이그레이션 | Merged |
-| [`#7`](https://github.com/eryang11188/todo-app-mini-project-20222017/pull/7#issue-4116072294) | TEST : todos_v5 5.0ver | 새로운 기능 추가: 학점 시뮬레이터 목표한 학점과 남은 학점을 입력하면, 해당 학점에 도달하기 위한 시뮬레이션 기능 추가. | ~~Closed~~ |
-| [`#8`](https://github.com/eryang11188/todo-app-mini-project-20222017/pull/8#issue-4122474901) | AI 비서 기능 도입 (Google Gemini API) | 핵심 차별화 기능인 대화형 AI 폼 자동완성 로직 개발 및 백엔드 연동 | Merged |
-| [`#10`](https://github.com/eryang11188/todo-app-mini-project-20222017/pull/10#issue-4134641182) | 분실물 센터 구현 및 실시간 날씨 위젯 도입 | OpenWeather API 기반 날씨 연동 및 분실물 게시판(CRUD) 컴포넌트 개발 및 병합 | Merged |
-| [`#12`](https://github.com/eryang11188/todo-app-mini-project-20222017/pull/12#issue-4135914374) | 음식 메뉴 바로보기 추가 | 교내 식단 데이터 파싱 및 메인 대시보드 UI 렌더링 컴포넌트 추가 | Merged |
+| [`#5`](https://github.com/jeongiryang/todo-app-mini-project-20222017/pull/5#issue-4109393628) | todos_v4 -> v5_super로 MongoDB 연동 시도 | 2학년 웹프로그래밍 기말 대체 과제로 나온 todos_v4.js를 업그레이드 시도 | ~~Closed~~ |
+| [`#6`](https://github.com/jeongiryang/todo-app-mini-project-20222017/pull/6#issue-4110829531) | feat: todos_v4 -> v5_super 대규모 업그레이드 | 기존 로컬 기반 구버전 앱을 클라우드 통합 포털 아키텍처로 전면 마이그레이션 | Merged |
+| [`#7`](https://github.com/jeongiryang/todo-app-mini-project-20222017/pull/7#issue-4116072294) | TEST : todos_v5 5.0ver | 새로운 기능 추가: 학점 시뮬레이터 목표한 학점과 남은 학점을 입력하면, 해당 학점에 도달하기 위한 시뮬레이션 기능 추가. | ~~Closed~~ |
+| [`#8`](https://github.com/jeongiryang/todo-app-mini-project-20222017/pull/8#issue-4122474901) | AI 비서 기능 도입 (Google Gemini API) | 핵심 차별화 기능인 대화형 AI 폼 자동완성 로직 개발 및 백엔드 연동 | Merged |
+| [`#10`](https://github.com/jeongiryang/todo-app-mini-project-20222017/pull/10#issue-4134641182) | 분실물 센터 구현 및 실시간 날씨 위젯 도입 | OpenWeather API 기반 날씨 연동 및 분실물 게시판(CRUD) 컴포넌트 개발 및 병합 | Merged |
+| [`#12`](https://github.com/jeongiryang/todo-app-mini-project-20222017/pull/12#issue-4135914374) | 음식 메뉴 바로보기 추가 | 교내 식단 데이터 파싱 및 메인 대시보드 UI 렌더링 컴포넌트 추가 | Merged |
 
 ---
 

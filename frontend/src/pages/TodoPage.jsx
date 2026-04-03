@@ -705,7 +705,7 @@ function TodoPage({ lang, timerMode, setTimerMode, timerTime, setTimerTime, time
     </p>
     <div className="relative group flex flex-col items-center">
       <a 
-        href="https://github.com/eryang11188/todo-app-mini-project-20222017.git" 
+        href="https://github.com/jeongiryang/todo-app-mini-project-20222017.git" 
         target="_blank" 
         rel="noopener noreferrer"
         className="text-gray-400 dark:text-gray-500 hover:text-gray-900 dark:hover:text-gray-100 transition-all hover:scale-110"
