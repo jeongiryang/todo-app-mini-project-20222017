@@ -29,20 +29,34 @@ function MainPage({ lang }) {
   const [showAllergy, setShowAllergy] = useState(false);
   useEffect(() => {
     const fetchData = async () => {
+     
       try {
         const weatherRes = await fetch('https://api.open-meteo.com/v1/forecast?latitude=35.2422&longitude=128.6946&current=temperature_2m,relative_humidity_2m,weather_code&timezone=Asia%2FSeoul');
         const weatherData = await weatherRes.json();
         setWeather(weatherData.current);
+      } catch (error) {
+        console.error("날씨 실패:", error);
+      }
+
+     
+      try {
         const dustRes = await fetch('https://air-quality-api.open-meteo.com/v1/air-quality?latitude=35.2422&longitude=128.6946&current=pm10,pm2_5');
         const dustData = await dustRes.json();
         setDust(dustData.current);
+      } catch (error) {
+        console.error("미세먼지 실패:", error);
+      }
+
+    
+      try {
         const foodRes = await fetch('/api/food'); 
         const foodData = await foodRes.json();
         setMeals(foodData);
       } catch (error) {
-        console.error("데이터 실패", error);
+        console.error("학식 실패:", error);
       }
     };
+
     fetchData();
     const interval = setInterval(fetchData, 600000);
     return () => clearInterval(interval);
