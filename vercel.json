@@ -13,6 +13,15 @@
   ],
   "routes": [
     {
+      "src": "/proxy/weather",
+      "dest": "https://api.open-meteo.com/v1/forecast"
+    },
+    {
+      "src": "/proxy/dust",
+      "dest": "https://air-quality-api.open-meteo.com/v1/air-quality"
+    },
+
+    {
       "src": "/api/(.*)",
       "dest": "/backend/index.js"
     },

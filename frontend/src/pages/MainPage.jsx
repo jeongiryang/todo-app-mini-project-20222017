@@ -28,25 +28,31 @@ function MainPage({ lang }) {
   const [bongrimTab, setBongrimTab] = useState('1층');
   const [showAllergy, setShowAllergy] = useState(false);
   useEffect(() => {
-    const fetchData = async () => {
-     
+   const fetchData = async () => {
+    
       try {
-        const weatherRes = await fetch('https://api.open-meteo.com/v1/forecast?latitude=35.2422&longitude=128.6946&current=temperature_2m,relative_humidity_2m,weather_code&timezone=Asia%2FSeoul');
+        const weatherRes = await fetch('/proxy/weather?latitude=35.2422&longitude=128.6946&current=temperature_2m,relative_humidity_2m,weather_code&timezone=Asia%2FSeoul');
+        
+      
+        if (!weatherRes.ok) throw new Error(`서버 에러 상태 코드: ${weatherRes.status}`);
+        
         const weatherData = await weatherRes.json();
         setWeather(weatherData.current);
       } catch (error) {
         console.error("날씨 실패:", error);
       }
 
-     
+      
       try {
-        const dustRes = await fetch('https://air-quality-api.open-meteo.com/v1/air-quality?latitude=35.2422&longitude=128.6946&current=pm10,pm2_5');
+        const dustRes = await fetch('/proxy/dust?latitude=35.2422&longitude=128.6946&current=pm10,pm2_5');
+        
+        if (!dustRes.ok) throw new Error(`서버 에러 상태 코드: ${dustRes.status}`);
+        
         const dustData = await dustRes.json();
         setDust(dustData.current);
       } catch (error) {
         console.error("미세먼지 실패:", error);
       }
-
     
       try {
         const foodRes = await fetch('/api/food'); 
