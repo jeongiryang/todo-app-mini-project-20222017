@@ -359,13 +359,14 @@ Vercel을 통한 CI/CD(지속적 통합/배포) 자동화 파이프라인을 구
 
 | 번호 | 제목 | 주요 내용 및 해결 사항 | 상태 |
 |:---:|:---|:---|:---:|
-| [`#2`](https://github.com/jeongiryang/todo-app-mini-project-20222017/issues/2#issue-4109098108) | [Issue 1] Vercel 배포 시 '500 Internal Server' 에러 | Vercel Serverless 환경에서의 Node.js 모듈 인식 경로 충돌 문제 해결 | ~~Closed~~ / `bug` `critical` |
-| [`#3`](https://github.com/jeongiryang/todo-app-mini-project-20222017/issues/3#issue-4109132912) | [Issue 2] Vercel 배포 시 404 Not Found 문제 | React SPA 라우팅(새로고침) 시 발생하는 경로 이탈 현상을 `vercel.json` 설정으로 방어 | ~~Closed~~ / `bug` `deployment` |
-| [`#4`](https://github.com/jeongiryang/todo-app-mini-project-20222017/issues/4#issue-4109163314) | [Issue 3] MongoDB Atlas 연결 지연 및 CORS 해결 | 클라우드 DB 연동 최적화 및 프론트-백엔드 간 통신 보안 정책(CORS) 허용 | ~~Closed~~ / `database` `security` |
-| [`#9`](https://github.com/jeongiryang/todo-app-mini-project-20222017/issues/9#issue-4125102374) | [Issue 4] AI 기능 도입 후, 한도초과 에러 | API 할당량 고갈(429 Error) 방어를 위한 다중 모델 릴레이(Multi-Model Relay) 아키텍처 구축 | ~~Closed~~ / `bug` `backend` |
+| [`#2`](https://github.com/jeongiryang/todo-app-mini-project-20222017/issues/2#issue-4109098108) | **[Issue 1]** Vercel 배포 시 '500 Internal Server' 에러 | Vercel Serverless 환경에서의 Node.js 모듈 인식 경로 충돌 문제 해결 | ~~Closed~~ / `bug` `critical` |
+| [`#3`](https://github.com/jeongiryang/todo-app-mini-project-20222017/issues/3#issue-4109132912) | **[Issue 2]** Vercel 배포 시 404 Not Found 문제 | React SPA 라우팅(새로고침) 시 발생하는 경로 이탈 현상을 `vercel.json` 설정으로 방어 | ~~Closed~~ / `bug` `deployment` |
+| [`#4`](https://github.com/jeongiryang/todo-app-mini-project-20222017/issues/4#issue-4109163314) | **[Issue 3]** MongoDB Atlas 연결 지연 및 CORS 해결 | 클라우드 DB 연동 최적화 및 프론트-백엔드 간 통신 보안 정책(CORS) 허용 | ~~Closed~~ / `database` `security` |
+| [`#9`](https://github.com/jeongiryang/todo-app-mini-project-20222017/issues/9#issue-4125102374) | **[Issue 4]** AI 기능 도입 후, 한도초과 에러 | API 할당량 고갈(429 Error) 방어를 위한 다중 모델 릴레이(Multi-Model Relay) 아키텍처 구축 | ~~Closed~~ / `bug` `backend` |
 | [`#11`](https://github.com/jeongiryang/todo-app-mini-project-20222017/issues/11#issue-4134735783) | Vercel 서버 On/Off 기능 추가 | 관리자 환경 변수(`isOff`)를 활용한 서버 접근 제어 및 클라이언트 차단 로직 테스트 | Open / `security` `enhancement` |
-| [`#13`](https://github.com/jeongiryang/todo-app-mini-project-20222017/issues/13#issue-4141308925) | [Issue 5] 학식 크롤링 데이터 불일치 및 누락 해결 | 외부 데이터 비동기 연동 시 발생하는 파싱 누락 버그 수정 및 예외 처리 강화 | ~~Closed~~ / `bug` `frontend` |
+| [`#13`](https://github.com/jeongiryang/todo-app-mini-project-20222017/issues/15#issue-4216925096) | **[Issue 5]** 학식 크롤링 데이터 불일치 및 누락 해결 | 외부 데이터 비동기 연동 시 발생하는 파싱 누락 버그 수정 및 예외 처리 강화 | ~~Closed~~ / `bug` `frontend` |
 | [`#14`](https://github.com/jeongiryang/todo-app-mini-project-20222017/issues/14#issue-4147003571) | Gemini AI API 우선순위 설정 | AI 우선순위 설정 로직 정상 작동 여부 확인 완료| ~~Closed~~ / `backend` `enhancement` |
+| [`#15`](https://github.com/jeongiryang/todo-app-mini-project-20222017/issues/15) | **[Issue 6]** 날씨 API 장애 시 학식 데이터 로딩 누락 문제 해결 | 데이터 페칭 병렬화 및 독립적 에러 핸들링을 통한 결함 격리 적용 | ~~Closed~~ / `backend` `bug` `configuration` |
 
 ---
 
