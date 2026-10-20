@@ -1,0 +1,22 @@
+{
+  "file": "demo.gif",
+  "sourceUrl": "https://todo-app-mini-project-20222017.vercel.app/",
+  "capturedAt": "2026-10-20T04:53:01.872Z",
+  "scene": "메인 → 학점계산기 → 브라우저 내 예시 과목 입력·평점 계산",
+  "scope": "실제 배포 사이트를 브라우저에서 열고 조작한 화면.",
+  "originalViewport": {
+    "width": 1280,
+    "height": 800
+  },
+  "originalFrameCount": 43,
+  "gif": {
+    "size": [
+      960,
+      600
+    ],
+    "frames": 43,
+    "durationMs": 12930,
+    "bytes": 253200
+  },
+  "sha256": "4607fdbbbab7c51ccafd560da712c707df3ac6d84ea93ce3b502fffafbd6b883"
+}
