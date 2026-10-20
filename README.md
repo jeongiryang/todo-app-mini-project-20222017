@@ -1,10 +1,51 @@
-# 소프트웨어 공학 과제: CWNU 스마트 포털 통합 시스템 
+# CWNU Smart Portal
 
-- [Github 원격 저장소 바로가기](https://github.com/jeongiryang/todo-app-mini-project-20222017.git)
- 
-- [Vercel 배포 사이트 바로가기](https://todo-app-mini-project-20222017.vercel.app/)
-  - **Latest Update:** `v1.1.0` 
-  - [![GitHub release (latest by date)](https://img.shields.io/github/v/release/jeongiryang/todo-app-mini-project-20222017?color=blue&label=v1.1.0%20Latest)](https://github.com/jeongiryang/todo-app-mini-project-20222017/releases/latest)
+학식, 학교 바로가기, 할 일, 학점 계산을 모은 창원대학교 학생용 포털.
+
+![React](https://img.shields.io/badge/React-61DAFB?style=flat-square&logo=react&logoColor=black) ![Vite](https://img.shields.io/badge/Vite-646CFF?style=flat-square&logo=vite&logoColor=white) ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white) ![Express](https://img.shields.io/badge/Express-000000?style=flat-square&logo=express&logoColor=white) ![MongoDB](https://img.shields.io/badge/MongoDB-47A248?style=flat-square&logo=mongodb&logoColor=white) ![Vercel](https://img.shields.io/badge/Vercel-000000?style=flat-square&logo=vercel&logoColor=white)
+
+[사이트 열기](https://todo-app-mini-project-20222017.vercel.app/) · [주요 기능](#주요-기능) · [로컬 실행](#로컬-실행) · [개발 기록](#개발-기록)
+
+[![메인 화면에서 학점계산기로 이동해 과목과 성적을 입력하고 평점을 계산하는 실제 배포 화면](docs/media/demo.gif)](https://todo-app-mini-project-20222017.vercel.app/)
+
+메인 → 학점계산기 → 과목·성적 입력 → 평점 계산
+
+## 주요 기능
+
+- **메인** — 학식·알레르기 정보, 날씨·미세먼지, 교내 서비스 바로가기
+- **할 일** — 목록·카드·표 보기, 집중 타이머와 스톱워치
+- **학점** — 과목별 평점 계산, 목표 학점 시뮬레이션, 브라우저 내 저장
+- **중고장터·분실물** — 글 등록·검색·정렬, AI 폼 자동완성
+- **화면** — 한국어·영어, 라이트·다크 모드, 모바일 레이아웃
+
+웹프로그래밍 공동 과제의 ToDo를 확장한 소프트웨어공학 개인 과제다. 중고장터와 분실물 센터는 실험 기능으로 구성했다.
+
+## 로컬 실행
+
+Node.js와 MongoDB가 필요하다. `backend/.env`에 `MONGODB_URI`를 설정하고, AI 폼 완성을 사용할 경우 `GEMINI_API_KEY`도 설정한다.
+
+백엔드:
+
+```sh
+cd backend
+npm ci
+npm run dev
+```
+
+새 터미널에서 프런트엔드:
+
+```sh
+cd frontend
+npm ci
+npm run dev
+```
+
+[localhost:5173](http://localhost:5173)을 연다. 프런트엔드의 `/api` 요청은 개발 서버 설정에 따라 `localhost:5000`으로 전달된다.
+
+## 개발 기록
+
+<details>
+<summary>과제 보고서 · 기능별 화면 · 개발 과정</summary>
 
 ## 기획
 - 과거 _웹프로그래밍_(25-1학기) 기말 과제 `todos_v4`의 데이터 휘발성 한계를 극복하고, 나아가 창원대학교 학우들의 편의성을 위해 개발된 **실시간 클라우드 DB 연동 및 CWNU 스마트 포털 구축 프로젝트**
@@ -442,3 +483,5 @@ Vercel을 통한 CI/CD(지속적 통합/배포) 자동화 파이프라인을 구
 | ![학점계산기](./screenshots/images/2026-03-22/2026-03-22_30.png) | ![분실물센터](./screenshots/images/2026-03-25/2026-03-25_7.png) | ![최종 배포](./screenshots/images/2026-03-27/2026-03-27_13.png) |
 |:---:|:---:|:---:|
 | **▲ 학점계산기 도입** | **▲ 분실물센터 도입** | **▲ 최종 배포** |
+
+</details>
